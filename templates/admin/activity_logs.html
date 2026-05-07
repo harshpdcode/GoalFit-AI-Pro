@@ -1,0 +1,58 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-active">Activity Logs</span>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">Activity <span>Logs</span></h1>
+<div class="accent-line"></div>
+
+<div class="admin-chart-card full-width" data-aos="fade-up" data-aos-delay="100">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="id-cell">#{{ log.id }}</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="mini-avatar">{{ (log.user_name or 'S')[0] }}</div>
+                            <span>{{ log.user_name or 'System' }}</span>
+                        </div>
+                    </td>
+                    <td class="email-cell">{{ log.user_email or '—' }}</td>
+                    <td><span class="action-badge action-{{ log.action }}">{{ log.action }}</span></td>
+                    <td class="details-cell">{{ log.details or '—' }}</td>
+                    <td class="time-cell">{{ log.created_at.strftime('%b %d, %Y — %H:%M') if log.created_at else '—' }}</td>
+                </tr>
+                {% endfor %}
+                {% if not logs %}
+                <tr><td colspan="6" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="scroll-text" class="empty-icon"></i>
+                        <p>No activity logs recorded yet</p>
+                    </div>
+                </td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

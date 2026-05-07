@@ -1,0 +1,93 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/users">Users</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-active">Management</span>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-header-row">
+    <div>
+        <h1 class="page-title" data-aos="fade-up">User <span>Management</span></h1>
+        <div class="accent-line"></div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
+    <form class="search-form" method="GET" action="/admin/users">
+        <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" name="search" placeholder="Search by name or email..." value="{{ search }}">
+        </div>
+        <button type="submit" class="admin-btn primary">Search</button>
+        {% if search %}
+        <a href="/admin/users" class="admin-btn secondary">Clear</a>
+        {% endif %}
+    </form>
+    <div class="toolbar-stats">
+        <span class="stat-pill"><i data-lucide="users"></i> {{ users|length }} users</span>
+    </div>
+</div>
+
+<!-- Users Grid -->
+<div class="grid" data-aos="fade-up" data-aos-delay="200" style="margin-top:20px;">
+    {% for user in users %}
+    <div class="gf-card" style="cursor:pointer; padding-top:25px;" onclick="window.location.href='/admin/users/{{ user.id }}'">
+        
+        <form method="POST" action="/admin/users/{{ user.id }}/delete" style="position:absolute; top:20px; right:20px; z-index:10;" onsubmit="return confirm('Delete this user permanently?')">
+            <button type="submit" class="action-btn delete" title="Delete User" onclick="event.stopPropagation();">
+                <i data-lucide="trash-2"></i>
+            </button>
+        </form>
+
+        <div class="user-cell" style="margin-bottom:20px;">
+            <div class="mini-avatar" style="width:48px; height:48px; font-size:18px;">{{ user.name[0] if user.name else '?' }}</div>
+            <div>
+                <h3 style="margin:0; color:var(--text-primary); font-size:17px; font-weight:700;">{{ user.name }}</h3>
+                <span class="email-cell" style="display:block; margin-top:4px;">{{ user.email }}</span>
+            </div>
+        </div>
+        
+        <div class="detail-grid cols-2" style="margin-bottom:15px;">
+            <div class="detail-item">
+                <span>Goal</span>
+                <strong>{{ user.goal_type or '—' }}</strong>
+            </div>
+            <div class="detail-item">
+                <span>Diet</span>
+                <strong>{{ user.diet_preference or '—' }}</strong>
+            </div>
+            <div class="detail-item">
+                <span>Weight</span>
+                <strong>{{ user.weight_kg or '—' }} kg</strong>
+            </div>
+            <div class="detail-item">
+                <span>Latest BMI</span>
+                <strong>{{ user.latest_bmi or '—' }}</strong>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid var(--border-subtle); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:var(--text-muted);"><i data-lucide="calendar" style="width:12px; height:12px; display:inline; margin-right:4px; margin-bottom:-2px;"></i>Joined: {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}</span>
+            <span style="font-size:12px; color:var(--accent-primary); font-weight:600;">View Profile &rarr;</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not users %}
+<div class="empty-state large" data-aos="fade-up">
+    <i data-lucide="users" class="empty-icon"></i>
+    <p>No users found matching "{{ search }}"</p>
+    <a href="/admin/users" class="view-all-link" style="margin-top:10px; display:inline-block;">View All Users</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

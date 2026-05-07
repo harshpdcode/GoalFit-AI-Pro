@@ -1,0 +1,1116 @@
+GoalFit AI — Project Documentation (Part 1)
+
+======================================================================
+
+1. PROJECT TITLE
+
+GoalFit AI — An Intelligent Health & Fitness Management System
+
+A web-based application that leverages rule-based AI algorithms to provide personalized fitness goals, diet plans, workout recommendations, BMI tracking, water intake monitoring, and downloadable health reports — tailored to each user's unique health profile.
+
+======================================================================
+
+2. PROBLEM DEFINITION
+
+In the modern era, lifestyle-related health issues such as obesity, malnutrition, and sedentary behaviour are rapidly increasing. Millions of individuals wish to improve their health but face the following core problems:
+
+  - Lack of Personalization: Generic fitness apps offer one-size-fits-all plans that do not account for individual metrics like BMI, age, gender, activity level, and dietary preference.
+  - Information Overload: Users are overwhelmed by conflicting fitness advice from multiple sources with no structured, unified system to follow.
+  - No Intelligent Goal Prediction: Most platforms do not predict when a user will realistically achieve their target weight based on their current health parameters.
+  - Fragmented Tools: Tracking weight, diet, water intake, and workout progress requires multiple separate apps, leading to poor consistency and user drop-off.
+  - No Expert-Level Guidance for Non-Experts: People without access to dieticians or personal trainers have no personalized, data-driven guidance.
+  - Zero Administrative Oversight: There is no centralized system for monitoring overall user health trends across a platform, which is crucial for health professionals or gym administrators.
+
+======================================================================
+
+3. NEED OF THE PROJECT
+
+The need for GoalFit AI arises from the following critical gaps in today's health management ecosystem:
+
++----------------------------------+----------------------------------------------------------------------+
+| Gap                              | GoalFit AI Solution                                                  |
++----------------------------------+----------------------------------------------------------------------+
+| No personalized goal timeline    | AI-based prediction engine estimates weeks to goal                   |
+| Generic diet recommendations     | Meals filtered by diet type (Veg/Non-Veg/Vegan) and goal (Loss/Gain) |
+| No workout customization by BMI  | Exercise difficulty auto-adjusted based on BMI category              |
+| Manual water tracking is tedious | Automated daily water log with goal streaks                          |
+| No consolidated health report    | One-click PDF report with all health metrics                         |
+| No admin visibility              | Full admin panel with analytics, user management, and feedback inbox |
++----------------------------------+----------------------------------------------------------------------+
+
+Statistical Context:
+  - Over 1.9 billion adults globally are overweight (WHO, 2022)
+  - 78% of fitness app users quit within 3 months due to lack of personalization
+  - Only 30% of people have access to a personal trainer or dietician
+
+GoalFit AI democratizes personalized health management by making it accessible, free, and intelligent for every user.
+
+======================================================================
+
+4. CURRENT SYSTEM AND ITS DRAWBACKS
+
+4.1 Existing Systems in the Market
+
++----------------------+-----------------+-------------------------------------------------+
+| System               | Type            | Limitation                                      |
++----------------------+-----------------+-------------------------------------------------+
+| MyFitnessPal         | Mobile App      | Requires manual food logging, no AI prediction  |
+| HealthifyMe          | Mobile App      | Paid premium for AI features, no offline access |
+| Fitbit App           | Wearable-linked | Requires expensive hardware                     |
+| Generic Gym Software | Desktop         | No personalization, no diet planning            |
+| Excel/Google Sheets  | Manual          | Completely manual, no automation                |
++----------------------+-----------------+-------------------------------------------------+
+
+4.2 Drawbacks of the Current System
+
+1. No Automated Goal Prediction: Existing free tools do not calculate how many weeks it will take to achieve a target weight based on BMI category and weekly change rate.
+
+2. No Integrated Diet + Workout + Water System: Users must use 3–4 separate applications to manage nutrition, exercise, and hydration — there is no unified platform.
+
+3. No BMI-Aware Workout Filtering: Most apps suggest the same exercises regardless of whether a user is Obese, Normal, or Underweight. This can lead to injury.
+
+4. Limited Admin Control: Existing systems provide no backend admin panel to manage meals, workouts, users, and feedback from a centralized dashboard.
+
+5. No PDF Report Generation: Users cannot export a professional health report summarizing their BMI history, diet plan, goal prediction, and step recommendations.
+
+6. High Cost for Personalization: Premium AI-powered plans on platforms like HealthifyMe cost ₹800–₹2000/month, making them inaccessible to most users.
+
+7. No Activity Logging: Existing systems do not log every user action (login, register, feedback) for administrative auditing.
+
+8. First-Login Flow Gaps: Most apps do not force health profile completion on first login, leading to inaccurate recommendations.
+
+======================================================================
+
+5. PROPOSED SYSTEM AND ITS FEATURES
+
+5.1 Overview
+
+GoalFit AI is a Python Flask web application with a MySQL relational database that provides a complete, intelligent, and personalized health management ecosystem accessible via any web browser — without requiring hardware devices or premium subscriptions.
+
+5.2 System Architecture
+
+[User Browser]
+     ↓
+[Flask Web Server — app.py]
+     ↓
+[Blueprint Modules: auth, health, bmi, prediction, diet,
+ workout, progress, water, feedback, report, admin]
+     ↓
+[MySQL Database — goalfit_ai]
+     ↓
+[13 Relational Tables with Foreign Key Constraints]
+
+5.3 Key Features
+
+🔐 Authentication & Role Management
+  - Secure user registration with Werkzeug password hashing (bcrypt)
+  - Role-based access control:  vs  roles
+  - First-login flow: forces health profile completion before dashboard access
+  - Session management with Flask sessions
+  - Activity logging for every login, logout, and registration event
+
+📋 Health Profile Module
+  - Collects: Age, Gender, Height, Weight, Target Weight, Activity Level, Goal Type, Diet Preference
+  - Supports both INSERT (new user) and UPDATE (returning user) operations
+  - Automatically triggers BMI calculation and AI prediction on save
+
+📊 BMI Calculation Engine
+  - Formula: BMI = weight(kg) / (height(m))²- Categories: Underweight (<18.5), Normal (18.5–24.9), Overweight (25–29.9), Obese (≥30)
+  - Stores timestamped records for historical tracking
+
+🎯 AI Goal Prediction Engine
+  - Uses BMI category + goal type to determine a realistic weekly weight change rate:
+  - Weight Loss (Obese): 1.0 kg/week
+  - Weight Loss (Overweight): 0.7 kg/week
+  - Weight Loss (Normal): 0.4 kg/week
+  - Weight Gain (Underweight): 0.6 kg/week
+  - Weight Gain (Others): 0.3 kg/week
+  - Calculates _weeks = weight_diff / weekly_rate- Computes _completion_date from today
+  - Auto-generates daily step target and calorie burn goal based on weight difference
+
+🍽️ Personalized Diet Plan
+  - Meals automatically filtered by diet_preference (Vegetarian / Non-Vegetarian / Vegan) and goal_type (Weight Loss / Weight Gain)
+  - Organized by meal time: Breakfast, Lunch, Dinner, Snacks
+  - Displays: Meal Name, Calories, Proteins, Carbs, Fats, Food Image
+  - 40+ pre-loaded meals covering all diet-goal combinations
+
+💪 Smart Workout Plan
+  - Exercises filtered by BMI category to set appropriate difficulty:
+  - Obese/Overweight → Beginner + Intermediate
+  - Normal → Intermediate only
+  - Underweight → Intermediate + Advanced
+  - Grouped by muscle group: Chest, Legs, Abs, Cardio
+  - Each exercise includes: Name, Calories Burned, Difficulty, Image, YouTube Tutorial Link
+  - 20 pre-loaded exercises across all muscle groups
+
+📈 Progress Tracker
+  - Users log daily weight entries
+  - Auto-recalculates BMI, goal prediction, and step recommendations on each log
+  - Line chart visualization of weight trend over time
+  - BMI trend chart with historical data
+
+💧 Water Intake Tracker
+  - Daily water glass counter (default goal: 8 glasses)
+  - Add/Remove glass via AJAX (no page reload)
+  - Streak counter for consecutive days meeting water goal
+  - 7-day historical view
+  - Custom daily goal setting
+
+📄 PDF Report Generator
+  - One-click downloadable report using ReportLab
+  - Report includes: Health Profile, BMI History, Goal Prediction, Step Recommendations, Weight Progress Log, Full Diet Plan
+  - Professional branded design with GoalFit AI header
+
+💬 Feedback System
+  - Users submit feedback with subject and message
+  - View history of past submissions with status (unread/read)
+  - Admin can reply and mark status
+
+🛠️ Admin Panel (Complete CMS)
+  - Dashboard: Total users, new users this week, average BMI, total meals & exercises, unread feedback count, goal distribution charts, activity logs
+  - User Management: View all users as cards, search by name/email, click to view full user detail
+  - User Detail View: Full profile, BMI history, progress logs, predictions, activity logs
+  - Meal CRUD: Add, Edit, Delete diet meals with all nutritional fields
+  - Workout CRUD: Add, Edit, Delete exercises with image/video links
+  - Activity Logs: Full audit trail of all user actions (last 100)
+  - Feedback Inbox: Filter by status, reply to user feedback
+  - Analytics API: JSON endpoint for BMI distribution charts
+
+======================================================================
+
+6. REQUIREMENTS
+
+6.1 Software Requirements
+
+Development Environment
++---------------------+--------------------------------------+
+| Component           | Specification                        |
++---------------------+--------------------------------------+
+| Operating System    | Windows 10/11 / Linux / macOS        |
+| Python Version      | Python 3.10+                         |
+| Web Framework       | Flask 3.x                            |
+| Database            | MySQL 8.0+ (via XAMPP or standalone) |
+| IDE                 | VS Code / PyCharm                    |
+| Package Manager     | pip                                  |
+| Virtual Environment | venv                                 |
++---------------------+--------------------------------------+
+
+Python Dependencies (from requirements.txt)
+
++------------------------+-------------------------------------------+
+| Package                | Purpose                                   |
++------------------------+-------------------------------------------+
+| Flask                  | Core web framework                        |
+| mysql-connector-python | MySQL database driver                     |
+| Werkzeug               | Password hashing, request utilities       |
+| python-dotenv          | Environment variable management (.env)    |
+| ReportLab              | PDF report generation                     |
+| Jinja2                 | HTML template engine (bundled with Flask) |
+| MarkupSafe             | Safe HTML rendering                       |
+| click                  | CLI utilities (Flask dependency)          |
+| itsdangerous           | Session signing (Flask dependency)        |
++------------------------+-------------------------------------------+
+
+Frontend Technologies
++----------------------+--------------------------------------------+
+| Technology           | Purpose                                    |
++----------------------+--------------------------------------------+
+| HTML5                | Page structure and semantics               |
+| CSS3 (Vanilla)       | Styling, animations, glassmorphism effects |
+| JavaScript (Vanilla) | Interactive UI, AJAX calls, Chart.js       |
+| Chart.js             | Progress and analytics charts              |
+| Google Fonts         | Typography (Inter/Outfit)                  |
++----------------------+--------------------------------------------+
+
+Browser Compatibility
+  - Google Chrome 90+
+  - Mozilla Firefox 88+
+  - Microsoft Edge 90+
+  - Safari 14+
+
+6.2 Hardware Requirements
+
+Minimum (Development)
++-----------+----------------------------------------+
+| Component | Minimum Specification                  |
++-----------+----------------------------------------+
+| Processor | Intel Core i3 / AMD Ryzen 3 (2.0 GHz+) |
+| RAM       | 4 GB                                   |
+| Storage   | 500 MB free disk space                 |
+| Display   | 1280 × 720 resolution                  |
+| Network   | Local network (localhost)              |
++-----------+----------------------------------------+
+
+Recommended (Production Deployment)
++-----------+-------------------------------------------------+
+| Component | Recommended Specification                       |
++-----------+-------------------------------------------------+
+| Processor | Intel Core i5/i7 or equivalent (2.5 GHz+)       |
+| RAM       | 8 GB+                                           |
+| Storage   | 10 GB SSD                                       |
+| Display   | 1920 × 1080 resolution                          |
+| Network   | Broadband Internet connection                   |
+| Server    | Linux VPS (Ubuntu 20.04+) with gunicorn + nginx |
++-----------+-------------------------------------------------+
+
+======================================================================
+
+7. TIME DURATION
+
+Project Timeline (Semester 2 — 2026)
+
++-------------------------------------+----------------------------------------------------------+------------+
+| Phase                               | Activities                                               | Duration   |
++-------------------------------------+----------------------------------------------------------+------------+
+| Phase 1 — Planning & Analysis   | Requirement gathering, system design, ER diagram, DFD    | Week 1–2   |
+| Phase 2 — Database Design       | Schema creation, table relationships, seed data          | Week 3     |
+| Phase 3 — Authentication Module | Register, Login, Logout, Session, Role-based access      | Week 4     |
+| Phase 4 — Core User Modules     | Health profile, BMI, Prediction engine, Dashboard        | Week 5–6   |
+| Phase 5 — Feature Modules       | Diet plan, Workout plan, Progress tracker, Water tracker | Week 7–9   |
+| Phase 6 — Report & Feedback     | PDF generation (ReportLab), Feedback CRUD                | Week 10    |
+| Phase 7 — Admin Panel           | Admin dashboard, User/Meal/Workout/Feedback management   | Week 11–12 |
+| Phase 8 — Testing & Debugging   | Unit testing, integration testing, bug fixes             | Week 13    |
+| Phase 9 — Documentation         | Technical docs, user manual, deployment guide            | Week 14    |
++-------------------------------------+----------------------------------------------------------+------------+
+
+Total Duration: ~14 Weeks (3.5 Months)
+
+======================================================================
+
+8. TECHNOLOGY USED
+
+Backend
++----------------------------+---------+------------------------------------------------------+
+| Technology                 | Version | Usage                                                |
++----------------------------+---------+------------------------------------------------------+
+| Python                 | 3.10+   | Core programming language                            |
+| Flask                  | 3.x     | Web framework — routing, blueprints, sessions        |
+| Flask Blueprints       | —       | Modular application structure (12 blueprints)        |
+| Werkzeug               | 3.x     | Password hashing (PBKDF2-SHA256), security utilities |
+| mysql-connector-python | 9.x     | MySQL database ORM-free connector                    |
+| python-dotenv          | 1.x     | .env file loading for credentials                  |
+| ReportLab              | 4.x     | Professional PDF generation                          |
++----------------------------+---------+------------------------------------------------------+
+
+Frontend
++------------------------+---------+--------------------------------------------+
+| Technology             | Version | Usage                                      |
++------------------------+---------+--------------------------------------------+
+| HTML5              | —       | Page markup and structure                  |
+| CSS3               | —       | Styling, animations, dark glassmorphism UI |
+| Vanilla JavaScript | ES6+    | DOM manipulation, AJAX, event handling     |
+| Chart.js           | 4.x     | Weight trend and BMI history line charts   |
+| Google Fonts       | —       | Premium typography (Inter, Outfit)         |
++------------------------+---------+--------------------------------------------+
+
+Database
++------------+---------+-------------------------------------------+
+| Technology | Version | Usage                                     |
++------------+---------+-------------------------------------------+
+| MySQL  | 8.0+    | Relational database management            |
+| XAMPP  | 8.x     | Local development server (Apache + MySQL) |
++------------+---------+-------------------------------------------+
+
+Tools & Utilities
++-----------------------+---------------------------------------+
+| Tool                  | Purpose                               |
++-----------------------+---------------------------------------+
+| VS Code           | Primary IDE                           |
+| Git               | Version control                       |
+| GitHub            | Remote repository                     |
+| pip + venv        | Dependency and environment management |
+| Postman           | API testing                           |
+| YouTube Embed API | Workout tutorial video integration    |
++-----------------------+---------------------------------------+
+
+AI/Logic Engine
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------+
+| Component                     | Description                                                                                                                  |
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------+
+| Rule-Based AI             | Custom Python logic using BMI category, goal type, and weight differential to predict weekly change rates and goal timelines |
+| Mifflin-St Jeor Formula   | Used to calculate Basal Metabolic Rate (BMR) on the dashboard                                                                |
+| Step Estimation Algorithm | Derived from calorie deficit math:  = (daily_calorie_burn × 0.4) / 0.04 capped between 5,000–12,000                   |
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------+
+
+======================================================================
+
+9. FUNCTIONAL AND NON-FUNCTIONAL REQUIREMENTS
+
+9.1 Functional Requirements
+
+Functional requirements define what the system must do.
+
+FR-01: User Registration
+  - The system shall allow new users to register with Name, Email, and Password.
+  - The system shall hash the password before storing it.
+  - The system shall prevent duplicate email registration.
+  - The system shall log the registration event in _logs.
+
+FR-02: User Login / Logout
+  - The system shall authenticate users using email and hashed password comparison.
+  - The system shall establish a session upon successful login containing _id, _name, , and .
+  - The system shall redirect admin users to the admin dashboard.
+  - The system shall redirect first-time users to the health profile form.
+  - The system shall clear all session data on logout.
+
+FR-03: Health Profile Management
+  - The system shall allow users to fill in age, gender, height, weight, target weight, activity level, goal type, and diet preference.
+  - The system shall store the profile in _health.
+  - The system shall auto-trigger BMI calculation and goal prediction on profile save.
+
+FR-04: BMI Calculation
+  - The system shall calculate BMI using  / (height_m)².
+  - The system shall categorize BMI as Underweight / Normal / Overweight / Obese.
+  - The system shall store each calculation with a timestamp in _records.
+
+FR-05: AI Goal Prediction
+  - The system shall calculate estimated weeks to reach target weight.
+  - The system shall compute a goal completion date.
+  - The system shall generate daily step and calorie burn targets.
+  - The system shall store predictions in _predictions and _recommendations.
+
+FR-06: Diet Plan
+  - The system shall retrieve meals matching the user's _preference and _type.
+  - The system shall display meals grouped by time (Breakfast, Lunch, Dinner, Snacks).
+  - The system shall show nutritional values (calories, protein, carbs, fats) for each meal.
+
+FR-07: Workout Plan
+  - The system shall retrieve exercises filtered by difficulty based on the user's BMI category.
+  - The system shall group exercises by muscle group.
+  - The system shall display exercise images and YouTube tutorial links.
+
+FR-08: Progress Tracking
+  - The system shall allow users to log daily weight.
+  - The system shall automatically recalculate BMI, goal prediction, and step targets on each weight log.
+  - The system shall display weight and BMI trend charts.
+
+FR-09: Water Tracking
+  - The system shall log daily water intake in glasses.
+  - The system shall support add/remove glass via AJAX without page reload.
+  - The system shall calculate and display a hydration streak.
+  - The system shall display a 7-day history.
+
+FR-10: PDF Report Generation
+  - The system shall generate a downloadable PDF report.
+  - The report shall include health profile, BMI history, goal prediction, step recommendations, weight log, and diet plan.
+
+FR-11: Feedback System
+  - The system shall allow users to submit feedback with subject and message.
+  - The system shall display users' own feedback history with status.
+  - The admin shall be able to reply and update feedback status.
+
+FR-12: Admin Panel
+  - The system shall restrict admin routes using a decorator that verifies  == 'admin' in session.
+  - The admin shall be able to view, add, edit, and delete meals and exercises.
+  - The admin shall be able to view all users, search by name/email, view detailed user profiles, and delete users.
+  - The admin shall be able to view all activity logs and feedback with filters.
+  - The admin dashboard shall display aggregate statistics: total users, average BMI, goal distribution, diet distribution, and user growth.
+
+======================================================================
+
+9.2 Non-Functional Requirements
+
+Non-functional requirements define how the system must perform.
+
++--------+---------------------+------------------------------------------------------------------------------------------------------------------------------------+
+| ID     | Category            | Requirement                                                                                                                        |
++--------+---------------------+------------------------------------------------------------------------------------------------------------------------------------+
+| NFR-01 | Security        | All passwords must be stored as PBKDF2-SHA256 hashes using Werkzeug. Plain-text passwords must never be stored.                    |
+| NFR-02 | Security        | All protected routes must validate session before processing. Unauthorized access redirects to login.                              |
+| NFR-03 | Security        | Admin-only routes are protected by an @admin_required decorator. Regular users cannot access admin URLs.                         |
+| NFR-04 | Performance     | Dashboard page must load within 2 seconds on a local machine with a standard MySQL query set.                                      |
+| NFR-05 | Performance     | PDF report generation must complete within 5 seconds for a standard user data set.                                                 |
+| NFR-06 | Reliability     | Database connection failures must be gracefully handled with user-facing error flash messages, not server crashes.                 |
+| NFR-07 | Usability       | The UI must be responsive and usable on screens from 768px (tablet) to 1920px (desktop).                                           |
+| NFR-08 | Usability       | Flash messages must be displayed for all key user actions (login failure, registration success, form save, etc.).                  |
+| NFR-09 | Maintainability | Application must use Flask Blueprints to separate concerns — each module is independently maintainable.                            |
+| NFR-10 | Maintainability | Database credentials must be stored in a .env file and never hardcoded in application logic.                                     |
+| NFR-11 | Scalability     | The Blueprint-based modular architecture allows new features to be added as independent modules without modifying existing code.   |
+| NFR-12 | Data Integrity  | All foreign key relationships must use ON DELETE CASCADE or ON DELETE SET NULL to maintain referential integrity.              |
+| NFR-13 | Auditability    | Every significant user action (login, logout, register, admin edits) must be logged in _logs with timestamp and details. |
+| NFR-14 | Portability     | The application must run on Windows, Linux, and macOS with no OS-specific dependencies.                                            |
+| NFR-15 | Availability    | The system must support concurrent multi-user access without data corruption (handled by MySQL transaction isolation).             |
++--------+---------------------+------------------------------------------------------------------------------------------------------------------------------------+
+
+======================================================================
+
+🌿 1. FLOWCHART (System Flow)
+[Start]
+   ↓
+[User Visits Website]
+   ↓
+[Register / Login]
+   ↓
+{First Login?}
+   ↓ Yes                     ↓ No
+[Fill Health Profile]     [Go to Dashboard]
+   ↓
+[Calculate BMI]
+   ↓
+[Generate Goal Prediction]
+   ↓
+[Dashboard]
+   ↓
++-----------------------------+
+| Choose Feature              |
+| Diet | Workout | Progress   |
+| Water | Report | Feedback   |
++-----------------------------+
+   ↓
+[Admin Panel (if admin)]
+   ↓
+[Logout]
+   ↓
+[End]
+
+🌿 2. UML CLASS DIAGRAM
+Class User
+- user_id
+- name
+- email
+- password
+- role
++ register()
++ login()
+
+Class HealthProfile
+- age
+- gender
+- height
+- weight
+- target_weight
++ updateProfile()
+
+Class BMI
+- bmi_value
+- category
++ calculateBMI()
+
+Class Prediction
+- weeks
+- completion_date
++ predictGoal()
+
+Class Diet
+- meal_name
+- calories
+- protein
++ getMeals()
+
+Class Workout
+- exercise_name
+- difficulty
++ getExercises()
+
+Class Progress
+- weight_log
+- date
++ updateProgress()
+
+Class WaterTracker
+- glasses
+- goal
++ trackWater()
+
+Class Admin
++ manageUsers()
++ manageMeals()
++ manageWorkouts()
+
+Relationships:
+User → HealthProfile
+User → BMI
+User → Prediction
+User → Diet
+User → Workout
+User → Progress
+User → WaterTracker
+Admin → User (manages)
+
+🌿 3. USE CASE DIAGRAM
+
+Actors:
+User
+Admin
+
+Use Cases:
+Register/Login
+Manage Health Profile
+View BMI
+Get Diet Plan
+Get Workout Plan
+Track Progress
+Track Water
+Download Report
+Submit Feedback
+Admin Manage Users/Meals/Workouts
+
+User → (Login/Register)
+User → (Update Profile)
+User → (View Dashboard)
+User → (Track Progress)
+User → (Download Report)
+
+Admin → (Manage Users)
+Admin → (Manage Diet/Workout)
+Admin → (View Analytics)
+
+🌿 4. ACTIVITY DIAGRAM
+Start
+ ↓
+Login/Register
+ ↓
+Fill Health Profile
+ ↓
+Calculate BMI
+ ↓
+Predict Goal
+ ↓
+Display Dashboard
+ ↓
+[User selects option]
+   ↓
+   → Diet Plan
+   → Workout Plan
+   → Progress Tracking
+   → Water Tracking
+   → Report Download
+ ↓
+Logout
+ ↓
+End
+
+🌿 5. SEQUENCE DIAGRAM
+User → Web App : Login
+Web App → Database : Verify User
+Database → Web App : Success
+
+User → Web App : Submit Health Data
+Web App → BMI Module : Calculate BMI
+Web App → Prediction Module : Predict Goal
+
+User → Web App : Request Diet Plan
+Web App → Database : Fetch Meals
+Database → Web App : Return Meals
+
+Web App → User : Display Dashboard
+
+🌿 6. ER DIAGRAM (Database Design)
+Users (user_id, name, email, password, role)
+
+Health_Profile (profile_id, user_id, age, height, weight)
+
+BMI_Records (bmi_id, user_id, bmi_value, category)
+
+Goal_Predictions (prediction_id, user_id, weeks, target_date)
+
+Meals (meal_id, name, calories, type)
+
+Workouts (workout_id, name, difficulty)
+
+Progress (progress_id, user_id, weight, date)
+
+Water_Log (log_id, user_id, glasses, date)
+
+Feedback (feedback_id, user_id, message, status)
+
+Relationships:
+User → Health_Profile (1:1)
+User → BMI_Records (1:M)
+User → Progress (1:M)
+User → Feedback (1:M)
+Meals → Users (M:M via preference)
+
+🌿 7. DATA DICTIONARY 
+1. USERS TABLE
++------------+--------------+-------------------+----------------------------+
+| Field Name | Data Type    | Constraints       | Description                |
++------------+--------------+-------------------+----------------------------+
+| id         | INT          | PK, AI            | Unique identifier for user |
+| name       | VARCHAR(100) | NOT NULL          | Full name of the user      |
+| email      | VARCHAR(100) | UNIQUE, NOT NULL  | Login email address        |
+| password   | VARCHAR(255) | NOT NULL          | Hashed password            |
++------------+--------------+-------------------+----------------------------+
+
+2. USER_HEALTH TABLE
++----------------+--------------+-------------+---------------------------+
+| Field Name     | Data Type    | Constraints | Description               |
++----------------+--------------+-------------+---------------------------+
+| id             | INT          | PK, AI      | Record ID                 |
+| user_id        | INT          | FK          | Link to user              |
+| age            | INT          |             | User's age                |
+| gender         | VARCHAR(20)  |             | Male / Female / Other     |
+| height_cm      | DECIMAL(5,2) |             | Height in cm              |
+| weight_kg      | DECIMAL(5,2) |             | Current weight            |
+| activity_level | VARCHAR(50)  |             | Sedentary / Moderate      |
+| goal_type      | VARCHAR(50)  |             | Weight Loss / Gain        |
+| target_weight  | DECIMAL(5,2) |             | Target weight             |
+| diet_preference| VARCHAR(50)  |             | Veg / Non-Veg             |
++----------------+--------------+-------------+---------------------------+
+
+3. BMI_RECORDS TABLE
++---------------+--------------+-------------+---------------------------+
+| Field Name    | Data Type    | Constraints | Description               |
++---------------+--------------+-------------+---------------------------+
+| id            | INT          | PK, AI      | Record ID                 |
+| user_id       | INT          | FK          | Link to user              |
+| bmi_value     | DECIMAL(5,2) |             | Calculated BMI            |
+| bmi_category  | VARCHAR(50)  |             | Underweight / Normal      |
+| recorded_date | DATE         |             | Record date               |
++---------------+--------------+-------------+---------------------------+
+
+4. GOAL_PREDICTIONS TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Prediction ID             |
+| user_id          | INT          | FK          | Link to user              |
+| current_weight   | DECIMAL(5,2) |             | Current weight            |
+| target_weight    | DECIMAL(5,2) |             | Target weight             |
+| weekly_change_rate|DECIMAL(5,2)|             | Weekly weight change(kg)  |
+| estimated_weeks  | INT          |             | Time to reach goal        |
+| estimated_completion_date| DATE|             | Expected completion date  |
++------------------+--------------+-------------+---------------------------+
+
+5. STEP_RECOMMENDATIONS TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Recommendation ID         |
+| user_id          | INT          | FK          | Link to user              |
+| daily_steps      | INT          |             | Steps per day             |
+| calories_to_burn | INT          |             | Daily calorie target      |
+| distance_km      | DECIMAL(5,2) |             | Walking distance          |
++------------------+--------------+-------------+---------------------------+
+
+6. DIET_MEALS TABLE
++-------------+--------------+-------------+---------------------------+
+| Field Name  | Data Type    | Constraints | Description               |
++-------------+--------------+-------------+---------------------------+
+| id          | INT          | PK, AI      | Meal ID                   |
+| meal_name   | VARCHAR(100) | NOT NULL    | Food item name            |
+| meal_time   | VARCHAR(50)  |             | Breakfast / Lunch / Dinner|
+| calories    | INT          |             | Total calories            |
+| proteins    | INT          |             | Protein content           |
+| carbs       | INT          |             | Carbohydrates             |
+| fats        | INT          |             | Fat content               |
+| goal_type   | VARCHAR(50)  |             | Weight Loss / Gain        |
+| diet_type   | VARCHAR(50)  |             | Veg / Non-Veg             |
++-------------+--------------+-------------+---------------------------+
+
+7. WORKOUT_EXERCISES TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Exercise ID               |
+| exercise_name    | VARCHAR(100) | NOT NULL    | Name of exercise          |
+| target_muscle    | VARCHAR(50)  |             | Muscle group              |
+| difficulty_level | VARCHAR(50)  |             | Beginner / Intermediate   |
+| calories_burned  | INT          |             | Estimated calories burned |
++------------------+--------------+-------------+---------------------------+
+
+8. PROGRESS_LOGS TABLE
++-------------+--------------+-------------+---------------------------+
+| Field Name  | Data Type    | Constraints | Description               |
++-------------+--------------+-------------+---------------------------+
+| id          | INT          | PK, AI      | Log ID                    |
+| user_id     | INT          | FK          | Link to user              |
+| weight_kg   | DECIMAL(5,2) |             | Logged weight             |
+| log_date    | DATE         |             | Date of entry             |
++-------------+--------------+-------------+---------------------------+
+
+🌿 8. SCREENSHOTS (What to Include)
+
+You should add:
+
+Login Page
+Register Page
+Dashboard
+BMI Result
+Diet Plan Page
+Workout Page
+Progress Chart
+Water Tracker
+Admin Panel
+
+(📌 Tip: Take clean screenshots from your running project)
+
+🌿 9. APPLICATION (Real-world Use)
+
+GoalFit AI can be used in:
+
+Gyms & Fitness Centers
+Personal Health Tracking
+Diet Planning Platforms
+College Health Projects
+Startup MVP for fitness apps
+
+🌿 10. EXPECTED OUTCOMES
+Personalized diet & workout plans
+Accurate BMI tracking
+Realistic goal prediction
+Improved user fitness consistency
+Centralized health monitoring system
+Increased user engagement
+
+🌿 11. FUTURE SCOPE
+
+Like a seed that promises a forest, this system too can grow:
+
+Integration with wearable devices (Fitbit, smartwatches)
+AI chatbot fitness assistant
+Mobile application (Android/iOS)
+Machine Learning-based predictions
+Voice assistant integration
+Real-time calorie tracking via camera
+Cloud deployment (AWS/GCP)
+
+🌿 12. REFERENCES
+WHO (World Health Organization)
+Python Documentation
+Flask Documentation
+MySQL Documentation
+Research papers on BMI & fitness tracking
+Existing apps (MyFitnessPal, HealthifyMe)
+
+======================================================================
+
+🌿 1. FLOWCHART (System Flow)
+[Start]
+   ↓
+[User Visits Website]
+   ↓
+[Register / Login]
+   ↓
+{First Login?}
+   ↓ Yes                     ↓ No
+[Fill Health Profile]     [Go to Dashboard]
+   ↓
+[Calculate BMI]
+   ↓
+[Generate Goal Prediction]
+   ↓
+[Dashboard]
+   ↓
++-----------------------------+
+| Choose Feature              |
+| Diet | Workout | Progress   |
+| Water | Report | Feedback   |
++-----------------------------+
+   ↓
+[Admin Panel (if admin)]
+   ↓
+[Logout]
+   ↓
+[End]
+
+🌿 2. UML CLASS DIAGRAM
+Class User
+- user_id
+- name
+- email
+- password
+- role
++ register()
++ login()
+
+Class HealthProfile
+- age
+- gender
+- height
+- weight
+- target_weight
++ updateProfile()
+
+Class BMI
+- bmi_value
+- category
++ calculateBMI()
+
+Class Prediction
+- weeks
+- completion_date
++ predictGoal()
+
+Class Diet
+- meal_name
+- calories
+- protein
++ getMeals()
+
+Class Workout
+- exercise_name
+- difficulty
++ getExercises()
+
+Class Progress
+- weight_log
+- date
++ updateProgress()
+
+Class WaterTracker
+- glasses
+- goal
++ trackWater()
+
+Class Admin
++ manageUsers()
++ manageMeals()
++ manageWorkouts()
+
+Relationships:
+User → HealthProfile
+User → BMI
+User → Prediction
+User → Diet
+User → Workout
+User → Progress
+User → WaterTracker
+Admin → User (manages)
+
+🌿 3. USE CASE DIAGRAM
+
+Actors:
+User
+Admin
+
+Use Cases:
+Register/Login
+Manage Health Profile
+View BMI
+Get Diet Plan
+Get Workout Plan
+Track Progress
+Track Water
+Download Report
+Submit Feedback
+Admin Manage Users/Meals/Workouts
+
+User → (Login/Register)
+User → (Update Profile)
+User → (View Dashboard)
+User → (Track Progress)
+User → (Download Report)
+
+Admin → (Manage Users)
+Admin → (Manage Diet/Workout)
+Admin → (View Analytics)
+
+🌿 4. ACTIVITY DIAGRAM
+Start
+ ↓
+Login/Register
+ ↓
+Fill Health Profile
+ ↓
+Calculate BMI
+ ↓
+Predict Goal
+ ↓
+Display Dashboard
+ ↓
+[User selects option]
+   ↓
+   → Diet Plan
+   → Workout Plan
+   → Progress Tracking
+   → Water Tracking
+   → Report Download
+ ↓
+Logout
+ ↓
+End
+
+🌿 5. SEQUENCE DIAGRAM
+User → Web App : Login
+Web App → Database : Verify User
+Database → Web App : Success
+
+User → Web App : Submit Health Data
+Web App → BMI Module : Calculate BMI
+Web App → Prediction Module : Predict Goal
+
+User → Web App : Request Diet Plan
+Web App → Database : Fetch Meals
+Database → Web App : Return Meals
+
+Web App → User : Display Dashboard
+
+🌿 6. ER DIAGRAM (Database Design)
+Users (user_id, name, email, password, role)
+
+Health_Profile (profile_id, user_id, age, height, weight)
+
+BMI_Records (bmi_id, user_id, bmi_value, category)
+
+Goal_Predictions (prediction_id, user_id, weeks, target_date)
+
+Meals (meal_id, name, calories, type)
+
+Workouts (workout_id, name, difficulty)
+
+Progress (progress_id, user_id, weight, date)
+
+Water_Log (log_id, user_id, glasses, date)
+
+Feedback (feedback_id, user_id, message, status)
+
+Relationships:
+User → Health_Profile (1:1)
+User → BMI_Records (1:M)
+User → Progress (1:M)
+User → Feedback (1:M)
+Meals → Users (M:M via preference)
+
+🌿 7. DATA DICTIONARY 
+
+1. USERS TABLE
++------------+--------------+-------------------+----------------------------+
+| Field Name | Data Type    | Constraints       | Description                |
++------------+--------------+-------------------+----------------------------+
+| id         | INT          | PK, AI            | Unique identifier for user |
+| name       | VARCHAR(100) | NOT NULL          | Full name of the user      |
+| email      | VARCHAR(100) | UNIQUE, NOT NULL  | Login email address        |
+| password   | VARCHAR(255) | NOT NULL          | Hashed password            |
++------------+--------------+-------------------+----------------------------+
+
+2. USER_HEALTH TABLE
++----------------+--------------+-------------+---------------------------+
+| Field Name     | Data Type    | Constraints | Description               |
++----------------+--------------+-------------+---------------------------+
+| id             | INT          | PK, AI      | Record ID                 |
+| user_id        | INT          | FK          | Link to user              |
+| age            | INT          |             | User's age                |
+| gender         | VARCHAR(20)  |             | Male / Female / Other     |
+| height_cm      | DECIMAL(5,2) |             | Height in cm              |
+| weight_kg      | DECIMAL(5,2) |             | Current weight            |
+| activity_level | VARCHAR(50)  |             | Sedentary / Moderate      |
+| goal_type      | VARCHAR(50)  |             | Weight Loss / Gain        |
+| target_weight  | DECIMAL(5,2) |             | Target weight             |
+| diet_preference| VARCHAR(50)  |             | Veg / Non-Veg             |
++----------------+--------------+-------------+---------------------------+
+
+3. BMI_RECORDS TABLE
++---------------+--------------+-------------+---------------------------+
+| Field Name    | Data Type    | Constraints | Description               |
++---------------+--------------+-------------+---------------------------+
+| id            | INT          | PK, AI      | Record ID                 |
+| user_id       | INT          | FK          | Link to user              |
+| bmi_value     | DECIMAL(5,2) |             | Calculated BMI            |
+| bmi_category  | VARCHAR(50)  |             | Underweight / Normal      |
+| recorded_date | DATE         |             | Record date               |
++---------------+--------------+-------------+---------------------------+
+
+4. GOAL_PREDICTIONS TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Prediction ID             |
+| user_id          | INT          | FK          | Link to user              |
+| current_weight   | DECIMAL(5,2) |             | Current weight            |
+| target_weight    | DECIMAL(5,2) |             | Target weight             |
+| weekly_change_rate|DECIMAL(5,2)|             | Weekly weight change(kg)  |
+| estimated_weeks  | INT          |             | Time to reach goal        |
+| estimated_completion_date| DATE|             | Expected completion date  |
++------------------+--------------+-------------+---------------------------+
+
+5. STEP_RECOMMENDATIONS TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Recommendation ID         |
+| user_id          | INT          | FK          | Link to user              |
+| daily_steps      | INT          |             | Steps per day             |
+| calories_to_burn | INT          |             | Daily calorie target      |
+| distance_km      | DECIMAL(5,2) |             | Walking distance          |
++------------------+--------------+-------------+---------------------------+
+
+6. DIET_MEALS TABLE
++-------------+--------------+-------------+---------------------------+
+| Field Name  | Data Type    | Constraints | Description               |
++-------------+--------------+-------------+---------------------------+
+| id          | INT          | PK, AI      | Meal ID                   |
+| meal_name   | VARCHAR(100) | NOT NULL    | Food item name            |
+| meal_time   | VARCHAR(50)  |             | Breakfast / Lunch / Dinner|
+| calories    | INT          |             | Total calories            |
+| proteins    | INT          |             | Protein content           |
+| carbs       | INT          |             | Carbohydrates             |
+| fats        | INT          |             | Fat content               |
+| goal_type   | VARCHAR(50)  |             | Weight Loss / Gain        |
+| diet_type   | VARCHAR(50)  |             | Veg / Non-Veg             |
++-------------+--------------+-------------+---------------------------+
+
+7. WORKOUT_EXERCISES TABLE
++------------------+--------------+-------------+---------------------------+
+| Field Name       | Data Type    | Constraints | Description               |
++------------------+--------------+-------------+---------------------------+
+| id               | INT          | PK, AI      | Exercise ID               |
+| exercise_name    | VARCHAR(100) | NOT NULL    | Name of exercise          |
+| target_muscle    | VARCHAR(50)  |             | Muscle group              |
+| difficulty_level | VARCHAR(50)  |             | Beginner / Intermediate   |
+| calories_burned  | INT          |             | Estimated calories burned |
++------------------+--------------+-------------+---------------------------+
+
+8. PROGRESS_LOGS TABLE
++-------------+--------------+-------------+---------------------------+
+| Field Name  | Data Type    | Constraints | Description               |
++-------------+--------------+-------------+---------------------------+
+| id          | INT          | PK, AI      | Log ID                    |
+| user_id     | INT          | FK          | Link to user              |
+| weight_kg   | DECIMAL(5,2) |             | Logged weight             |
+| log_date    | DATE         |             | Date of entry             |
++-------------+--------------+-------------+---------------------------+
+
+🌿 8. SCREENSHOTS (What to Include)
+
+You should add:
+
+Login Page
+Register Page
+Dashboard
+BMI Result
+Diet Plan Page
+Workout Page
+Progress Chart
+Water Tracker
+Admin Panel
+
+(📌 Tip: Take clean screenshots from your running project)
+
+🌿 9. APPLICATION (Real-world Use)
+
+GoalFit AI can be used in:
+
+Gyms & Fitness Centers
+Personal Health Tracking
+Diet Planning Platforms
+College Health Projects
+Startup MVP for fitness apps
+
+🌿 10. EXPECTED OUTCOMES
+Personalized diet & workout plans
+Accurate BMI tracking
+Realistic goal prediction
+Improved user fitness consistency
+Centralized health monitoring system
+Increased user engagement
+
+🌿 11. FUTURE SCOPE
+
+Like a seed that promises a forest, this system too can grow:
+
+Integration with wearable devices (Fitbit, smartwatches)
+AI chatbot fitness assistant
+Mobile application (Android/iOS)
+Machine Learning-based predictions
+Voice assistant integration
+Real-time calorie tracking via camera
+Cloud deployment (AWS/GCP)
+
+🌿 12. REFERENCES
+WHO (World Health Organization)
+Python Documentation
+Flask Documentation
+MySQL Documentation
+Research papers on BMI & fitness tracking
+Existing apps (MyFitnessPal, HealthifyMe)

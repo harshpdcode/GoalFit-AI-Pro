@@ -14,7 +14,7 @@ def workout_plan():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # ---------- USER HEALTH ----------
     cursor.execute("""
@@ -34,12 +34,16 @@ def workout_plan():
     """, (user_id,))
     bmi_data = cursor.fetchone()
 
-    if not health or not bmi_data:
-        return "Health/BMI data missing"
+    if not health:
+        return redirect(url_for('health.health_profile'))
 
     goal = health['goal_type']
     activity = health['activity_level']
-    bmi = bmi_data['bmi_category']
+    
+    if not bmi_data:
+        bmi = "Normal"
+    else:
+        bmi = bmi_data['bmi_category']
 
     # ---------- DIFFICULTY FILTER ----------
     if bmi in ["Obese", "Overweight"]:

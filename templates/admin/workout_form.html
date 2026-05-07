@@ -1,0 +1,84 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/workouts">Exercises</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-active">{{ 'Edit' if exercise else 'Add New' }} Exercise</span>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">{{ 'Edit' if exercise else 'Add New' }} <span>Exercise</span></h1>
+<div class="accent-line"></div>
+
+<div class="admin-form-card" data-aos="fade-up" data-aos-delay="100">
+    <form method="POST" class="admin-form">
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Exercise Name</label>
+                <input type="text" name="exercise_name" value="{{ exercise.exercise_name if exercise else '' }}" required placeholder="e.g. Push Ups">
+            </div>
+
+            <div class="form-group">
+                <label>Target Muscle</label>
+                <select name="target_muscle" required>
+                    <option value="Chest" {{ 'selected' if exercise and exercise.target_muscle == 'Chest' }}>Chest</option>
+                    <option value="Legs" {{ 'selected' if exercise and exercise.target_muscle == 'Legs' }}>Legs</option>
+                    <option value="Abs" {{ 'selected' if exercise and exercise.target_muscle == 'Abs' }}>Abs</option>
+                    <option value="Cardio" {{ 'selected' if exercise and exercise.target_muscle == 'Cardio' }}>Cardio</option>
+                    <option value="Back" {{ 'selected' if exercise and exercise.target_muscle == 'Back' }}>Back</option>
+                    <option value="Arms" {{ 'selected' if exercise and exercise.target_muscle == 'Arms' }}>Arms</option>
+                    <option value="Shoulders" {{ 'selected' if exercise and exercise.target_muscle == 'Shoulders' }}>Shoulders</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Muscle ID</label>
+                <input type="number" name="muscle_id" value="{{ exercise.muscle_id if exercise else 1 }}" required min="1">
+            </div>
+
+            <div class="form-group">
+                <label>Calories Burned</label>
+                <input type="number" name="calories_burned" value="{{ exercise.calories_burned if exercise else '' }}" required placeholder="e.g. 50">
+            </div>
+
+            <div class="form-group">
+                <label>Difficulty Level</label>
+                <select name="difficulty_level" required>
+                    <option value="Beginner" {{ 'selected' if exercise and exercise.difficulty_level == 'Beginner' }}>Beginner</option>
+                    <option value="Intermediate" {{ 'selected' if exercise and exercise.difficulty_level == 'Intermediate' }}>Intermediate</option>
+                    <option value="Advanced" {{ 'selected' if exercise and exercise.difficulty_level == 'Advanced' }}>Advanced</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Option Group</label>
+                <input type="number" name="option_group" value="{{ exercise.option_group if exercise else 1 }}" required min="1">
+            </div>
+
+            <div class="form-group full-span">
+                <label>Image Path</label>
+                <input type="text" name="img_src" value="{{ exercise.img_src if exercise else 'static/images/workout/1.jpg' }}" placeholder="static/images/workout/...">
+            </div>
+
+            <div class="form-group full-span">
+                <label>Video URL (YouTube Embed)</label>
+                <input type="text" name="video_src" value="{{ exercise.video_src if exercise else '' }}" placeholder="https://www.youtube.com/embed/...">
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/admin/workouts" class="admin-btn secondary">Cancel</a>
+            <button type="submit" class="admin-btn primary">
+                <i data-lucide="save"></i> {{ 'Update' if exercise else 'Create' }} Exercise
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

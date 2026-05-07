@@ -1,0 +1,111 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/meals">Meals</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-active">Management</span>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-header-row">
+    <div>
+        <h1 class="page-title" data-aos="fade-up">Meal <span>Management</span></h1>
+        <div class="accent-line"></div>
+    </div>
+    <a href="/admin/meals/add" class="admin-btn primary" data-aos="fade-left">
+        <i data-lucide="plus"></i> Add Meal
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
+    <form class="filter-form" method="GET" action="/admin/meals">
+        <select name="diet_type" class="admin-select" onchange="this.form.submit()">
+            <option value="">All Diet Types</option>
+            <option value="Vegetarian" {{ 'selected' if filter_type == 'Vegetarian' }}>Vegetarian</option>
+            <option value="Non-Vegetarian" {{ 'selected' if filter_type == 'Non-Vegetarian' }}>Non-Vegetarian</option>
+            <option value="Vegan" {{ 'selected' if filter_type == 'Vegan' }}>Vegan</option>
+            <option value="Eggetarian" {{ 'selected' if filter_type == 'Eggetarian' }}>Eggetarian</option>
+        </select>
+        <select name="goal_type" class="admin-select" onchange="this.form.submit()">
+            <option value="">All Goals</option>
+            <option value="Weight Loss" {{ 'selected' if filter_goal == 'Weight Loss' }}>Weight Loss</option>
+            <option value="Weight Gain" {{ 'selected' if filter_goal == 'Weight Gain' }}>Weight Gain</option>
+            <option value="Maintenance" {{ 'selected' if filter_goal == 'Maintenance' }}>Maintenance</option>
+        </select>
+        {% if filter_type or filter_goal %}
+        <a href="/admin/meals" class="admin-btn secondary">Clear</a>
+        {% endif %}
+    </form>
+    <div class="toolbar-stats">
+        <span class="stat-pill"><i data-lucide="utensils-crossed"></i> {{ meals|length }} meals</span>
+    </div>
+</div>
+
+<!-- Meals Table -->
+<div class="admin-chart-card full-width" data-aos="fade-up" data-aos-delay="200">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Meal</th>
+                    <th>Time</th>
+                    <th>Calories</th>
+                    <th>P / C / F</th>
+                    <th>Diet Type</th>
+                    <th>Goal</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for meal in meals %}
+                <tr>
+                    <td class="id-cell">#{{ meal.id }}</td>
+                    <td>
+                        <div class="meal-cell">
+                            <img src="/{{ meal.img_src }}" alt="" class="table-thumb">
+                            <span>{{ meal.meal_name }}</span>
+                        </div>
+                    </td>
+                    <td><span class="tag bmi">{{ meal.meal_time }}</span></td>
+                    <td><strong>{{ meal.calories }}</strong> kcal</td>
+                    <td class="macro-cell">
+                        <span class="macro-p">{{ meal.proteins }}g</span>
+                        <span class="macro-c">{{ meal.carbs }}g</span>
+                        <span class="macro-f">{{ meal.fats }}g</span>
+                    </td>
+                    <td><span class="tag vegan">{{ meal.diet_type }}</span></td>
+                    <td><span class="tag goal">{{ meal.goal_type }}</span></td>
+                    <td class="actions-cell">
+                        <a href="/admin/meals/{{ meal.id }}/edit" class="action-btn edit" title="Edit">
+                            <i data-lucide="pencil"></i>
+                        </a>
+                        <form method="POST" action="/admin/meals/{{ meal.id }}/delete" class="inline-form"
+                              onsubmit="return confirm('Delete this meal?')">
+                            <button type="submit" class="action-btn delete" title="Delete">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not meals %}
+                <tr><td colspan="8" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="utensils-crossed" class="empty-icon"></i>
+                        <p>No meals found</p>
+                    </div>
+                </td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

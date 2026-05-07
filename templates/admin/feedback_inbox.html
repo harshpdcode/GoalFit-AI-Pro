@@ -1,0 +1,84 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-active">Feedback Inbox</span>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">Feedback <span>Inbox</span></h1>
+<div class="accent-line"></div>
+
+<!-- Filters -->
+<div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
+    <div class="filter-pills">
+        <a href="/admin/feedback" class="filter-pill {{ 'active' if not status_filter }}">All</a>
+        <a href="/admin/feedback?status=unread" class="filter-pill {{ 'active' if status_filter == 'unread' }}">Unread</a>
+        <a href="/admin/feedback?status=read" class="filter-pill {{ 'active' if status_filter == 'read' }}">Read</a>
+        <a href="/admin/feedback?status=resolved" class="filter-pill {{ 'active' if status_filter == 'resolved' }}">Resolved</a>
+    </div>
+    <div class="toolbar-stats">
+        <span class="stat-pill"><i data-lucide="mail"></i> {{ feedbacks|length }} messages</span>
+    </div>
+</div>
+
+<!-- Feedback Cards -->
+<div class="feedback-list" data-aos="fade-up" data-aos-delay="200">
+    {% for fb in feedbacks %}
+    <div class="feedback-card {{ fb.status }}">
+        <div class="feedback-header">
+            <div class="feedback-user">
+                <div class="mini-avatar">{{ (fb.user_name or 'U')[0] }}</div>
+                <div>
+                    <strong>{{ fb.user_name or 'Unknown' }}</strong>
+                    <span class="feedback-email">{{ fb.user_email or '' }}</span>
+                </div>
+            </div>
+            <div class="feedback-meta">
+                <span class="status-badge status-{{ fb.status }}">{{ fb.status }}</span>
+                <span class="feedback-time">{{ fb.created_at.strftime('%b %d, %Y — %H:%M') if fb.created_at else '' }}</span>
+            </div>
+        </div>
+
+        <div class="feedback-body">
+            <h4>{{ fb.subject }}</h4>
+            <p>{{ fb.message }}</p>
+        </div>
+
+        {% if fb.admin_reply %}
+        <div class="admin-reply-box">
+            <strong>Admin Reply:</strong>
+            <p>{{ fb.admin_reply }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/admin/feedback/{{ fb.id }}/update" class="feedback-actions">
+            <div class="reply-group">
+                <textarea name="admin_reply" placeholder="Write a reply..." rows="2">{{ fb.admin_reply or '' }}</textarea>
+            </div>
+            <div class="feedback-btns">
+                <select name="status" class="admin-select small">
+                    <option value="unread" {{ 'selected' if fb.status == 'unread' }}>Unread</option>
+                    <option value="read" {{ 'selected' if fb.status == 'read' }}>Read</option>
+                    <option value="resolved" {{ 'selected' if fb.status == 'resolved' }}>Resolved</option>
+                </select>
+                <button type="submit" class="admin-btn primary small">Update</button>
+            </div>
+        </form>
+    </div>
+    {% endfor %}
+
+    {% if not feedbacks %}
+    <div class="empty-state large">
+        <i data-lucide="mail-check" class="empty-icon"></i>
+        <p>No feedback messages yet</p>
+        <span>All clear! 🎉</span>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">Help & <span>Feedback</span></h1>
+<div class="accent-line"></div>
+
+<div class="feedback-page">
+
+    <!-- Submit Form -->
+    <div class="gf-card feedback-submit-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="gf-card-header">
+            <i data-lucide="message-square-plus"></i>
+            <h3>Send us your feedback</h3>
+        </div>
+
+        <form method="POST" action="/feedback" class="feedback-form-user">
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" name="subject" required placeholder="What's this about?">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea name="message" rows="5" required placeholder="Tell us what's on your mind..."></textarea>
+            </div>
+            <button type="submit" class="save-btn">
+                <i data-lucide="send"></i> Submit Feedback
+            </button>
+        </form>
+    </div>
+
+    <!-- Past Feedback -->
+    <div class="gf-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="gf-card-header">
+            <i data-lucide="history"></i>
+            <h3>Your Feedback History</h3>
+        </div>
+
+        {% if feedbacks %}
+        <div class="user-feedback-list">
+            {% for fb in feedbacks %}
+            <div class="user-feedback-item">
+                <div class="fb-header">
+                    <h4>{{ fb.subject }}</h4>
+                    <div class="fb-meta">
+                        <span class="status-badge status-{{ fb.status }}">{{ fb.status }}</span>
+                        <span class="fb-time">{{ fb.created_at.strftime('%b %d, %Y') if fb.created_at else '' }}</span>
+                    </div>
+                </div>
+                <p class="fb-message">{{ fb.message }}</p>
+                {% if fb.admin_reply %}
+                <div class="fb-reply">
+                    <strong>✉️ Admin Reply:</strong>
+                    <p>{{ fb.admin_reply }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>No feedback submitted yet</p>
+            <span>We'd love to hear from you!</span>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

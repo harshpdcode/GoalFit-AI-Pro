@@ -1,0 +1,202 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-active">Dashboard</span>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">Admin <span>Dashboard</span></h1>
+<div class="accent-line"></div>
+
+<!-- ===== KPI CARDS ===== -->
+<div class="admin-grid" data-aos="fade-up" data-aos-delay="100">
+
+    <div class="admin-kpi-card kpi-users">
+        <div class="kpi-icon"><i data-lucide="users"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_users }}</span>
+            <span class="kpi-label">Total Users</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-new">
+        <div class="kpi-icon"><i data-lucide="user-plus"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ new_this_week }}</span>
+            <span class="kpi-label">New This Week</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-bmi">
+        <div class="kpi-icon"><i data-lucide="activity"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ avg_bmi }}</span>
+            <span class="kpi-label">Avg BMI</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-meals">
+        <div class="kpi-icon"><i data-lucide="utensils-crossed"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_meals }}</span>
+            <span class="kpi-label">Diet Meals</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-exercises">
+        <div class="kpi-icon"><i data-lucide="dumbbell"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_exercises }}</span>
+            <span class="kpi-label">Exercises</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-feedback">
+        <div class="kpi-icon"><i data-lucide="mail"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ unread_feedback }}</span>
+            <span class="kpi-label">Unread Feedback</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+</div>
+
+<!-- ===== CHARTS ROW ===== -->
+<div class="admin-charts-row" data-aos="fade-up" data-aos-delay="200">
+
+    <!-- Goal Type Distribution -->
+    <div class="admin-chart-card">
+        <div class="gf-card-header">
+            <i data-lucide="target"></i>
+            <h3>Goal Type Distribution</h3>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="goalChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Diet Preference Distribution -->
+    <div class="admin-chart-card">
+        <div class="gf-card-header">
+            <i data-lucide="salad"></i>
+            <h3>Diet Preferences</h3>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="dietChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== RECENT ACTIVITY ===== -->
+<div class="admin-section" data-aos="fade-up" data-aos-delay="300">
+    <div class="admin-chart-card full-width">
+        <div class="gf-card-header">
+            <i data-lucide="scroll-text"></i>
+            <h3>Recent Activity</h3>
+            <a href="/admin/logs" class="view-all-link">View All →</a>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_logs %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="mini-avatar">{{ (log.user_name or 'S')[0] }}</div>
+                                <span>{{ log.user_name or 'System' }}</span>
+                            </div>
+                        </td>
+                        <td><span class="action-badge action-{{ log.action }}">{{ log.action }}</span></td>
+                        <td class="details-cell">{{ log.details or '—' }}</td>
+                        <td class="time-cell">{{ log.created_at.strftime('%b %d, %H:%M') if log.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not recent_logs %}
+                    <tr><td colspan="4" class="empty-cell">No activity logs yet</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    lucide.createIcons();
+
+    // Goal Distribution Chart
+    const goalData = {{ goal_dist | tojson }};
+    if (goalData.length > 0) {
+        new Chart(document.getElementById('goalChart'), {
+            type: 'doughnut',
+            data: {
+                labels: goalData.map(g => g.goal_type || 'Unknown'),
+                datasets: [{
+                    data: goalData.map(g => g.count),
+                    backgroundColor: ['#12d6c5', '#8b5cf6', '#f59e0b', '#ef4444', '#3b82f6'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#9aa4b2', padding: 15, font: { family: 'Inter', size: 12 } }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // Diet Preference Chart
+    const dietData = {{ diet_dist | tojson }};
+    if (dietData.length > 0) {
+        new Chart(document.getElementById('dietChart'), {
+            type: 'doughnut',
+            data: {
+                labels: dietData.map(d => d.diet_preference || 'Unknown'),
+                datasets: [{
+                    data: dietData.map(d => d.count),
+                    backgroundColor: ['#10b981', '#f97316', '#06b6d4', '#a855f7', '#ec4899'],
+                    borderWidth: 0,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#9aa4b2', padding: 15, font: { family: 'Inter', size: 12 } }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+</script>
+{% endblock %}

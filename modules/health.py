@@ -7,7 +7,7 @@ health_bp = Blueprint('health', __name__)
 
 def calculate_and_save_prediction(user_id, conn):
     """Calculate and save goal prediction and step recommendations"""
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Get health data
     cursor.execute("""
@@ -124,7 +124,7 @@ def health_profile():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Fetch existing profile
     cursor.execute("""

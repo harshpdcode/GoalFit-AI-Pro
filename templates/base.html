@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="dark">
 
 <head>
-    <title>GoalFit AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalFit AI — Your Fitness Intelligence</title>
+    <meta name="description" content="AI-powered fitness intelligence with personalized diet, workout plans, and goal predictions.">
     <link rel="icon" type="image/png" href="/static/images/logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
@@ -22,6 +32,9 @@
         <p>Loading your fitness journey...</p>
     </div>
 </div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
     // Hide loading overlay when page is fully loaded
@@ -43,10 +56,15 @@
     <div class="layout">
 
         <!-- ===== SIDEBAR ===== -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
 
-            <!-- Logo -->
             <div>
+                <!-- Mobile Toggle -->
+                <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                    <i data-lucide="menu"></i>
+                </button>
+
+                <!-- Logo -->
                 <div class="logo">
                     <img src="/static/images/logo.png" alt="GoalFit AI" class="logo-img">
                     <div class="logo-text">
@@ -58,89 +76,112 @@
                 <!-- Navigation -->
                 <nav class="menu">
 
-                    <a href="/dashboard" class="nav-item">
-                        <svg class="icon" viewBox="0 0 24 24">
-                            <!-- <path d="M3 13h8V3H3v10zm10 8h8V3h-8v18z" /> -->
-                            <rect width="7" height="9" x="3" y="3" rx="1"></rect>
-                            <rect width="7" height="5" x="14" y="3" rx="1"></rect>
-                            <rect width="7" height="9" x="14" y="12" rx="1"></rect>
-                            <rect width="7" height="5" x="3" y="16" rx="1"></rect>
-                        </svg>
+                    <a href="/dashboard" class="nav-item" id="nav-dashboard">
+                        <i data-lucide="layout-dashboard"></i>
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="/diet-plan" class="nav-item">
-                        <svg class="icon" viewBox="0 0 24 24">
-                            <!-- <path d="M3 3h18v2H3zm4 6h10v2H7zm-4 6h18v2H3z" /> -->
-                            <path d="M7 21h10"></path>
-                            <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path>
-                            <path
-                                d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1">
-                            </path>
-                            <path d="m13 12 4-4"></path>
-                            <path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"></path>
-                        </svg>
+                    <a href="/diet-plan" class="nav-item" id="nav-diet">
+                        <i data-lucide="salad"></i>
                         <span>Diet Plan</span>
                     </a>
 
-                    <a href="/workout-plan" class="nav-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="lucide lucide-dumbbell w-4 h-4" aria-hidden="true">
-                            <path
-                                d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z">
-                            </path>
-                            <path d="m2.5 21.5 1.4-1.4"></path>
-                            <path d="m20.1 3.9 1.4-1.4"></path>
-                            <path
-                                d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z">
-                            </path>
-                            <path d="m9.6 14.4 4.8-4.8"></path>
-                        </svg>
-
+                    <a href="/workout-plan" class="nav-item" id="nav-workout">
+                        <i data-lucide="dumbbell"></i>
                         <span>Workouts</span>
                     </a>
 
-                    <a href="/progress" class="nav-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" class="lucide lucide-trending-up w-4 h-4" aria-hidden="true">
-                            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
-                            <polyline points="16 7 22 7 22 13"></polyline>
-                        </svg>
+                    <a href="/water-tracker" class="nav-item" id="nav-water">
+                        <i data-lucide="droplets"></i>
+                        <span>Water Tracker</span>
+                    </a>
+
+                    <a href="/progress" class="nav-item" id="nav-progress">
+                        <i data-lucide="trending-up"></i>
                         <span>Progress</span>
                     </a>
 
-                    <a href="/health" class="nav-item">
-                        <svg class="icon" viewBox="0 0 24 24">
-                            <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 3-9 6v2h18v-2c0-3-4-6-9-6z" />
-                        </svg>
+                    <a href="/health" class="nav-item" id="nav-profile">
+                        <i data-lucide="user-circle"></i>
                         <span>Profile</span>
                     </a>
+
+                    <a href="/feedback" class="nav-item" id="nav-feedback">
+                        <i data-lucide="message-square"></i>
+                        <span>Feedback</span>
+                    </a>
+
+                    <a href="/download-report" class="nav-item nav-download" id="nav-report">
+                        <i data-lucide="file-down"></i>
+                        <span>PDF Report</span>
+                    </a>
+
+                    {% if session.get('role') == 'admin' %}
+                    <div class="nav-divider"></div>
+                    <a href="/admin/dashboard" class="nav-item nav-switch">
+                        <i data-lucide="shield"></i>
+                        <span>Admin Panel</span>
+                    </a>
+                    {% endif %}
 
                 </nav>
             </div>
 
-            <!-- Bottom User Section -->
-            <div class="user-box">
-
-                <div class="avatar">
-                    {{ session.get('user_name', 'U')[0] if session.get('user_name') else 'U' }}
+            <!-- Bottom Section -->
+            <div class="sidebar-bottom">
+                
+                <!-- Theme Toggle -->
+                <div class="theme-toggle-wrap">
+                    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+                        <i data-lucide="moon" class="theme-icon-dark"></i>
+                        <i data-lucide="sun" class="theme-icon-light"></i>
+                        <div class="theme-slider"></div>
+                    </button>
+                    <span class="theme-label">Theme</span>
                 </div>
 
-                <div class="user-info">
-                    <p>{{ session.get('user_name', '') }}</p>
-                    <p class="user-email">{{ session.get('email', '') }}</p>
-                    <a href="/logout" class="logout-btn">Logout</a>
+                <!-- User Box -->
+                <div class="user-box">
+                    <div class="avatar">
+                        {{ session.get('user_name', 'U')[0] if session.get('user_name') else 'U' }}
+                    </div>
+                    <div class="user-info">
+                        <p>{{ session.get('user_name', '') }}</p>
+                        <p class="user-email">{{ session.get('email', '') }}</p>
+                        <a href="/logout" class="logout-btn">Logout</a>
+                    </div>
                 </div>
-
             </div>
 
         </aside>
 
 
         <!-- ===== MAIN CONTENT ===== -->
-        <main class="content">
+        <main class="content" id="mainContent">
+            
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-nav" aria-label="breadcrumb">
+                <a href="/dashboard">Home</a>
+                <span class="breadcrumb-sep">/</span>
+                {% if request.endpoint == 'dashboard.dashboard' %}
+                    <span class="breadcrumb-active">Dashboard</span>
+                {% elif request.endpoint == 'diet.diet_plan' %}
+                    <span class="breadcrumb-active">Diet Plan</span>
+                {% elif request.endpoint == 'workout.workout_plan' %}
+                    <span class="breadcrumb-active">Workouts</span>
+                {% elif request.endpoint == 'progress.progress' %}
+                    <span class="breadcrumb-active">Progress</span>
+                {% elif request.endpoint == 'health.health_profile' %}
+                    <span class="breadcrumb-active">Profile</span>
+                {% elif request.endpoint == 'water.water_tracker' %}
+                    <span class="breadcrumb-active">Water Tracker</span>
+                {% elif request.endpoint == 'feedback.feedback_form' %}
+                    <span class="breadcrumb-active">Feedback</span>
+                {% else %}
+                    <span class="breadcrumb-active">Page</span>
+                {% endif %}
+            </nav>
+
             {% block content %}{% endblock %}
         </main>
 
@@ -157,7 +198,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-    // Highlight active menu item
+    // ===== ACTIVE MENU HIGHLIGHT =====
     document.addEventListener('DOMContentLoaded', function() {
         const currentEndpoint = '{{ request.endpoint }}';
         const navItems = document.querySelectorAll('.nav-item');
@@ -166,8 +207,10 @@
             'dashboard.dashboard': '/dashboard',
             'diet.diet_plan': '/diet-plan',
             'workout.workout_plan': '/workout-plan',
-            'progress.progress_page': '/progress',
-            'health.health_profile': '/health'
+            'progress.progress': '/progress',
+            'health.health_profile': '/health',
+            'water.water_tracker': '/water-tracker',
+            'feedback.feedback_form': '/feedback'
         };
         
         navItems.forEach(item => {
@@ -177,7 +220,76 @@
                 item.classList.add('active');
             }
         });
+
+        // Initialize Lucide Icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     });
+
+    // ===== THEME TOGGLE =====
+    function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        localStorage.setItem('goalfit-theme', next);
+    }
+
+    // Load saved theme
+    (function() {
+        const saved = localStorage.getItem('goalfit-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+    })();
+
+    // ===== SIDEBAR TOGGLE (mobile) =====
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('expanded');
+    }
+
+    // Close sidebar on outside click (mobile)
+    document.addEventListener('click', function(e) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('sidebarToggle');
+        if (sidebar && sidebar.classList.contains('expanded') && 
+            !sidebar.contains(e.target) && e.target !== toggle) {
+            sidebar.classList.remove('expanded');
+        }
+    });
+
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast-msg toast-${type}`;
+        
+        const icons = { success: '✓', danger: '✕', warning: '⚠', info: 'ℹ' };
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || '✓'}</span><span>${message}</span>`;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // Show flash messages as toasts
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    document.addEventListener('DOMContentLoaded', () => showToast("{{ message }}", "{{ category }}"));
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</script>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
 </script>
 
 </body>

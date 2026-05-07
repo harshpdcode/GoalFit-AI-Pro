@@ -43,19 +43,12 @@
     <!-- IMAGE -->
     <div class="workout-img">
 
-        {% set img = ex.image_url %}
-        {# strip leading folders, especially "workout/" prefix #}
-        {% if img.startswith('workout/') %}
-            {% set img = img.split('/',1)[1] %}
-        {% endif %}
-        {% if not img.startswith('/static') %}
-            {% set img = url_for('static', filename='images/workout/' + img.lstrip('/')) %}
-        {% endif %}
-        <a href="{{ ex.video_url }}" target="_blank">
-            <img src="{{ img }}" alt="{{ ex.exercise_name }}">
+        {% set img = ex.img_src %}
+        <a href="{{ ex.video_src }}" target="_blank">
+            <img src="/{{ img }}" alt="{{ ex.exercise_name }}">
         </a>
 
-        <a href="{{ ex.video_url }}"
+        <a href="{{ ex.video_src }}"
            target="_blank"
            class="play-btn">▶</a>
 
@@ -71,20 +64,10 @@
         <h3>{{ ex.exercise_name }}</h3>
 
         <div class="meta">
-
-            <span>⏱ {{ ex.duration_minutes }} min</span>
-            <span>🔥 {{ ex.calories_burn }} kcal</span>
-            <span>🏋 {{ ex.environment_type }}</span>
-
+            <span>🔥 {{ ex.calories_burned }} kcal</span>
         </div>
 
-        <div class="sets">
-
-            <span>{{ ex.equipment_required }}</span>
-
-        </div>
-
-        <a href="{{ ex.video_url }}"
+        <a href="{{ ex.video_src }}"
            target="_blank"
            class="instructions">
            Show instructions

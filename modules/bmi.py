@@ -13,7 +13,7 @@ def calculate_bmi():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute(
         "SELECT height_cm, weight_kg FROM user_health WHERE user_id=%s",

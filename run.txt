@@ -1,11 +1,30 @@
 venv\Scripts\activate
+python app.py
 
 user:test@goalfit.ai
 password:1234
 
-user:nonveg@goalfit.ai
-password:1234
+user:harsh@goalfit.ai
+password:123
 
+Admin:admin@goalfit.ai
+password:admin123
+
+git remote set-url origin https://github.com/harshpdcode/GoalFit-AI.git
+git fetch origin
+git pull --rebase origin main   # make sure you’re up to date
+git push origin main
+
+
+--- RECENT PROJECT IMPROVEMENTS ---
+1. Password Hashing
+   - Added `werkzeug.security` to `modules/auth.py` and `setup_db.py` to encrypt passwords before storing them.
+   - Now checks db passwords against the hash!
+   
+2. Environment Configuration
+   - Created a `.env` file.
+   - Updated `database/db_connection.py` and `setup_db.py` to load credentials via `python-dotenv` rather than relying on hardcoded strings in the python files.
+-----------------------------------
 
 workout plan 
 

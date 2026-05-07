@@ -14,7 +14,7 @@ def predict_goal():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # Get health data
     cursor.execute("""

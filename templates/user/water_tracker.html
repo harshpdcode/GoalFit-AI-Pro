@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">Water <span>Tracker</span></h1>
+<div class="accent-line"></div>
+
+<div class="water-page">
+
+    <!-- Main Tracker -->
+    <div class="water-main" data-aos="fade-up" data-aos-delay="100">
+        
+        <div class="gf-card water-card">
+            <!-- Bottle Animation -->
+            <div class="water-bottle-wrap">
+                <div class="water-bottle" id="waterBottle">
+                    <div class="water-fill" id="waterFill" style="height: {{ (water_log.glasses / water_log.goal_glasses * 100) | int if water_log.goal_glasses else 0 }}%">
+                        <div class="water-wave"></div>
+                        <div class="water-wave wave-2"></div>
+                    </div>
+                    <div class="water-label">
+                        <span class="water-count" id="waterCount">{{ water_log.glasses }}</span>
+                        <span class="water-of">/ {{ water_log.goal_glasses }} glasses</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="water-controls">
+                <button class="water-btn minus" id="removeBtn" onclick="removeWater()">
+                    <i data-lucide="minus"></i>
+                </button>
+                <div class="water-info">
+                    <span class="water-percent" id="waterPercent">{{ (water_log.glasses / water_log.goal_glasses * 100) | int if water_log.goal_glasses else 0 }}%</span>
+                    <span class="water-status" id="waterStatus">
+                        {% if water_log.glasses >= water_log.goal_glasses %}
+                            ✅ Goal Complete!
+                        {% else %}
+                            {{ water_log.goal_glasses - water_log.glasses }} more to go
+                        {% endif %}
+                    </span>
+                </div>
+                <button class="water-btn plus" id="addBtn" onclick="addWater()">
+                    <i data-lucide="plus"></i>
+                </button>
+            </div>
+
+            <!-- Goal Setting -->
+            <div class="water-goal-setting">
+                <label>Daily Goal:</label>
+                <div class="goal-input-wrap">
+                    <button onclick="changeGoal(-1)" class="goal-adj">−</button>
+                    <span id="goalDisplay">{{ water_log.goal_glasses }}</span>
+                    <button onclick="changeGoal(1)" class="goal-adj">+</button>
+                    <span>glasses</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Side Info -->
+    <div class="water-side" data-aos="fade-up" data-aos-delay="200">
+        
+        <!-- Streak -->
+        <div class="gf-card water-streak-card">
+            <div class="gf-card-header">
+                <i data-lucide="flame"></i>
+                <h3>Current Streak</h3>
+            </div>
+            <div class="streak-display">
+                <span class="streak-number">{{ streak }}</span>
+                <span class="streak-label">day{{ 's' if streak != 1 else '' }}</span>
+            </div>
+            <p class="streak-msg">
+                {% if streak >= 7 %}🔥 Amazing! Keep it going!
+                {% elif streak >= 3 %}💪 Great consistency!  
+                {% elif streak >= 1 %}👍 Good start!
+                {% else %}🌊 Start your streak today!
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Week History -->
+        <div class="gf-card">
+            <div class="gf-card-header">
+                <i data-lucide="calendar"></i>
+                <h3>This Week</h3>
+            </div>
+            <div class="week-history">
+                {% for day in week_history %}
+                <div class="week-day {{ 'completed' if day.glasses >= day.goal_glasses else 'incomplete' }}">
+                    <span class="day-label">{{ day.log_date.strftime('%a') if day.log_date else '' }}</span>
+                    <div class="day-bar">
+                        <div class="day-fill" style="height: {{ (day.glasses / day.goal_glasses * 100) | int if day.goal_glasses else 0 }}%"></div>
+                    </div>
+                    <span class="day-count">{{ day.glasses }}/{{ day.goal_glasses }}</span>
+                </div>
+                {% endfor %}
+                {% if not week_history %}
+                <p class="empty-msg">No history yet. Start tracking today!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="gf-card tip-card">
+            <div class="gf-card-header">
+                <i data-lucide="lightbulb"></i>
+                <h3>Hydration Tips</h3>
+            </div>
+            <ul class="tip-list">
+                <li>💧 Drink water first thing in the morning</li>
+                <li>⏰ Set reminders every 2 hours</li>
+                <li>🍋 Add lemon for flavor</li>
+                <li>🏃 Drink extra before & after exercise</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const goalGlasses = {{ water_log.goal_glasses }};
+    
+    function addWater() {
+        fetch('/water-tracker/add', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => updateUI(data));
+    }
+
+    function removeWater() {
+        fetch('/water-tracker/remove', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => updateUI(data));
+    }
+
+    function changeGoal(delta) {
+        const display = document.getElementById('goalDisplay');
+        let goal = parseInt(display.textContent) + delta;
+        if (goal < 1) goal = 1;
+        if (goal > 20) goal = 20;
+        display.textContent = goal;
+
+        fetch('/water-tracker/set-goal', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({goal: goal})
+        }).then(() => location.reload());
+    }
+
+    function updateUI(data) {
+        document.getElementById('waterCount').textContent = data.glasses;
+        document.getElementById('waterPercent').textContent = data.percentage + '%';
+        document.getElementById('waterFill').style.height = Math.min(100, data.percentage) + '%';
+        
+        const remaining = data.goal - data.glasses;
+        const status = document.getElementById('waterStatus');
+        if (remaining <= 0) {
+            status.textContent = '✅ Goal Complete!';
+            document.getElementById('waterBottle').classList.add('goal-met');
+        } else {
+            status.textContent = remaining + ' more to go';
+            document.getElementById('waterBottle').classList.remove('goal-met');
+        }
+    }
+</script>
+
+{% endblock %}

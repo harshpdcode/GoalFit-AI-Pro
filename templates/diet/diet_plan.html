@@ -29,7 +29,7 @@
 
         <div class="meal-img">
 
-            <img src="{{ url_for('static', filename=meal.image_url) }}" alt="{{ meal.meal_name }}">
+            <img src="/{{ meal.img_src }}" alt="{{ meal.meal_name }}" style="width:100%; height:200px; object-fit:cover;">
 
             <span class="kcal-badge">
                 🔥 {{ meal.calories }} kcal
@@ -43,13 +43,11 @@
 
             <div class="meal-meta">
                 <span>{{ meal.diet_type }}</span>
-                <span>{{ meal.cost_category }}</span>
-                <span>{{ meal.quantity }}</span>
             </div>
 
             <div class="macros">
                 <div>
-                    <strong>{{ meal.protein or 0 }}g</strong>
+                    <strong>{{ meal.proteins or 0 }}g</strong>
                     <p>Protein</p>
                 </div>
 
@@ -59,7 +57,7 @@
                 </div>
 
                 <div>
-                    <strong>{{ meal.fat or 0 }}g</strong>
+                    <strong>{{ meal.fats or 0 }}g</strong>
                     <p>Fat</p>
                 </div>
             </div>

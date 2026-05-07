@@ -90,15 +90,14 @@
             <h3>Goal Progress</h3>
         </div>
 
-        <div class="goal-chart-wrap">
-
-            <canvas id="goalChart"></canvas>
-
-            <div class="goal-center-text">
-                <span id="completionPercent">0%</span>
-                <p>Achieved</p>
+        <div class="goal-chart-wrap" style="position: relative;width: 120px;height: 180px;margin: 20px auto;border: 4px solid rgba(255, 255, 255, 0.1);border-radius: 40px;border-top-left-radius: 20px;border-top-right-radius: 20px;text-align: center;overflow: hidden;background: rgb(32 229 239 / 15%);box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+            <div id="bottleFill" style="position: absolute; bottom: 0px; left: 0px; right: 0px; height: 80%; background: linear-gradient(180deg, var(--accent) 0%, rgba(18,214,197,0.5) 100%); transition: height 2s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: rgba(18, 214, 197, 0.4) 0px -10px 20px;">
+                <div style="position: absolute; top: -10px; left: 0; right: 0; height: 10px; background: rgba(255,255,255,0.2); border-radius: 50%;"></div>
             </div>
-
+            <div class="goal-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; width:100%;">
+                <span id="completionPercent" style="font-size: 1.8rem; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">80%</span>
+                <p style="font-size: 0.85rem; margin:0; font-weight: 500; letter-spacing:1px; text-transform: uppercase; color:#9aa4b2; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Achieved</p>
+            </div>
         </div>
 
     </div>
@@ -283,16 +282,19 @@
 
             const weightValues = data.weights.map(w => w.weight_kg);
 
-            const startWeight = parseFloat("{{ health.weight_kg }}");
             const targetWeight = parseFloat("{{ health.target_weight }}");
+            
+            const startWeight = weightValues.length > 0 
+                ? weightValues[0] 
+                : parseFloat("{{ health.weight_kg }}");
 
-            const currentWeight = weightValues.length
+            const currentWeight = weightValues.length > 0
                 ? weightValues[weightValues.length - 1]
                 : startWeight;
 
             let completion = 0;
 
-            if (startWeight !== targetWeight) {
+            if (startWeight !== targetWeight && currentWeight !== startWeight) {
                 completion =
                     ((startWeight - currentWeight) /
                         (startWeight - targetWeight)) * 100;
@@ -300,44 +302,30 @@
 
             completion = Math.max(0, Math.min(100, Math.round(completion)));
 
-            $("#completionPercent").text(completion + "%");
+            // Bottle Animation Logic
+            let currentDisplay = 0;
+            const liquidHeight = Math.max(5, completion);
 
-
-            /* ===== ARC GAUGE ===== */
-
-            new Chart(document.getElementById("goalChart"), {
-
-                type: "doughnut",
-
-                data: {
-                    datasets: [{
-                        data: [completion, 100 - completion],
-                        backgroundColor: [
-                            "#12d6c5",
-                            "rgba(255,255,255,0.06)"
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-
-                options: {
-
-                    responsive: true,
-                    maintainAspectRatio: false,
-
-                    rotation: -90 * Math.PI / 180,   // Start top center
-                    circumference: 180 * Math.PI / 180, // Half circle
-
-                    cutout: "75%",
-
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-
+            // Make bottle liquid rise
+            setTimeout(() => {
+                $("#bottleFill").css("height", liquidHeight + "%");
+                
+                // Change color if over 100%
+                if(completion >= 100) {
+                    $("#bottleFill").css("background", "linear-gradient(180deg, #38bdf8 0%, rgba(56,189,248,0.5) 100%)");
                 }
+            }, 500);
 
-            });
+            // Animate Number Counter
+            const interval = setInterval(() => {
+                if (currentDisplay >= completion) {
+                    clearInterval(interval);
+                    $("#completionPercent").text(completion + "%");
+                } else {
+                    currentDisplay += Math.ceil((completion - currentDisplay) / 10) || 1;
+                    $("#completionPercent").text(currentDisplay + "%");
+                }
+            }, 30);
 
         });
 

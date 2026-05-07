@@ -14,7 +14,7 @@ def dashboard():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     # ---------- HEALTH ----------
     cursor.execute("""
@@ -28,6 +28,13 @@ def dashboard():
         cursor.close()
         conn.close()
         return redirect(url_for('health.health_profile'))
+
+    # Calculate BMR (Mifflin-St Jeor)
+    if health['gender'] == 'Male':
+        health['bmr'] = round((10 * health['weight_kg']) + (6.25 * health['height_cm']) - (5 * health['age']) + 5)
+    else:
+        health['bmr'] = round((10 * health['weight_kg']) + (6.25 * health['height_cm']) - (5 * health['age']) - 161)
+
 
     # ---------- BMI ----------
     cursor.execute("""
@@ -78,6 +85,12 @@ def dashboard():
         LIMIT 1
     """, (user_id,))
     steps = cursor.fetchone()
+    
+    if not steps:
+        steps = {"daily_steps": 0, "calories_to_burn": 0}
+        
+    if not bmi:
+        bmi = {"bmi_value": "--", "bmi_category": "No Record"}
 
     # ---------- MEALS ----------
     cursor.execute("""
@@ -119,7 +132,7 @@ def dashboard_progress_data():
     user_id = session['user_id']
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("""
         SELECT weight_kg, log_date

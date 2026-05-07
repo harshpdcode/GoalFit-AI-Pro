@@ -1,0 +1,111 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/workouts">Exercises</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-active">Management</span>
+{% endblock %}
+
+{% block content %}
+
+<div class="admin-header-row">
+    <div>
+        <h1 class="page-title" data-aos="fade-up">Exercise <span>Management</span></h1>
+        <div class="accent-line"></div>
+    </div>
+    <a href="/admin/workouts/add" class="admin-btn primary" data-aos="fade-left">
+        <i data-lucide="plus"></i> Add Exercise
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
+    <form class="filter-form" method="GET" action="/admin/workouts">
+        <select name="muscle" class="admin-select" onchange="this.form.submit()">
+            <option value="">All Muscles</option>
+            <option value="Chest" {{ 'selected' if filter_muscle == 'Chest' }}>Chest</option>
+            <option value="Legs" {{ 'selected' if filter_muscle == 'Legs' }}>Legs</option>
+            <option value="Abs" {{ 'selected' if filter_muscle == 'Abs' }}>Abs</option>
+            <option value="Cardio" {{ 'selected' if filter_muscle == 'Cardio' }}>Cardio</option>
+        </select>
+        <select name="difficulty" class="admin-select" onchange="this.form.submit()">
+            <option value="">All Levels</option>
+            <option value="Beginner" {{ 'selected' if filter_diff == 'Beginner' }}>Beginner</option>
+            <option value="Intermediate" {{ 'selected' if filter_diff == 'Intermediate' }}>Intermediate</option>
+            <option value="Advanced" {{ 'selected' if filter_diff == 'Advanced' }}>Advanced</option>
+        </select>
+        {% if filter_muscle or filter_diff %}
+        <a href="/admin/workouts" class="admin-btn secondary">Clear</a>
+        {% endif %}
+    </form>
+    <div class="toolbar-stats">
+        <span class="stat-pill"><i data-lucide="dumbbell"></i> {{ exercises|length }} exercises</span>
+    </div>
+</div>
+
+<!-- Exercises Table -->
+<div class="admin-chart-card full-width" data-aos="fade-up" data-aos-delay="200">
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Exercise</th>
+                    <th>Muscle</th>
+                    <th>Difficulty</th>
+                    <th>Calories</th>
+                    <th>Video</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ex in exercises %}
+                <tr>
+                    <td class="id-cell">#{{ ex.id }}</td>
+                    <td>
+                        <div class="meal-cell">
+                            <img src="/{{ ex.img_src }}" alt="" class="table-thumb">
+                            <span>{{ ex.exercise_name }}</span>
+                        </div>
+                    </td>
+                    <td><span class="tag goal">{{ ex.target_muscle }}</span></td>
+                    <td><span class="difficulty-tag {{ ex.difficulty_level|lower }}">{{ ex.difficulty_level }}</span></td>
+                    <td><strong>{{ ex.calories_burned }}</strong> kcal</td>
+                    <td>
+                        {% if ex.video_src %}
+                        <a href="{{ ex.video_src }}" target="_blank" class="video-link"><i data-lucide="play-circle"></i></a>
+                        {% else %}
+                        <span class="no-video">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="actions-cell">
+                        <a href="/admin/workouts/{{ ex.id }}/edit" class="action-btn edit" title="Edit">
+                            <i data-lucide="pencil"></i>
+                        </a>
+                        <form method="POST" action="/admin/workouts/{{ ex.id }}/delete" class="inline-form"
+                              onsubmit="return confirm('Delete this exercise?')">
+                            <button type="submit" class="action-btn delete" title="Delete">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not exercises %}
+                <tr><td colspan="7" class="empty-cell">
+                    <div class="empty-state">
+                        <i data-lucide="dumbbell" class="empty-icon"></i>
+                        <p>No exercises found</p>
+                    </div>
+                </td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

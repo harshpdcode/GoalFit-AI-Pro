@@ -1,0 +1,141 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/users">Users</a>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-active">{{ user.name }}</span>
+{% endblock %}
+
+{% block content %}
+
+<h1 class="page-title" data-aos="fade-up">{{ user.name }}'s <span>Profile</span></h1>
+<div class="accent-line"></div>
+
+<!-- User Info Card -->
+<div class="admin-grid cols-2" data-aos="fade-up" data-aos-delay="100">
+
+    <!-- Basic Info -->
+    <div class="admin-chart-card">
+        <div class="gf-card-header"><i data-lucide="user"></i><h3>Basic Information</h3></div>
+        <div class="detail-grid">
+            <div class="detail-item"><span>Name</span><strong>{{ user.name }}</strong></div>
+            <div class="detail-item"><span>Email</span><strong>{{ user.email }}</strong></div>
+            <div class="detail-item"><span>Role</span><strong>{{ user.role }}</strong></div>
+            <div class="detail-item"><span>Joined</span><strong>{{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}</strong></div>
+        </div>
+    </div>
+
+    <!-- Health Profile -->
+    <div class="admin-chart-card">
+        <div class="gf-card-header"><i data-lucide="heart-pulse"></i><h3>Health Profile</h3></div>
+        {% if health %}
+        <div class="detail-grid">
+            <div class="detail-item"><span>Age</span><strong>{{ health.age }} years</strong></div>
+            <div class="detail-item"><span>Gender</span><strong>{{ health.gender }}</strong></div>
+            <div class="detail-item"><span>Height</span><strong>{{ health.height_cm }} cm</strong></div>
+            <div class="detail-item"><span>Weight</span><strong>{{ health.weight_kg }} kg</strong></div>
+            <div class="detail-item"><span>Target</span><strong>{{ health.target_weight }} kg</strong></div>
+            <div class="detail-item"><span>Activity</span><strong>{{ health.activity_level }}</strong></div>
+            <div class="detail-item"><span>Goal</span><strong>{{ health.goal_type }}</strong></div>
+            <div class="detail-item"><span>Diet</span><strong>{{ health.diet_preference }}</strong></div>
+        </div>
+        {% else %}
+        <div class="empty-state small"><p>No health profile yet</p></div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Goal Prediction -->
+{% if prediction %}
+<div class="admin-chart-card" data-aos="fade-up" data-aos-delay="200">
+    <div class="gf-card-header"><i data-lucide="brain-circuit"></i><h3>AI Goal Prediction</h3></div>
+    <div class="detail-grid cols-5">
+        <div class="detail-item"><span>Current</span><strong>{{ prediction.current_weight }} kg</strong></div>
+        <div class="detail-item"><span>Target</span><strong>{{ prediction.target_weight }} kg</strong></div>
+        <div class="detail-item"><span>Weekly Rate</span><strong>{{ prediction.weekly_change_rate }} kg/wk</strong></div>
+        <div class="detail-item"><span>Est. Weeks</span><strong>{{ prediction.estimated_weeks }}</strong></div>
+        <div class="detail-item"><span>Completion</span><strong>{{ prediction.estimated_completion_date }}</strong></div>
+    </div>
+</div>
+{% endif %}
+
+<!-- BMI History & Progress -->
+<div class="admin-grid cols-2" data-aos="fade-up" data-aos-delay="300">
+    
+    <div class="admin-chart-card">
+        <div class="gf-card-header"><i data-lucide="scale"></i><h3>BMI History</h3></div>
+        <div class="admin-table-wrap">
+            <table class="admin-table compact">
+                <thead><tr><th>Date</th><th>BMI</th><th>Category</th></tr></thead>
+                <tbody>
+                    {% for r in bmi_records %}
+                    <tr>
+                        <td>{{ r.recorded_date }}</td>
+                        <td>{{ r.bmi_value }}</td>
+                        <td><span class="tag {{ r.bmi_category|lower }}">{{ r.bmi_category }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not bmi_records %}
+                    <tr><td colspan="3" class="empty-cell">No BMI records</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-chart-card">
+        <div class="gf-card-header"><i data-lucide="trending-up"></i><h3>Weight Progress</h3></div>
+        <div class="admin-table-wrap">
+            <table class="admin-table compact">
+                <thead><tr><th>Date</th><th>Weight (kg)</th></tr></thead>
+                <tbody>
+                    {% for p in progress %}
+                    <tr>
+                        <td>{{ p.log_date }}</td>
+                        <td>{{ p.weight_kg }} kg</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not progress %}
+                    <tr><td colspan="2" class="empty-cell">No progress logs</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- User Activity -->
+<div class="admin-chart-card" data-aos="fade-up" data-aos-delay="400">
+    <div class="gf-card-header"><i data-lucide="scroll-text"></i><h3>User Activity</h3></div>
+    <div class="admin-table-wrap">
+        <table class="admin-table compact">
+            <thead><tr><th>Action</th><th>Details</th><th>Time</th></tr></thead>
+            <tbody>
+                {% for log in user_logs %}
+                <tr>
+                    <td><span class="action-badge action-{{ log.action }}">{{ log.action }}</span></td>
+                    <td>{{ log.details or '—' }}</td>
+                    <td>{{ log.created_at.strftime('%b %d, %H:%M') if log.created_at else '—' }}</td>
+                </tr>
+                {% endfor %}
+                {% if not user_logs %}
+                <tr><td colspan="3" class="empty-cell">No activity logs</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="admin-actions-bar" data-aos="fade-up" data-aos-delay="500">
+    <a href="/admin/users" class="admin-btn secondary">← Back to Users</a>
+    <form method="POST" action="/admin/users/{{ user.id }}/delete" class="inline-form"
+          onsubmit="return confirm('Delete this user permanently? This cannot be undone.')">
+        <button type="submit" class="admin-btn danger">Delete User</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>lucide.createIcons();</script>
+{% endblock %}

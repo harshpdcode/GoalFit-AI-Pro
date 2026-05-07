@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalFit AI — Admin Panel</title>
+    <link rel="icon" type="image/png" href="/static/images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="layout">
+
+    <!-- ===== ADMIN SIDEBAR ===== -->
+    <aside class="sidebar admin-sidebar">
+
+        <div>
+            <!-- Logo -->
+            <div class="logo">
+                <img src="/static/images/logo.png" alt="GoalFit AI" class="logo-img">
+                <div class="logo-text">
+                    <h2>GOALFIT</h2>
+                    <p>ADMIN PANEL</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="menu">
+                <a href="/admin/dashboard" class="nav-item {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/admin/users" class="nav-item {% if 'user_management' in request.endpoint or 'user_detail' in request.endpoint %}active{% endif %}">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </a>
+
+                <a href="/admin/meals" class="nav-item {% if 'meal' in request.endpoint %}active{% endif %}">
+                    <i data-lucide="utensils-crossed"></i>
+                    <span>Meals</span>
+                </a>
+
+                <a href="/admin/workouts" class="nav-item {% if 'workout' in request.endpoint %}active{% endif %}">
+                    <i data-lucide="dumbbell"></i>
+                    <span>Exercises</span>
+                </a>
+
+                <a href="/admin/logs" class="nav-item {% if request.endpoint == 'admin.activity_logs' %}active{% endif %}">
+                    <i data-lucide="scroll-text"></i>
+                    <span>Activity Logs</span>
+                </a>
+
+                <a href="/admin/feedback" class="nav-item {% if request.endpoint == 'admin.feedback_inbox' %}active{% endif %}">
+                    <i data-lucide="mail"></i>
+                    <span>Feedback</span>
+                    {% if unread_count is defined and unread_count > 0 %}
+                    <span class="badge-count">{{ unread_count }}</span>
+                    {% endif %}
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="/dashboard" class="nav-item nav-switch">
+                    <i data-lucide="arrow-left-right"></i>
+                    <span>User View</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Bottom User Section -->
+        <div class="user-box">
+            <div class="avatar admin-avatar">A</div>
+            <div class="user-info">
+                <p>{{ session.get('user_name', 'Admin') }}</p>
+                <p class="user-email">{{ session.get('email', '') }}</p>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="content">
+        
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav" aria-label="breadcrumb">
+            <a href="/admin/dashboard">Admin</a>
+            <span class="breadcrumb-sep">/</span>
+            {% block breadcrumb %}
+            <span>Dashboard</span>
+            {% endblock %}
+        </nav>
+
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+    AOS.init({ duration: 600, once: true });
+    lucide.createIcons();
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast-msg toast-${type}`;
+        
+        const icons = { success: '✓', danger: '✕', warning: '⚠', info: 'ℹ' };
+        toast.innerHTML = `<span class="toast-icon">${icons[type] || '✓'}</span><span>${message}</span>`;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // Show flash messages as toasts
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    showToast("{{ message }}", "{{ category }}");
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
