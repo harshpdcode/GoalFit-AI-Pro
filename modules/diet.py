@@ -16,7 +16,7 @@ def diet_plan():
 
     # CHECK IF HIRED A DIETICIAN
     cursor.execute("""
-        SELECT ca.*, p.full_name as prof_name 
+        SELECT ca.*, p.full_name as prof_name, p.role
         FROM client_assignments ca
         JOIN professionals p ON ca.professional_id = p.id
         WHERE ca.user_id=%s AND ca.status='active' AND p.role IN ('dietician', 'both')

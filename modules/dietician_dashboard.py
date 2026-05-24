@@ -89,3 +89,67 @@ def handle_request(req_id, action):
     cursor.close()
     conn.close()
     return redirect(url_for('dietician_dashboard.dashboard'))
+
+@dietician_dashboard_bp.route('/build-plan/<int:client_id>', methods=['GET', 'POST'])
+@dietician_required
+def build_plan(client_id):
+    prof_id = session.get('user_id')
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM client_assignments WHERE professional_id=%s AND user_id=%s AND status='active'", (prof_id, client_id))
+    if not cursor.fetchone():
+        flash("Unauthorized", "danger")
+        return redirect(url_for('dietician_dashboard.dashboard'))
+
+    cursor.execute("SELECT * FROM users WHERE id=%s", (client_id,))
+    client_user = cursor.fetchone()
+
+    if request.method == 'POST':
+        plan_name = request.form.get('plan_name')
+        meal_types = request.form.getlist('meal_type[]')
+        meal_ids = request.form.getlist('meal_id[]')
+        
+        # Ensure tables exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_diet_plans (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                professional_id INT NOT NULL,
+                plan_name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_diet_plan_meals (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                plan_id INT NOT NULL,
+                meal_type VARCHAR(50) NOT NULL,
+                meal_id INT NOT NULL
+            )
+        """)
+        
+        cursor.execute("INSERT INTO custom_diet_plans (user_id, professional_id, plan_name) VALUES (%s, %s, %s)", (client_id, prof_id, plan_name))
+        plan_id = cursor.lastrowid
+        
+        for t, m_id in zip(meal_types, meal_ids):
+            if m_id:
+                cursor.execute("INSERT INTO custom_diet_plan_meals (plan_id, meal_type, meal_id) VALUES (%s, %s, %s)", (plan_id, t, m_id))
+            
+        conn.commit()
+        flash("Diet plan published successfully!", "success")
+        return redirect(url_for('dietician_dashboard.dashboard'))
+
+    # Fallback to generic diet_meals
+    try:
+        cursor.execute("SELECT * FROM professional_meals WHERE professional_id=%s", (prof_id,))
+        meals = cursor.fetchall()
+    except:
+        # Fallback
+        cursor.execute("SELECT id, meal_name, calories, protein, carbs, fats FROM diet_meals")
+        meals = cursor.fetchall()
+        
+    cursor.close()
+    conn.close()
+
+    return render_template('professional/build_diet.html', client=client_user, client_id=client_id, meals=meals)

@@ -89,3 +89,67 @@ def handle_request(req_id, action):
     cursor.close()
     conn.close()
     return redirect(url_for('trainer_dashboard.dashboard'))
+
+@trainer_dashboard_bp.route('/build-plan/<int:client_id>', methods=['GET', 'POST'])
+@trainer_required
+def build_plan(client_id):
+    prof_id = session.get('user_id')
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM client_assignments WHERE professional_id=%s AND user_id=%s AND status='active'", (prof_id, client_id))
+    if not cursor.fetchone():
+        flash("Unauthorized", "danger")
+        return redirect(url_for('trainer_dashboard.dashboard'))
+
+    cursor.execute("SELECT * FROM users WHERE id=%s", (client_id,))
+    client_user = cursor.fetchone()
+
+    if request.method == 'POST':
+        plan_name = request.form.get('plan_name')
+        days = request.form.getlist('day[]')
+        workout_ids = request.form.getlist('workout_id[]')
+        
+        # Ensure tables exist
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_workout_plans (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                professional_id INT NOT NULL,
+                plan_name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS custom_workout_plan_exercises (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                plan_id INT NOT NULL,
+                workout_day VARCHAR(50) NOT NULL,
+                workout_id INT NOT NULL
+            )
+        """)
+        
+        cursor.execute("INSERT INTO custom_workout_plans (user_id, professional_id, plan_name) VALUES (%s, %s, %s)", (client_id, prof_id, plan_name))
+        plan_id = cursor.lastrowid
+        
+        for d, w_id in zip(days, workout_ids):
+            if w_id:
+                cursor.execute("INSERT INTO custom_workout_plan_exercises (plan_id, workout_day, workout_id) VALUES (%s, %s, %s)", (plan_id, d, w_id))
+            
+        conn.commit()
+        flash("Workout plan published successfully!", "success")
+        return redirect(url_for('trainer_dashboard.dashboard'))
+
+    # If professional_workouts doesn't exist or is empty, we fall back to generic workout_exercises
+    try:
+        cursor.execute("SELECT * FROM professional_workouts WHERE professional_id=%s", (prof_id,))
+        workouts = cursor.fetchall()
+    except:
+        # Fallback to general exercises
+        cursor.execute("SELECT id, exercise_name as workout_name, target_muscle, 3 as sets, 12 as reps FROM workout_exercises")
+        workouts = cursor.fetchall()
+        
+    cursor.close()
+    conn.close()
+
+    return render_template('professional/build_workout.html', client=client_user, client_id=client_id, workouts=workouts)
