@@ -6,11 +6,62 @@
     <h1 class="diet-title">Diet Plan</h1>
 
     <div class="diet-tags">
+        {% if coach %}
+        <span class="tag goal">GoalFit Pro</span>
+        <span class="tag activity">Coach: {{ coach.prof_name }}</span>
+        {% else %}
         <span class="tag vegan">{{ diet_pref }}</span>
         <span class="tag goal">{{ goal }}</span>
         <span class="tag bmi">{{ bmi }}</span>
+        {% endif %}
     </div>
 </div>
+
+{% if coach %}
+<div class="meal-tabs">
+    <button class="tab active" data-meal="breakfast">Breakfast</button>
+    <button class="tab" data-meal="lunch">Lunch</button>
+    <button class="tab" data-meal="dinner">Dinner</button>
+    <button class="tab" data-meal="snacks">Snacks</button>
+</div>
+
+<div class="meal-grid">
+    {% for meal in custom_meals %}
+    <div class="meal-card" data-meal="{{ meal.meal_type|lower }}">
+        <div class="meal-img">
+            <img src="/{{ meal.img_src }}" alt="{{ meal.meal_name }}" style="width:100%; height:200px; object-fit:cover;">
+            <span class="kcal-badge">🔥 {{ meal.calories }} kcal</span>
+        </div>
+        <div class="meal-info">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="mb-0">{{ meal.meal_name }}</h3>
+                <div class="form-check">
+                    <input class="form-check-input diet-checkbox" type="checkbox" value="" id="meal-{{ meal.meal_id }}" data-id="{{ meal.meal_id }}" {% if diet_logs.get(meal.meal_id) %}checked{% endif %}>
+                    <label class="form-check-label small text-muted" for="meal-{{ meal.meal_id }}">Done</label>
+                </div>
+            </div>
+            <div class="macros">
+                <div>
+                    <strong>{{ meal.protein or 0 }}g</strong>
+                    <p>Protein</p>
+                </div>
+                <div>
+                    <strong>{{ meal.carbs or 0 }}g</strong>
+                    <p>Carbs</p>
+                </div>
+                <div>
+                    <strong>{{ meal.fats or 0 }}g</strong>
+                    <p>Fat</p>
+                </div>
+            </div>
+            <p class="small text-muted mt-2"><strong>Ingredients:</strong> {{ meal.ingredients }}</p>
+            <p class="small text-muted"><strong>Instructions:</strong> {{ meal.instructions }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
 
 <div class="meal-tabs">
     <button class="tab active" data-meal="breakfast">Breakfast</button>
@@ -72,6 +123,8 @@
 
 </div>
 
+{% endif %}
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -93,7 +146,40 @@
         });
 
         filterMeals("breakfast");
+        filterMeals("breakfast");
+        
+        // Diet Checklist Logic
+        document.querySelectorAll('.diet-checkbox').forEach(cb => {
+            cb.addEventListener('change', async (e) => {
+                const mealId = cb.dataset.id;
+                const isCompleted = cb.checked;
+                const logDate = "{{ log_date }}";
+                
+                try {
+                    const res = await fetch('/api/diet/toggle', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            meal_id: mealId,
+                            is_completed: isCompleted,
+                            log_date: logDate
+                        })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        showToast(`Meal marked as ${isCompleted ? 'completed' : 'incomplete'}!`, 'success');
+                    } else {
+                        cb.checked = !isCompleted; // revert
+                        showToast("Failed to update meal status.", 'danger');
+                    }
+                } catch(err) {
+                    cb.checked = !isCompleted; // revert
+                    showToast("Error connecting to server.", 'danger');
+                }
+            });
+        });
     });
 </script>
 
+{% include 'components/chat_overlay.html' %}
 {% endblock %}

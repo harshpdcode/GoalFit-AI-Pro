@@ -55,6 +55,18 @@ def admin_dashboard():
     """)
     new_this_week = cursor.fetchone()['new_week']
 
+    # Total professionals
+    cursor.execute("SELECT COUNT(*) as total FROM professionals")
+    total_professionals = cursor.fetchone()['total']
+
+    # Total revenue
+    cursor.execute("SELECT SUM(commission_amount) as rev FROM payments WHERE payment_status='paid'")
+    total_revenue = cursor.fetchone()['rev'] or 0
+
+    # Total hire requests
+    cursor.execute("SELECT COUNT(*) as total FROM hire_requests")
+    total_hire_requests = cursor.fetchone()['total']
+
     # Average BMI
     cursor.execute("""
         SELECT ROUND(AVG(bmi_value), 1) as avg_bmi 
@@ -109,12 +121,24 @@ def admin_dashboard():
     """)
     user_growth = cursor.fetchall()
 
+    # Payment growth (last 30 days)
+    cursor.execute("""
+        SELECT DATE(created_at) as pay_date, SUM(commission_amount) as daily_revenue 
+        FROM payments WHERE payment_status='paid' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DATE(created_at) 
+        ORDER BY pay_date ASC
+    """)
+    payment_growth = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
     return render_template('admin/admin_dashboard.html',
         total_users=total_users,
         new_this_week=new_this_week,
+        total_professionals=total_professionals,
+        total_revenue=total_revenue,
+        total_hire_requests=total_hire_requests,
         avg_bmi=avg_bmi,
         total_meals=total_meals,
         total_exercises=total_exercises,
@@ -122,7 +146,8 @@ def admin_dashboard():
         goal_dist=goal_dist,
         diet_dist=diet_dist,
         recent_logs=recent_logs,
-        user_growth=user_growth
+        user_growth=user_growth,
+        payment_growth=payment_growth
     )
 
 
@@ -512,3 +537,52 @@ def admin_stats():
     conn.close()
 
     return jsonify({'bmi_distribution': bmi_dist})
+
+# ================= PROFESSIONALS MANAGEMENT =================
+@admin_bp.route('/professionals')
+@admin_required
+def professionals_management():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    cursor.execute("SELECT * FROM professionals ORDER BY created_at DESC")
+    professionals = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/professionals.html', professionals=professionals)
+
+@admin_bp.route('/professionals/<int:prof_id>/verify', methods=['POST'])
+@admin_required
+def verify_professional(prof_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE professionals SET is_verified = NOT is_verified WHERE id=%s", (prof_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Professional verification status updated.", "success")
+    return redirect(url_for('admin.professionals_management'))
+
+# ================= PAYMENTS =================
+@admin_bp.route('/payments')
+@admin_required
+def payments_view():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    cursor.execute("""
+        SELECT p.*, u.name as user_name, pr.full_name as prof_name
+        FROM payments p
+        JOIN users u ON p.user_id = u.id
+        JOIN professionals pr ON p.professional_id = pr.id
+        ORDER BY p.created_at DESC
+    """)
+    payments = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template('admin/payments.html', payments=payments)
+

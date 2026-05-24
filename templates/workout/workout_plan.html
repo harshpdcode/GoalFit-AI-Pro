@@ -9,78 +9,86 @@
     <h1 class="workout-title">Workout Plan</h1>
 
     <div class="workout-tags">
+        {% if coach %}
+        <span class="tag goal">GoalFit Pro</span>
+        <span class="tag activity">Coach: {{ coach.prof_name }}</span>
+        {% else %}
         <span class="tag goal">{{ goal }}</span>
         <span class="tag activity">{{ activity }}</span>
+        {% endif %}
     </div>
 
 </div>
 
 
-<!-- ===== MUSCLE FILTER ===== -->
+{% if coach %}
 
 <div class="muscle-tabs">
+    {% for day in custom_exercises.keys() %}
+        <button class="muscle-tab {% if loop.first %}active{% endif %}"
+                data-muscle="{{ day }}">
+            Day: {{ day }}
+        </button>
+    {% endfor %}
+</div>
 
+<div class="workout-grid">
+{% for day, ex_list in custom_exercises.items() %}
+{% for ex in ex_list %}
+<div class="workout-card" data-muscle="{{ day }}">
+    <div class="workout-info">
+        <h3>{{ ex.workout_name }}</h3>
+        <p class="text-muted small">Target: {{ ex.target_muscle }}</p>
+        <div class="meta">
+            <span>🏋️ Sets: {{ ex.sets }}</span>
+            <span>🔄 Reps: {{ ex.reps }}</span>
+            <span>⏱️ Rest: {{ ex.rest_time }}s</span>
+        </div>
+        <p class="small text-secondary">{{ ex.instructions }}</p>
+    </div>
+</div>
+{% endfor %}
+{% endfor %}
+</div>
+
+{% else %}
+
+<!-- ===== MUSCLE FILTER ===== -->
+<div class="muscle-tabs">
     {% for muscle in workouts.keys() %}
-        <button class="muscle-tab"
+        <button class="muscle-tab {% if loop.first %}active{% endif %}"
                 data-muscle="{{ muscle }}">
             {{ muscle }}
         </button>
     {% endfor %}
-
 </div>
 
-
 <!-- ===== WORKOUT GRID ===== -->
-
 <div class="workout-grid">
-
 {% for muscle, ex_list in workouts.items() %}
 {% for ex in ex_list %}
-
-<div class="workout-card"
-     data-muscle="{{ muscle }}">
-
-    <!-- IMAGE -->
+<div class="workout-card" data-muscle="{{ muscle }}">
     <div class="workout-img">
-
         {% set img = ex.img_src %}
         <a href="{{ ex.video_src }}" target="_blank">
             <img src="/{{ img }}" alt="{{ ex.exercise_name }}">
         </a>
-
-        <a href="{{ ex.video_src }}"
-           target="_blank"
-           class="play-btn">▶</a>
-
-        <span class="difficulty {{ ex.difficulty_level|lower }}">
-            {{ ex.difficulty_level }}
-        </span>
-
+        <a href="{{ ex.video_src }}" target="_blank" class="play-btn">▶</a>
+        <span class="difficulty {{ ex.difficulty_level|lower }}">{{ ex.difficulty_level }}</span>
     </div>
-
-    <!-- INFO -->
     <div class="workout-info">
-
         <h3>{{ ex.exercise_name }}</h3>
-
         <div class="meta">
             <span>🔥 {{ ex.calories_burned }} kcal</span>
         </div>
-
-        <a href="{{ ex.video_src }}"
-           target="_blank"
-           class="instructions">
-           Show instructions
-        </a>
-
+        <a href="{{ ex.video_src }}" target="_blank" class="instructions">Show instructions</a>
     </div>
-
 </div>
-
 {% endfor %}
 {% endfor %}
-
 </div>
+
+{% endif %}
 
 
 <!-- ===== FILTER SCRIPT ===== -->
@@ -120,4 +128,5 @@ if(tabs.length){
 
 </script>
 
+{% include 'components/chat_overlay.html' %}
 {% endblock %}

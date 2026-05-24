@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="gf-card text-center p-4" data-aos="fade-right">
+                <img src="/{{ professional.profile_photo if professional.profile_photo else 'static/images/profile_img/default_prof.jpg' }}" class="rounded-circle mx-auto mb-3" style="width:150px; height:150px; object-fit:cover; border: 4px solid var(--accent-primary);" onerror="this.onerror=null; this.src='/static/images/profile_img/default_prof.jpg';">
+                <h3 class="fw-bold" style="color: var(--text-primary);">{{ professional.full_name }}</h3>
+                <p class="mb-2 text-capitalize" style="color: var(--text-secondary);">{{ professional.role }}</p>
+                
+                <div class="d-flex justify-content-center gap-3 mb-3">
+                    <span class="badge bg-warning text-dark"><i data-lucide="star" style="width:14px;"></i> {{ professional.rating }}</span>
+                    {% if professional.is_verified %}
+                    <span class="badge bg-success"><i data-lucide="check-circle" style="width:14px;"></i> Verified</span>
+                    {% endif %}
+                    <span class="badge bg-secondary">{{ professional.experience_years }} Yrs Exp</span>
+                </div>
+                
+                <hr style="border-color: var(--border-color);">
+                <div class="text-start">
+                    <p style="color: var(--text-primary);"><strong><i data-lucide="award" style="width:16px;"></i> Specialization:</strong><br><span style="color: var(--text-secondary);">{{ professional.specialization }}</span></p>
+                    <p style="color: var(--text-primary);"><strong><i data-lucide="info" style="width:16px;"></i> Bio:</strong><br><span style="color: var(--text-secondary);">{{ professional.bio }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            {% if active_hire %}
+            <div class="alert alert-success d-flex align-items-center" role="alert" data-aos="fade-down">
+                <i data-lucide="check-circle" class="me-2"></i>
+                <div>
+                    You have an active plan with this professional until <strong>{{ active_hire.end_date }}</strong>.
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="gf-card mb-4" data-aos="fade-up">
+                <div class="gf-card-header pt-4 pb-0" style="margin-bottom: 20px;">
+                    <h4 class="fw-bold m-0" style="color: var(--text-primary);"><i data-lucide="credit-card" style="stroke: var(--accent-primary); margin-right: 8px;"></i> Coaching Plans</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for plan in pricing_plans %}
+                        <div class="col-md-6">
+                            <div class="gf-card h-100" style="padding: 16px;">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="fw-bold mb-0 text-gradient">{{ plan.plan_type }}</h5>
+                                        <span class="badge bg-primary rounded-pill">₹{{ plan.price }}</span>
+                                    </div>
+                                    <p class="small mb-3" style="color: var(--text-secondary);"><i data-lucide="clock" style="width:12px;"></i> {{ plan.duration_days }} Days</p>
+                                    <p class="small" style="color: var(--text-secondary);">{{ plan.description }}</p>
+                                    
+                                    {% if not active_hire %}
+                                    <a href="/payment/checkout/{{ professional.id }}/{{ plan.id }}" class="save-btn w-100 mt-3" style="text-align: center; display: block; text-decoration: none;">Hire Now</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No pricing plans available yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% if transformations %}
+            <div class="gf-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="gf-card-header pt-4 pb-0" style="margin-bottom: 20px;">
+                    <h4 class="fw-bold m-0"><i data-lucide="camera" style="stroke: var(--accent-primary); margin-right: 8px;"></i> Client Transformations</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for t in transformations %}
+                        <div class="col-md-6">
+                            <div class="card bg-dark text-white h-100" style="border-radius:10px; overflow:hidden;">
+                                <img src="/{{ t.image }}" class="card-img opacity-50" alt="..." style="height: 200px; object-fit:cover;">
+                                <div class="card-img-overlay d-flex flex-column justify-content-end p-3">
+                                    <h6 class="card-title fw-bold mb-0">{{ t.client_name }}</h6>
+                                    <p class="card-text small mb-0">{{ t.before_weight }}kg → {{ t.after_weight }}kg</p>
+                                    <p class="card-text small text-warning">★ {{ t.rating }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0 text-gradient">Build Custom Diet Plan</h2>
+        <a href="/dietician/dashboard" class="btn btn-outline-secondary rounded-pill">Back to Dashboard</a>
+    </div>
+
+    <div class="card stat-card mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold">Client: {{ client.name }}</h5>
+            <p class="text-muted small mb-0">Select meals from your professional library and assign them as Breakfast, Lunch, etc. for this client.</p>
+        </div>
+    </div>
+
+    <form method="POST" action="/dietician/build-plan/{{ client_id }}">
+        <div class="card stat-card mb-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Plan Name</label>
+                    <input type="text" name="plan_name" class="form-control" placeholder="e.g. 4-Week Fat Loss Diet" required>
+                </div>
+                
+                <h6 class="fw-bold mt-4 mb-3">Meals</h6>
+                <div id="meals-container">
+                    <div class="row g-3 mb-3 meal-row align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">Meal Type</label>
+                            <select name="meal_type[]" class="form-control" required>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Dinner">Dinner</option>
+                                <option value="Snack">Snack</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label small text-muted">Select Meal</label>
+                            <select name="meal_id[]" class="form-control" required>
+                                <option value="">-- Select from your library --</option>
+                                {% for m in meals %}
+                                <option value="{{ m.id }}">{{ m.meal_name }} ({{ m.calories }} kcal)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger w-100 remove-btn" disabled>Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" id="add-meal-btn" class="btn btn-outline-primary mt-2 rounded-pill"><i data-lucide="plus" style="width:16px;"></i> Add Meal</button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg" style="background: var(--gradient-primary); border:none;">Publish Custom Plan</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('add-meal-btn').addEventListener('click', function() {
+        const container = document.getElementById('meals-container');
+        const row = container.querySelector('.meal-row').cloneNode(true);
+        row.querySelector('.remove-btn').disabled = false;
+        row.querySelector('.remove-btn').addEventListener('click', function() {
+            row.remove();
+        });
+        container.appendChild(row);
+    });
+</script>
+{% endblock %}

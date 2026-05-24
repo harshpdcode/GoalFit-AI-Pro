@@ -1,0 +1,803 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="mkt-page">
+
+    <!-- ===== PAGE HEADER ===== -->
+    <div class="mkt-header mb-5">
+        <p class="mkt-eyebrow">
+            {{ 'ELITE COACHING' if title == 'Trainers' else 'EXPERT NUTRITION' }}
+        </p>
+        <h1 class="mkt-title">
+            {{ 'Hire a Personal Trainer' if title == 'Trainers' else 'Hire a Dietician' }}
+        </h1>
+        <p class="mkt-subtitle">
+            {% if title == 'Trainers' %}
+                Expert guidance tailored to your fitness goals. Choose from our AI‑vetted personal trainers.
+            {% else %}
+                Personalized nutrition plans from certified dieticians to fuel your transformation.
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="mkt-body">
+
+        <!-- ===== FILTER SIDEBAR ===== -->
+        <aside class="filter-panel" id="filterPanel">
+
+            <p class="filter-section-label">FILTERS</p>
+
+            <!-- Search -->
+            <div class="filter-group">
+                <div class="search-wrap">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search name or specialty…"
+                        class="search-input"
+                        oninput="applyFilters()"
+                    >
+                </div>
+            </div>
+
+            <!-- Specialization -->
+            <div class="filter-group">
+                <h6 class="filter-group-title">
+                    <i data-lucide="target"></i>
+                    Specialization
+                </h6>
+                {% for cat in filter_categories %}
+                <label class="custom-check-label">
+                    <input type="checkbox" class="goal-filter" value="{{ cat }}" onchange="applyFilters()" checked>
+                    <span class="checkmark"></span>
+                    {{ cat }}
+                </label>
+                {% endfor %}
+            </div>
+
+            <!-- Price Range -->
+            <div class="filter-group">
+                <h6 class="filter-group-title">
+                    <i data-lucide="wallet"></i>
+                    Max Budget / Month
+                </h6>
+                <div class="price-display-row">
+                    <span class="price-display-val">₹<span id="priceDisplay">10,000</span></span>
+                </div>
+                <input
+                    type="range"
+                    class="mkt-range"
+                    min="500" max="10000" step="500"
+                    value="10000"
+                    id="priceRange"
+                    oninput="updatePriceDisplay(); applyFilters()"
+                >
+                <div class="range-labels">
+                    <span>₹500</span>
+                    <span>₹10,000</span>
+                </div>
+            </div>
+
+            <!-- Minimum Rating -->
+            <div class="filter-group">
+                <h6 class="filter-group-title">
+                    <i data-lucide="star"></i>
+                    Minimum Rating
+                </h6>
+                <div class="rating-selector">
+                    <span class="star-btn active" data-value="0"   onclick="setRating(0)">Any</span>
+                    <span class="star-btn"         data-value="3"   onclick="setRating(3)">3★+</span>
+                    <span class="star-btn"         data-value="4"   onclick="setRating(4)">4★+</span>
+                    <span class="star-btn"         data-value="4.5" onclick="setRating(4.5)">4.5★+</span>
+                </div>
+                <input type="hidden" id="minRating" value="0">
+            </div>
+
+            <!-- Verified Only -->
+            <div class="filter-group">
+                <label class="custom-check-label">
+                    <input type="checkbox" id="verifiedFilter" onchange="applyFilters()">
+                    <span class="checkmark"></span>
+                    Verified Professionals Only
+                </label>
+            </div>
+
+            <!-- Clear -->
+            <button class="btn-clear-filters" onclick="clearFilters()">
+                <i data-lucide="x-circle"></i>
+                Clear All Filters
+            </button>
+
+        </aside>
+
+        <!-- ===== MAIN GRID ===== -->
+        <div class="mkt-main">
+
+            <!-- Toolbar -->
+            <div class="mkt-toolbar">
+                <p class="result-info">
+                    Showing
+                    <strong id="resultCount" class="accent-val">{{ professionals|length }}</strong>
+                    of
+                    <strong>{{ professionals|length }}</strong>
+                    {{ title }}
+                </p>
+                <select id="sortBy" class="sort-select" onchange="sortCards()">
+                    <option value="rating">Top Rated</option>
+                    <option value="price_low">Price: Low → High</option>
+                    <option value="price_high">Price: High → Low</option>
+                    <option value="experience">Most Experienced</option>
+                </select>
+            </div>
+
+            <!-- Cards -->
+            <div class="prof-grid" id="profGrid">
+                {% for prof in professionals %}
+                <div class="prof-card-wrapper"
+                     data-name="{{ prof.full_name|lower }}"
+                     data-specialization="{{ prof.specialization|lower }}"
+                     data-price="{{ prof.min_price|int if prof.min_price else 0 }}"
+                     data-rating="{{ prof.rating }}"
+                     data-verified="{{ '1' if prof.is_verified else '0' }}"
+                     data-experience="{{ prof.experience_years }}"
+                     data-aos="fade-up"
+                     data-aos-delay="{{ loop.index0 * 60 }}">
+
+                    <div class="prof-card">
+
+                        <!-- Image -->
+                        <div class="prof-img-wrap">
+                            <img
+                                src="/{{ prof.profile_photo }}"
+                                class="prof-img"
+                                alt="{{ prof.full_name }}"
+                                onerror="this.onerror=null; this.src='/static/images/profile_img/default_prof.png';"
+                            >
+                            <div class="prof-img-gradient"></div>
+
+                            <!-- Rating -->
+                            <div class="prof-rating-badge">
+                                ★ {{ "%.1f"|format(prof.rating) }}
+                            </div>
+
+                            <!-- Verified -->
+                            {% if prof.is_verified %}
+                            <div class="prof-verified-badge">
+                                <i data-lucide="shield-check"></i>
+                                Verified
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Body -->
+                        <div class="prof-body">
+                            <h4 class="prof-name">{{ prof.full_name }}</h4>
+                            <p class="prof-spec">{{ prof.specialization }}</p>
+
+                            <div class="prof-stats-row">
+                                <div class="prof-stat-item">
+                                    <span class="pstat-label">Starting From</span>
+                                    <span class="pstat-val">
+                                        {% if prof.min_price and prof.min_price > 0 %}
+                                            ₹{{ prof.min_price|int }}<small>/mo</small>
+                                        {% else %}
+                                            Contact
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="pstat-divider"></div>
+                                <div class="prof-stat-item">
+                                    <span class="pstat-label">Experience</span>
+                                    <span class="pstat-val">{{ prof.experience_years }}+ Yrs</span>
+                                </div>
+                                <div class="pstat-divider"></div>
+                                <div class="prof-stat-item">
+                                    <span class="pstat-label">Clients</span>
+                                    <span class="pstat-val">{{ prof.client_count }}</span>
+                                </div>
+                            </div>
+
+                            <a href="/marketplace/profile/{{ prof.id }}" class="prof-cta">
+                                View Profile
+                                <i data-lucide="arrow-right"></i>
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+                {% else %}
+                <div class="mkt-empty">
+                    <i data-lucide="users"></i>
+                    <h5>No professionals found.</h5>
+                    <p>Try adjusting your search filters.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- No results (JS-controlled) -->
+            <div id="noResults" class="mkt-empty" style="display:none;">
+                <i data-lucide="search-x"></i>
+                <h5>No professionals match your filters.</h5>
+                <p>Try relaxing the filters or <a href="#" onclick="clearFilters(); return false;" class="accent-link">clear all</a>.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================
+     MARKETPLACE STYLES
+     (uses GoalFit CSS variables)
+     ============================ -->
+<style>
+/* ---------- Page Layout ---------- */
+.mkt-page {
+    padding: 10px 0 40px;
+}
+.mkt-header {
+    max-width: 620px;
+}
+.mkt-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin-bottom: 8px;
+}
+.mkt-title {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.15;
+}
+.mkt-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+}
+
+.mkt-body {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .mkt-body { grid-template-columns: 1fr; }
+}
+
+/* ---------- Filter Panel ---------- */
+.filter-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 22px;
+    position: sticky;
+    top: 20px;
+}
+.filter-section-label {
+    font-size: 0.68rem;
+    color: var(--accent-primary);
+    letter-spacing: 2.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+.filter-group {
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.filter-group:last-of-type {
+    border-bottom: none;
+    margin-bottom: 14px;
+}
+.filter-group-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.75rem;
+    color: var(--text-label);
+    font-weight: 600;
+    margin-bottom: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.filter-group-title i {
+    width: 13px;
+    height: 13px;
+    stroke: var(--accent-primary);
+    flex-shrink: 0;
+}
+
+/* Search */
+.search-wrap { position: relative; }
+.search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    stroke: var(--text-muted);
+    pointer-events: none;
+}
+.search-input {
+    width: 100%;
+    padding: 9px 12px 9px 35px;
+    background: var(--bg-input, rgba(255,255,255,0.04));
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    outline: none;
+    transition: 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.search-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px rgba(18,214,197,0.12);
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+/* Custom checkbox */
+.custom-check-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.84rem;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    margin-bottom: 9px;
+    user-select: none;
+}
+.custom-check-label:last-child { margin-bottom: 0; }
+.custom-check-label:hover { color: var(--text-primary); }
+.custom-check-label input[type="checkbox"] { display: none; }
+.checkmark {
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: 0.2s;
+    background: transparent;
+}
+.custom-check-label input:checked ~ .checkmark {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+.custom-check-label input:checked ~ .checkmark::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    border: 2px solid #020617;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+    display: block;
+}
+
+/* Price Range */
+.price-display-row {
+    margin-bottom: 10px;
+}
+.price-display-val {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+.mkt-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+.mkt-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(18,214,197,0.45);
+    border: 2px solid #020617;
+}
+.mkt-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    cursor: pointer;
+    border: 2px solid #020617;
+}
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Rating Selector */
+.rating-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.star-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: 0.2s;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+}
+.star-btn.active {
+    background: rgba(18,214,197,0.12);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+.star-btn:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+/* Clear Filters Button */
+.btn-clear-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: rgba(255,255,255,0.02);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.btn-clear-filters i { width: 15px; height: 15px; stroke: currentColor; }
+.btn-clear-filters:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239,68,68,0.06);
+}
+
+/* ---------- Main Area ---------- */
+.mkt-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.result-info {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+.accent-val { color: var(--accent-primary); }
+.sort-select {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    padding: 8px 14px;
+    outline: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: 0.2s;
+}
+.sort-select:focus { border-color: var(--accent-primary); }
+
+/* ---------- Card Grid ---------- */
+.prof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+}
+
+/* ---------- Professional Card ---------- */
+.prof-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    height: 100%;
+}
+.prof-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-card);
+    border-color: var(--border-hover);
+}
+
+/* Image area */
+.prof-img-wrap {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background: var(--bg-secondary, #070a10);
+    flex-shrink: 0;
+}
+.prof-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    transition: transform 0.4s ease;
+    display: block;
+}
+.prof-card:hover .prof-img { transform: scale(1.05); }
+.prof-img-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(5,7,11,0.88) 0%, rgba(5,7,11,0.1) 55%, transparent 100%);
+}
+
+.prof-rating-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f59e0b;
+}
+.prof-verified-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(18,214,197,0.12);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(18,214,197,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.prof-verified-badge i { width: 12px; height: 12px; stroke: var(--accent-primary); }
+
+/* Card Body */
+.prof-body {
+    padding: 18px 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.prof-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.prof-spec {
+    font-size: 0.78rem;
+    color: var(--accent-primary);
+    font-weight: 500;
+    margin-bottom: 16px;
+    line-height: 1.45;
+}
+
+/* Stats Row */
+.prof-stats-row {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    gap: 14px;
+}
+.prof-stat-item { flex: 1; min-width: 0; }
+.pstat-label {
+    display: block;
+    font-size: 0.63rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+.pstat-val {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.pstat-val small {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+.pstat-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border-subtle);
+    flex-shrink: 0;
+}
+
+/* CTA Button */
+.prof-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    background: var(--accent-gradient);
+    border-radius: 10px;
+    color: #020617;
+    font-weight: 700;
+    font-size: 0.84rem;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+    transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+    margin-top: auto;
+}
+.prof-cta i { width: 15px; height: 15px; stroke: #020617; transition: transform 0.2s; }
+.prof-cta:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(18,214,197,0.25);
+    color: #020617;
+}
+.prof-cta:hover i { transform: translateX(4px); }
+
+/* Empty state */
+.mkt-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+.mkt-empty i {
+    width: 52px;
+    height: 52px;
+    stroke: var(--text-muted);
+    opacity: 0.35;
+    display: block;
+    margin: 0 auto 16px;
+}
+.mkt-empty h5 { color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+.mkt-empty p { font-size: 0.85rem; color: var(--text-muted); opacity: 0.7; }
+.accent-link { color: var(--accent-primary); text-decoration: none; }
+.accent-link:hover { text-decoration: underline; }
+</style>
+
+
+<!-- ============================
+     FILTER & SORT JAVASCRIPT
+     ============================ -->
+<script>
+    const TOTAL = {{ professionals | length }};
+
+    /* ---- Apply all active filters ---- */
+    function applyFilters() {
+        const checkedGoals  = [...document.querySelectorAll('.goal-filter:checked')].map(cb => cb.value.toLowerCase());
+        const maxPrice      = parseInt(document.getElementById('priceRange').value);
+        const minRating     = parseFloat(document.getElementById('minRating').value);
+        const searchQuery   = document.getElementById('searchInput').value.toLowerCase().trim();
+        const verifiedOnly  = document.getElementById('verifiedFilter').checked;
+
+        let visible = 0;
+
+        document.querySelectorAll('.prof-card-wrapper').forEach(card => {
+            const spec     = card.dataset.specialization;   // already lowercased
+            const price    = parseInt(card.dataset.price) || 0;
+            const rating   = parseFloat(card.dataset.rating) || 0;
+            const name     = card.dataset.name;             // already lowercased
+            const verified = card.dataset.verified === '1';
+
+            /* Specialization: at least one checked keyword must appear in spec string */
+            const goalMatch = checkedGoals.length === 0 || checkedGoals.some(goal => {
+                /* Break multi-word goal into words; each word > 2 chars must match */
+                return goal.split(' ').filter(w => w.length > 2).some(word => spec.includes(word));
+            });
+
+            /* Price: 0 means no plan on DB → always show; else must be ≤ slider */
+            const priceMatch = price === 0 || price <= maxPrice;
+
+            /* Rating */
+            const ratingMatch = rating >= minRating;
+
+            /* Search */
+            const searchMatch = !searchQuery || name.includes(searchQuery) || spec.includes(searchQuery);
+
+            /* Verified */
+            const verifiedMatch = !verifiedOnly || verified;
+
+            const show = goalMatch && priceMatch && ratingMatch && searchMatch && verifiedMatch;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('resultCount').textContent = visible;
+
+        const noRes = document.getElementById('noResults');
+        if (noRes) noRes.style.display = (visible === 0 && TOTAL > 0) ? '' : 'none';
+    }
+
+    /* ---- Price slider label ---- */
+    function updatePriceDisplay() {
+        const val = parseInt(document.getElementById('priceRange').value);
+        document.getElementById('priceDisplay').textContent = val.toLocaleString('en-IN');
+    }
+
+    /* ---- Rating pill ---- */
+    function setRating(val) {
+        document.getElementById('minRating').value = val;
+        document.querySelectorAll('.star-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.star-btn[data-value="${val}"]`).classList.add('active');
+        applyFilters();
+    }
+
+    /* ---- Clear all ---- */
+    function clearFilters() {
+        document.querySelectorAll('.goal-filter').forEach(cb => { cb.checked = true; });
+        document.getElementById('priceRange').value  = 10000;
+        document.getElementById('searchInput').value = '';
+        document.getElementById('verifiedFilter').checked = false;
+        updatePriceDisplay();
+        setRating(0);   // also calls applyFilters
+    }
+
+    /* ---- Sort ---- */
+    function sortCards() {
+        const sortBy = document.getElementById('sortBy').value;
+        const grid   = document.getElementById('profGrid');
+        const cards  = [...grid.querySelectorAll('.prof-card-wrapper')];
+
+        cards.sort((a, b) => {
+            switch (sortBy) {
+                case 'rating':
+                    return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+                case 'price_low':
+                    return (parseInt(a.dataset.price) || Infinity) - (parseInt(b.dataset.price) || Infinity);
+                case 'price_high':
+                    return (parseInt(b.dataset.price) || 0) - (parseInt(a.dataset.price) || 0);
+                case 'experience':
+                    return parseInt(b.dataset.experience) - parseInt(a.dataset.experience);
+                default:
+                    return 0;
+            }
+        });
+
+        cards.forEach(card => grid.appendChild(card));
+    }
+
+    /* ---- Init ---- */
+    document.addEventListener('DOMContentLoaded', function () {
+        updatePriceDisplay();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+
+{% endblock %}

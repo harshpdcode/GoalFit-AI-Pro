@@ -19,10 +19,15 @@ def create_schema():
 
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
         tables = [
+            "payments", "custom_workout_plan_exercises", "custom_workout_plans",
+            "professional_workouts", "custom_diet_plan_meals", "custom_diet_plans",
+            "professional_meals", "transformations", "client_assignments",
+            "hire_requests", "professional_pricing", "professionals",
             "water_logs", "user_feedback", "activity_logs",
-            "user_workouts", "user_meals", "workout_exercises", 
+            "user_workouts", "user_meals", "workout_exercises",
             "diet_meals", "progress_logs", "step_recommendations", 
-            "goal_predictions", "bmi_records", "user_health", "users"
+            "goal_predictions", "bmi_records", "user_health", "users",
+            "chat_messages", "diet_logs", "progress_photos"
         ]
         for t in tables:
             cursor.execute(f"DROP TABLE IF EXISTS {t};")
@@ -174,19 +179,7 @@ def create_schema():
         );
         """)
 
-        # ===== USER FEEDBACK =====
-        cursor.execute("""
-        CREATE TABLE user_feedback (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT,
-            subject VARCHAR(200),
-            message TEXT,
-            status VARCHAR(20) DEFAULT 'unread',
-            admin_reply TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-        );
-        """)
+
 
         # ===== WATER LOGS =====
         cursor.execute("""
@@ -196,6 +189,232 @@ def create_schema():
             glasses INT DEFAULT 0,
             goal_glasses INT DEFAULT 8,
             log_date DATE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """)
+
+        # ===========================
+        # MARKETPLACE TABLES
+        # ===========================
+        cursor.execute("""
+        CREATE TABLE professionals (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            full_name VARCHAR(100),
+            email VARCHAR(100) UNIQUE,
+            password VARCHAR(255),
+            phone VARCHAR(20),
+            role ENUM('trainer','dietician','both'),
+            bio TEXT,
+            experience_years INT,
+            specialization VARCHAR(255),
+            profile_photo VARCHAR(255) DEFAULT 'static/images/profile_img/default_prof.jpg',
+            is_verified BOOLEAN DEFAULT FALSE,
+            rating FLOAT DEFAULT 0.0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+
+        # ===== USER FEEDBACK =====
+        cursor.execute("""
+        CREATE TABLE user_feedback (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT DEFAULT NULL,
+            subject VARCHAR(200),
+            message TEXT,
+            status VARCHAR(20) DEFAULT 'unread',
+            admin_reply TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_pricing (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            plan_type VARCHAR(50),
+            duration_days INT,
+            price FLOAT,
+            description TEXT,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE hire_requests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT,
+            plan_type VARCHAR(50),
+            goal_type VARCHAR(50),
+            payment_status VARCHAR(50) DEFAULT 'pending',
+            status ENUM('pending','accepted','rejected','completed') DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE client_assignments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT,
+            plan_type VARCHAR(50),
+            start_date DATE,
+            end_date DATE,
+            status VARCHAR(50) DEFAULT 'active',
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE transformations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            client_name VARCHAR(100),
+            before_weight FLOAT,
+            after_weight FLOAT,
+            description TEXT,
+            image VARCHAR(255),
+            rating FLOAT,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_meals (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            meal_name VARCHAR(100),
+            calories INT,
+            protein FLOAT,
+            carbs FLOAT,
+            fats FLOAT,
+            ingredients TEXT,
+            instructions TEXT,
+            image VARCHAR(255),
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE custom_diet_plans (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT,
+            plan_name VARCHAR(100),
+            goal VARCHAR(100),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE custom_diet_plan_meals (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            plan_id INT,
+            meal_type VARCHAR(50),
+            meal_id INT,
+            FOREIGN KEY (plan_id) REFERENCES custom_diet_plans(id) ON DELETE CASCADE,
+            FOREIGN KEY (meal_id) REFERENCES professional_meals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_workouts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            workout_name VARCHAR(100),
+            target_muscle VARCHAR(50),
+            sets INT,
+            reps INT,
+            rest_time INT,
+            instructions TEXT,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE custom_workout_plans (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT,
+            plan_name VARCHAR(100),
+            goal VARCHAR(100),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE custom_workout_plan_exercises (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            plan_id INT,
+            workout_id INT,
+            workout_day VARCHAR(50),
+            FOREIGN KEY (plan_id) REFERENCES custom_workout_plans(id) ON DELETE CASCADE,
+            FOREIGN KEY (workout_id) REFERENCES professional_workouts(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE payments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            professional_id INT,
+            hire_request_id INT,
+            razorpay_payment_id VARCHAR(100),
+            amount FLOAT,
+            commission_amount FLOAT,
+            professional_amount FLOAT,
+            payment_status VARCHAR(50) DEFAULT 'pending',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE SET NULL,
+            FOREIGN KEY (hire_request_id) REFERENCES hire_requests(id) ON DELETE SET NULL
+        );
+        """)
+
+        # ===========================
+        # NEW FEATURE TABLES
+        # ===========================
+        cursor.execute("""
+        CREATE TABLE chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            sender_id INT,
+            sender_role VARCHAR(20),
+            receiver_id INT,
+            receiver_role VARCHAR(20),
+            message TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE diet_logs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            meal_id INT,
+            log_date DATE,
+            is_completed BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (meal_id) REFERENCES diet_meals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE progress_photos (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            photo_path VARCHAR(255),
+            log_date DATE,
+            is_shared BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         );
         """)
@@ -304,10 +523,10 @@ def create_schema():
         # ===========================
         # SEED REGULAR USER
         # ===========================
-        user_password = generate_password_hash("123")
+        user_password = generate_password_hash("password123")
         cursor.execute("""
             INSERT INTO users (id, name, email, password, role) 
-            VALUES (2, 'Harsh Pandya', 'harsh@goalfit.ai', %s, 'user')
+            VALUES (2, 'Test User', 'user@test.com', %s, 'user')
         """, (user_password,))
         cursor.execute("INSERT INTO user_health (user_id, age, gender, height_cm, weight_kg, target_weight, activity_level, goal_type, diet_preference) VALUES (2, 23, 'Male', 175, 82, 72, 'Moderate', 'Weight Loss', 'Vegetarian')")
         cursor.execute("INSERT INTO bmi_records (user_id, bmi_value, bmi_category, recorded_date) VALUES (2, 26.8, 'Overweight', '2026-01-15')")
@@ -318,13 +537,57 @@ def create_schema():
         # Seed activity log
         cursor.execute("INSERT INTO activity_logs (user_id, action, details) VALUES (1, 'system_setup', 'Database initialized with seed data')")
 
+        # ===========================
+        # SEED PROFESSIONALS & CLIENTS
+        # ===========================
+        prof_pass = generate_password_hash("password123")
+        prof_data = [
+            (1, "Alex Trainer", "alex@trainer.com", prof_pass, "9876543210", "trainer", "Elite personal trainer specializing in weight loss and bodybuilding.", 5, "Weight Loss, Muscle Building", True, 4.8),
+            (2, "Sarah Dietician", "sarah@dietician.com", prof_pass, "9876543211", "dietician", "Certified clinical nutritionist with a focus on holistic health.", 8, "Vegan Diets, PCOS, Weight Loss", True, 4.9),
+            (3, "Mike Hybrid", "mike@trainer.com", prof_pass, "9876543212", "both", "Complete transformation coach. I handle both your lifting and your kitchen.", 10, "Body Recomposition", True, 5.0),
+            (4, "Emma Coach", "emma@dietician.com", prof_pass, "9876543213", "trainer", "HIIT and mobility expert.", 3, "HIIT, Yoga", False, 4.2),
+            (5, "Dr. John", "john@health.com", prof_pass, "9876543214", "dietician", "Expert in sports nutrition.", 12, "Sports Nutrition", True, 4.7)
+        ]
+        cursor.executemany("""
+            INSERT INTO professionals (id, full_name, email, password, phone, role, bio, experience_years, specialization, is_verified, rating)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, prof_data)
+
+        pricing_data = [
+            (1, 1, 'Basic Training', 30, 2000, '4 weeks of personalized workout routines.'),
+            (2, 2, 'Diet Plan', 30, 1500, 'Customized diet plan with weekly check-ins.'),
+            (3, 3, 'Complete Transformation', 90, 8000, '90 days of complete workout and diet coaching.')
+        ]
+        cursor.executemany("INSERT INTO professional_pricing (id, professional_id, plan_type, duration_days, price, description) VALUES (%s,%s,%s,%s,%s,%s)", pricing_data)
+
+        # Additional Mock Users
+        test_users = [
+            (3, "Test User 1", "test1@goalfit.ai", user_password, "user"),
+            (4, "Test User 2", "test2@goalfit.ai", user_password, "user"),
+            (5, "Test User 3", "test3@goalfit.ai", user_password, "user"),
+            (6, "Test User 4", "test4@goalfit.ai", user_password, "user")
+        ]
+        cursor.executemany("INSERT INTO users (id, name, email, password, role) VALUES (%s,%s,%s,%s,%s)", test_users)
+
+        # Simulate Client Assignments (Harsh -> Alex Trainer, Test User 1 -> Mike Hybrid)
+        cursor.execute("INSERT INTO client_assignments (user_id, professional_id, plan_type, start_date, end_date, status) VALUES (2, 1, 'Basic Training', '2026-05-01', '2026-06-01', 'active')")
+        cursor.execute("INSERT INTO client_assignments (user_id, professional_id, plan_type, start_date, end_date, status) VALUES (3, 3, 'Complete Transformation', '2026-04-15', '2026-07-15', 'active')")
+
+        # Simulate payments
+        cursor.execute("INSERT INTO hire_requests (id, user_id, professional_id, plan_type, payment_status, status) VALUES (1, 2, 1, 'Basic Training', 'paid', 'accepted')")
+        cursor.execute("INSERT INTO hire_requests (id, user_id, professional_id, plan_type, payment_status, status) VALUES (2, 3, 3, 'Complete Transformation', 'paid', 'accepted')")
+        cursor.execute("INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status) VALUES (2, 1, 1, 'pay_mock1', 2000, 300, 1700, 'paid')")
+        cursor.execute("INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status) VALUES (3, 3, 2, 'pay_mock2', 8000, 1200, 6800, 'paid')")
+
+
         conn.commit()
-        print("✅ Database setup completed successfully!")
-        print("📧 Admin Login: admin@goalfit.ai / admin123")
-        print("📧 User Login: harsh@goalfit.ai / 123")
+        print("Success: Database setup completed successfully!")
+        print("Admin Login: admin@goalfit.ai / admin123")
+        print("User Login: user@test.com / password123")
+        print("Professional Logins: (e.g. mike@trainer.com / password123)")
 
     except mysql.connector.Error as err:
-        print(f"❌ Error during setup: {err}")
+        print(f"Error during setup: {err}")
     finally:
         if 'cursor' in locals(): cursor.close()
         if 'conn' in locals() and conn.is_connected(): conn.close()

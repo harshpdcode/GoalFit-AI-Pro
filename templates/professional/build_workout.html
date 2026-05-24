@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0 text-gradient">Build Custom Workout Plan</h2>
+        <a href="/trainer/dashboard" class="btn btn-outline-secondary rounded-pill">Back to Dashboard</a>
+    </div>
+
+    <div class="card stat-card mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold">Client: {{ client.name }}</h5>
+            <p class="text-muted small mb-0">Select workouts from your professional library and assign them to specific days for this client.</p>
+        </div>
+    </div>
+
+    <form method="POST" action="/trainer/build-plan/{{ client_id }}">
+        <div class="card stat-card mb-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Plan Name</label>
+                    <input type="text" name="plan_name" class="form-control" placeholder="e.g. 4-Week Hypertrophy Plan" required>
+                </div>
+                
+                <h6 class="fw-bold mt-4 mb-3">Exercises</h6>
+                <div id="exercises-container">
+                    <div class="row g-3 mb-3 exercise-row align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">Day</label>
+                            <select name="day[]" class="form-control" required>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label small text-muted">Select Workout</label>
+                            <select name="workout_id[]" class="form-control" required>
+                                <option value="">-- Select from your library --</option>
+                                {% for w in workouts %}
+                                <option value="{{ w.id }}">{{ w.workout_name }} ({{ w.target_muscle }} - {{ w.sets }}x{{ w.reps }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger w-100 remove-btn" disabled>Remove</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" id="add-exercise-btn" class="btn btn-outline-primary mt-2 rounded-pill"><i data-lucide="plus" style="width:16px;"></i> Add Exercise</button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-lg" style="background: var(--gradient-primary); border:none;">Publish Custom Plan</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('add-exercise-btn').addEventListener('click', function() {
+        const container = document.getElementById('exercises-container');
+        const row = container.querySelector('.exercise-row').cloneNode(true);
+        row.querySelector('.remove-btn').disabled = false;
+        row.querySelector('.remove-btn').addEventListener('click', function() {
+            row.remove();
+        });
+        container.appendChild(row);
+    });
+</script>
+{% endblock %}

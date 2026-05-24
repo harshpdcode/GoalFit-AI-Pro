@@ -9,11 +9,58 @@ def diet_plan():
     # ---------- SESSION CHECK ----------
     if 'user_id' not in session:
         return redirect(url_for('auth.login'))
-
+        
     user_id = session['user_id']
-
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
+
+    # CHECK IF HIRED A DIETICIAN
+    cursor.execute("""
+        SELECT ca.*, p.full_name as prof_name 
+        FROM client_assignments ca
+        JOIN professionals p ON ca.professional_id = p.id
+        WHERE ca.user_id=%s AND ca.status='active' AND p.role IN ('dietician', 'both')
+    """, (user_id,))
+    active_dietician = cursor.fetchone()
+
+    if active_dietician:
+        # Load custom plans from custom_diet_plans / custom_diet_plan_meals
+        cursor.execute("SELECT * FROM custom_diet_plans WHERE user_id=%s AND professional_id=%s ORDER BY created_at DESC LIMIT 1", (user_id, active_dietician['professional_id']))
+        custom_plan = cursor.fetchone()
+        custom_meals = []
+        if custom_plan:
+            cursor.execute("""
+                SELECT c.meal_type, c.meal_id, m.meal_name, m.calories, m.protein, m.carbs, m.fats, m.ingredients, m.instructions, m.image as img_src
+                FROM custom_diet_plan_meals c
+                JOIN professional_meals m ON c.meal_id = m.id
+                WHERE c.plan_id=%s
+            """, (custom_plan['id'],))
+            custom_meals = cursor.fetchall()
+            
+        # Fetch today's diet logs
+        from datetime import datetime
+        today = datetime.now().date()
+        cursor.execute("SELECT meal_id, is_completed FROM diet_logs WHERE user_id=%s AND log_date=%s", (user_id, today))
+        logs = cursor.fetchall()
+        diet_logs = {log['meal_id']: log['is_completed'] for log in logs}
+            
+        cursor.close()
+        conn.close()
+        
+        return render_template('diet/diet_plan.html', 
+                               coach=active_dietician,
+                               custom_plan=custom_plan,
+                               custom_meals=custom_meals,
+                               diet_logs=diet_logs,
+                               log_date=today,
+                               user_name=session.get('user_name'))
+        conn.close()
+        
+        return render_template('diet/diet_plan.html', 
+                               coach=active_dietician,
+                               custom_plan=custom_plan,
+                               custom_meals=custom_meals,
+                               user_name=session.get('user_name'))
 
     try:
         # ---------- FETCH USER HEALTH ----------

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block auth_content %}
+<div class="auth-container">
+    <!-- Left Side: Image & Branding -->
+    <div class="auth-left login-bg">
+        <div class="auth-overlay"></div>
+        <div class="auth-left-content" data-aos="fade-up">
+            {% if action == 'register' %}
+            <h1>BECOME A <span class="text-gradient">GOALFIT PRO</span></h1>
+            <p>Join the elite network of trainers and dieticians on GoalFit AI. Deliver personalized programs, grow your client base, and power your coaching with AI.</p>
+            {% else %}
+            <h1>COACH WITH <span class="text-gradient">GOALFIT PRO</span></h1>
+            <p>Manage clients, assign workouts, build custom diet plans and track transformations — all powered by GoalFit AI.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Side: Form -->
+    <div class="auth-right">
+        <div class="auth-form" style="max-width: 480px;">
+            <div class="brand mb-4">
+                <div class="brand-icon">⚡</div>
+                <span>GOALFIT AI <span class="badge ms-2" style="background: var(--pro-primary); color: #000; font-size: 0.6rem; vertical-align: middle;">PRO</span></span>
+            </div>
+
+            {% if action == 'register' %}
+            <h2>Professional Registration</h2>
+            <p class="sub">Create your coaching profile</p>
+                
+                <form action="/professional/register" method="POST" class="text-start">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Full Name</label>
+                        <input type="text" name="full_name" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="John Smith" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small mb-1">Email</label>
+                            <input type="email" name="email" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="john@email.com" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small mb-1">Phone</label>
+                            <input type="text" name="phone" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="+91 9876543210" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small mb-1">Password</label>
+                            <input type="password" name="password" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="••••••••" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small mb-1">Experience (Years)</label>
+                            <input type="number" name="experience_years" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="5" required min="0">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Professional Role</label>
+                        <select name="role" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" required>
+                            <option value="" disabled selected class="text-dark">Select expertise</option>
+                            <option value="trainer" class="text-dark">Trainer</option>
+                            <option value="dietician" class="text-dark">Dietician</option>
+                            <option value="both" class="text-dark">Both</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-1">Specialization</label>
+                        <input type="text" name="specialization" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" placeholder="e.g. Weight Loss, HIIT" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-muted small mb-1">Professional Bio</label>
+                        <textarea name="bio" class="form-control bg-transparent text-white border-bottom border-0 rounded-0 px-0" rows="2" placeholder="Describe your coaching style..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill mb-3 fw-bold" style="background: var(--pro-gradient); border:none; padding: 12px; color: #fff;">CREATE PROFESSIONAL ACCOUNT →</button>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="switch mb-1">Already registered? <a href="/professional/login" style="color: var(--pro-primary); text-decoration: none; font-weight: bold;">Login to Dashboard</a></p>
+                        <p class="switch">Looking for normal user registration? <a href="/register" style="color: #0dcaf0; text-decoration: none;">User Signup</a></p>
+                    </div>
+                </form>
+
+                {% else %}
+                <h2>Professional Login</h2>
+                <p class="sub">Access your coaching dashboard</p>
+
+                <form action="/professional/login" method="POST" class="text-start">
+                    <div class="input-box mb-4">
+                        <label>Email Address</label>
+                        <input type="email" name="email" placeholder="coach@email.com" required>
+                    </div>
+                    <div class="input-box mb-5">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <button type="submit" class="auth-btn w-100" style="background: var(--pro-gradient);">LOGIN TO DASHBOARD →</button>
+
+                    <div class="mt-4 text-center">
+                        <p class="switch mb-1">Don't have a professional account? <a href="/professional/register" style="color: var(--pro-primary); text-decoration: none; font-weight: bold;">Apply Now</a></p>
+                        <p class="switch">Looking for normal user login? <a href="/login" style="color: #0dcaf0; text-decoration: none;">User Login</a></p>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+<style>
+    .auth-container input:focus, .auth-container select:focus, .auth-container textarea:focus {
+        box-shadow: none !important;
+        border-bottom-color: var(--pro-primary) !important;
+    }
+</style>
+{% endblock %}

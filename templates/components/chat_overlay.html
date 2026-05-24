@@ -1,0 +1,155 @@
+{% if coach %}
+<div id="chat-overlay" class="chat-overlay">
+    <div class="chat-header" onclick="toggleChat()">
+        <div class="d-flex align-items-center">
+            <div class="avatar me-2 bg-white text-primary" style="width: 32px; height: 32px; font-size: 14px;">
+                {{ coach.prof_name[0] }}
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold">{{ coach.prof_name }}</h6>
+                <small class="text-white-50">{{ coach.role|title }}</small>
+            </div>
+        </div>
+        <i data-lucide="chevron-up" id="chat-toggle-icon"></i>
+    </div>
+    
+    <div class="chat-body" id="chat-body">
+        <div id="chat-messages" class="p-3 d-flex flex-column gap-2" style="height: 300px; overflow-y: auto;">
+            <!-- Messages load here -->
+        </div>
+        <div class="chat-input p-3 border-top border-secondary bg-dark">
+            <form id="chat-form" class="d-flex gap-2">
+                <input type="text" id="chat-input-msg" class="form-control bg-black text-white border-secondary" placeholder="Type a message..." required>
+                <button type="submit" class="btn btn-primary px-3"><i data-lucide="send" style="width: 16px;"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 1000;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+.chat-header {
+    background: var(--gradient-primary);
+    color: white;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-body {
+    display: none;
+}
+.chat-body.active {
+    display: block;
+}
+.chat-message {
+    max-width: 85%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+.chat-message.sent {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+.chat-message.received {
+    background: #2a2a2a;
+    color: white;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+</style>
+
+<script>
+const proId = "{{ coach.professional_id }}";
+const proRole = "{{ coach.role }}";
+
+function toggleChat() {
+    const body = document.getElementById('chat-body');
+    const icon = document.getElementById('chat-toggle-icon');
+    body.classList.toggle('active');
+    
+    if(body.classList.contains('active')) {
+        icon.setAttribute('data-lucide', 'chevron-down');
+        loadMessages();
+        // Set an interval to poll messages while chat is open
+        if(!window.chatInterval) {
+            window.chatInterval = setInterval(loadMessages, 5000);
+        }
+    } else {
+        icon.setAttribute('data-lucide', 'chevron-up');
+        if(window.chatInterval) {
+            clearInterval(window.chatInterval);
+            window.chatInterval = null;
+        }
+    }
+    lucide.createIcons();
+}
+
+async function loadMessages() {
+    try {
+        const res = await fetch(`/chat/history?other_id=${proId}&other_role=${proRole}`);
+        const messages = await res.json();
+        
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '';
+        
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            // If sender is the user
+            const isSent = msg.sender_role === '{{ current_role }}' && msg.sender_id == '{{ session.user_id }}';
+            div.className = `chat-message ${isSent ? 'sent' : 'received'}`;
+            div.textContent = msg.message;
+            container.appendChild(div);
+        });
+        
+        // Scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    } catch (e) {
+        console.error("Failed to load chat history", e);
+    }
+}
+
+document.getElementById('chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chat-input-msg');
+    const message = input.value.trim();
+    if(!message) return;
+    
+    try {
+        const res = await fetch('/chat/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                receiver_id: proId,
+                receiver_role: proRole,
+                message: message
+            })
+        });
+        const data = await res.json();
+        if(data.success) {
+            input.value = '';
+            loadMessages();
+        }
+    } catch(e) {
+        console.error("Failed to send message", e);
+    }
+});
+</script>
+{% endif %}

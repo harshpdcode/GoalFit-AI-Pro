@@ -41,32 +41,41 @@
                     <span>Dashboard</span>
                 </a>
 
+                <div class="nav-section-title" style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.5rem 1rem;">Users & Pros</div>
                 <a href="/admin/users" class="nav-item {% if 'user_management' in request.endpoint or 'user_detail' in request.endpoint %}active{% endif %}">
                     <i data-lucide="users"></i>
-                    <span>Users</span>
+                    <span>Manage Users</span>
+                </a>
+                <a href="/admin/professionals" class="nav-item {% if 'professional' in request.endpoint %}active{% endif %}">
+                    <i data-lucide="user-check"></i>
+                    <span>Manage Pros</span>
                 </a>
 
+                <div class="nav-section-title" style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.5rem 1rem;">System Management</div>
                 <a href="/admin/meals" class="nav-item {% if 'meal' in request.endpoint %}active{% endif %}">
                     <i data-lucide="utensils-crossed"></i>
                     <span>Meals</span>
                 </a>
-
                 <a href="/admin/workouts" class="nav-item {% if 'workout' in request.endpoint %}active{% endif %}">
                     <i data-lucide="dumbbell"></i>
                     <span>Exercises</span>
                 </a>
-
                 <a href="/admin/logs" class="nav-item {% if request.endpoint == 'admin.activity_logs' %}active{% endif %}">
                     <i data-lucide="scroll-text"></i>
                     <span>Activity Logs</span>
                 </a>
-
                 <a href="/admin/feedback" class="nav-item {% if request.endpoint == 'admin.feedback_inbox' %}active{% endif %}">
                     <i data-lucide="mail"></i>
                     <span>Feedback</span>
                     {% if unread_count is defined and unread_count > 0 %}
                     <span class="badge-count">{{ unread_count }}</span>
                     {% endif %}
+                </a>
+
+                <div class="nav-section-title" style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 0.5rem 1rem;">Transactions</div>
+                <a href="/admin/payments" class="nav-item {% if 'payment' in request.endpoint %}active{% endif %}">
+                    <i data-lucide="credit-card"></i>
+                    <span>Payments</span>
                 </a>
 
                 <div class="nav-divider"></div>
@@ -127,23 +136,23 @@
         
         container.appendChild(toast);
         
-        setTimeout(() => toast.classList.add('show'), 10);
-        setTimeout(() => {
+        setTimeout(function() { toast.classList.add('show'); }, 10);
+        setTimeout(function() {
             toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(function() { toast.remove(); }, 300);
         }, 4000);
     }
 
-    // Show flash messages as toasts
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    showToast("{{ message }}", "{{ category }}");
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
 </script>
-
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<script>
+showToast({{ message|tojson|safe }}, "{{ category }}");
+</script>
+{% endfor %}
+{% endif %}
+{% endwith %}
 {% block scripts %}{% endblock %}
 
 </body>

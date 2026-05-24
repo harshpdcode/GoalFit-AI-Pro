@@ -31,19 +31,28 @@
     </div>
 
     <div class="admin-kpi-card kpi-bmi">
-        <div class="kpi-icon"><i data-lucide="activity"></i></div>
+        <div class="kpi-icon"><i data-lucide="award"></i></div>
         <div class="kpi-data">
-            <span class="kpi-value">{{ avg_bmi }}</span>
-            <span class="kpi-label">Avg BMI</span>
+            <span class="kpi-value">{{ total_professionals }}</span>
+            <span class="kpi-label">Professionals</span>
         </div>
         <div class="kpi-glow"></div>
     </div>
 
     <div class="admin-kpi-card kpi-meals">
-        <div class="kpi-icon"><i data-lucide="utensils-crossed"></i></div>
+        <div class="kpi-icon"><i data-lucide="indian-rupee"></i></div>
         <div class="kpi-data">
-            <span class="kpi-value">{{ total_meals }}</span>
-            <span class="kpi-label">Diet Meals</span>
+            <span class="kpi-value">₹{{ total_revenue }}</span>
+            <span class="kpi-label">Revenue</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-exercises">
+        <div class="kpi-icon"><i data-lucide="bell"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_hire_requests }}</span>
+            <span class="kpi-label">Hire Requests</span>
         </div>
         <div class="kpi-glow"></div>
     </div>
@@ -90,6 +99,17 @@
         </div>
         <div class="chart-wrap">
             <canvas id="dietChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Revenue Over Time -->
+    <div class="admin-chart-card full-width mt-4">
+        <div class="gf-card-header">
+            <i data-lucide="trending-up"></i>
+            <h3>Revenue Over Time (30 Days)</h3>
+        </div>
+        <div class="chart-wrap" style="height: 300px;">
+            <canvas id="revenueChart"></canvas>
         </div>
     </div>
 
@@ -195,6 +215,53 @@
                     }
                 },
                 cutout: '65%'
+            }
+        });
+    }
+
+    // Revenue Chart
+    const paymentData = {{ payment_growth | tojson }};
+    if (paymentData && paymentData.length > 0) {
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'line',
+            data: {
+                labels: paymentData.map(p => {
+                    let d = new Date(p.pay_date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Daily Revenue (₹)',
+                    data: paymentData.map(p => p.daily_revenue),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#10b981',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#9aa4b2', font: { family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: {
+                            color: '#9aa4b2',
+                            font: { family: 'Inter' },
+                            callback: function(value) { return '₹' + value; }
+                        },
+                        beginAtZero: true
+                    }
+                }
             }
         });
     }

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="fw-bold mb-4 text-gradient">Trainer Dashboard</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card text-center py-4" data-aos="fade-up">
+                <i data-lucide="users" class="text-primary mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
+                <h2 class="fw-bold mb-0">{{ active_clients }}</h2>
+                <p class="text-muted mb-0">Active Clients</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card text-center py-4" data-aos="fade-up" data-aos-delay="50">
+                <i data-lucide="indian-rupee" class="text-success mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
+                <h2 class="fw-bold mb-0">₹{{ revenue }}</h2>
+                <p class="text-muted mb-0">Total Revenue</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card text-center py-4" data-aos="fade-up" data-aos-delay="100">
+                <i data-lucide="bell" class="text-warning mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
+                <h2 class="fw-bold mb-0">{{ pending_reqs }}</h2>
+                <p class="text-muted mb-0">Pending Requests</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card stat-card" data-aos="fade-right">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i data-lucide="user-plus" class="text-primary me-2"></i> Hire Requests</h5>
+                </div>
+                <div class="card-body">
+                    {% for req in requests %}
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ req.name }}</h6>
+                            <p class="mb-0 small text-muted">Plan: {{ req.plan_type }}</p>
+                        </div>
+                        <div>
+                            <a href="/trainer/request/{{ req.id }}/accept" class="btn btn-sm btn-success rounded-pill px-3 me-1">Accept</a>
+                            <a href="/trainer/request/{{ req.id }}/reject" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No pending requests.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card stat-card" data-aos="fade-left">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0">
+                    <h5 class="fw-bold"><i data-lucide="users" class="text-success me-2"></i> Active Clients</h5>
+                </div>
+                <div class="card-body">
+                    {% for client in clients %}
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: var(--bg-surface); border: 1px solid var(--border-color);">
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ client.name }}</h6>
+                            <p class="mb-0 small text-muted">{{ client.plan_type }} | End: {{ client.end_date }}</p>
+                        </div>
+                        <div>
+                            <a href="/trainer/build-plan/{{ client.user_id }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">Build Plan</a>
+                            <a href="/gallery/client/{{ client.user_id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Gallery</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No active clients right now.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

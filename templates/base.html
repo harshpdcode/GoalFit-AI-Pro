@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
-<body>
+<body class="{% if is_premium %}pro-mode{% endif %}">
 
 <!-- Page Loading Overlay -->
 <div class="loading-overlay" id="pageLoader">
@@ -50,7 +50,7 @@
     });
 </script>
 
-{% set is_auth = request.endpoint in ['auth.login', 'auth.register'] %}
+{% set is_auth = request.endpoint in ['auth.login', 'auth.register', 'professional_auth.login', 'professional_auth.register'] %}
 
 {% if not is_auth %}
     <div class="layout">
@@ -69,13 +69,14 @@
                     <img src="/static/images/logo.png" alt="GoalFit AI" class="logo-img">
                     <div class="logo-text">
                         <h2>GOALFIT</h2>
-                        <p>AI ENGINE</p>
+                        <p>{% if is_premium %}PRO ENGINE{% else %}AI ENGINE{% endif %}</p>
                     </div>
                 </div>
 
                 <!-- Navigation -->
                 <nav class="menu">
 
+                    {% if session.get('role') == 'user' or not session.get('role') %}
                     <a href="/dashboard" class="nav-item" id="nav-dashboard">
                         <i data-lucide="layout-dashboard"></i>
                         <span>Dashboard</span>
@@ -100,10 +101,28 @@
                         <i data-lucide="trending-up"></i>
                         <span>Progress</span>
                     </a>
+                    
+                    <a href="/gallery" class="nav-item" id="nav-gallery">
+                        <i data-lucide="camera"></i>
+                        <span>Photo Gallery</span>
+                    </a>
 
                     <a href="/health" class="nav-item" id="nav-profile">
                         <i data-lucide="user-circle"></i>
                         <span>Profile</span>
+                    </a>
+
+                    <div class="nav-divider"></div>
+                    <div class="nav-section-title" style="padding: 10px 20px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold;">Marketplace</div>
+
+                    <a href="/marketplace/trainers" class="nav-item" id="nav-trainers">
+                        <i data-lucide="users"></i>
+                        <span>Hire Trainer</span>
+                    </a>
+
+                    <a href="/marketplace/dieticians" class="nav-item" id="nav-dieticians">
+                        <i data-lucide="apple"></i>
+                        <span>Hire Dietician</span>
                     </a>
 
                     <a href="/feedback" class="nav-item" id="nav-feedback">
@@ -115,12 +134,48 @@
                         <i data-lucide="file-down"></i>
                         <span>PDF Report</span>
                     </a>
+                    
+                    <a href="/pdf/download-custom-plan" class="nav-item nav-download" style="background: var(--gradient-primary); color: white;">
+                        <i data-lucide="download"></i>
+                        <span>Custom Plan PDF</span>
+                    </a>
+                    {% endif %}
+
+                    {% if session.get('role') in ['prof_trainer', 'prof_both'] %}
+                    <div class="nav-divider"></div>
+                    <a href="/trainer/dashboard" class="nav-item nav-switch">
+                        <i data-lucide="briefcase"></i>
+                        <span>Trainer Dashboard</span>
+                    </a>
+                    {% endif %}
+                    
+                    {% if session.get('role') in ['prof_dietician', 'prof_both'] %}
+                    <div class="nav-divider"></div>
+                    <a href="/dietician/dashboard" class="nav-item nav-switch">
+                        <i data-lucide="apple"></i>
+                        <span>Dietician Dashboard</span>
+                    </a>
+                    {% endif %}
 
                     {% if session.get('role') == 'admin' %}
                     <div class="nav-divider"></div>
+                    <div class="nav-section-title" style="padding: 10px 20px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: bold;">Admin Panel</div>
+                    
                     <a href="/admin/dashboard" class="nav-item nav-switch">
                         <i data-lucide="shield"></i>
-                        <span>Admin Panel</span>
+                        <span>Admin Dashboard</span>
+                    </a>
+                    <a href="/admin/users" class="nav-item">
+                        <i data-lucide="users"></i>
+                        <span>Manage Users</span>
+                    </a>
+                    <a href="/admin/professionals" class="nav-item">
+                        <i data-lucide="award"></i>
+                        <span>Manage Pros</span>
+                    </a>
+                    <a href="/admin/payments" class="nav-item">
+                        <i data-lucide="credit-card"></i>
+                        <span>Payments</span>
                     </a>
                     {% endif %}
 
@@ -171,12 +226,29 @@
                     <span class="breadcrumb-active">Workouts</span>
                 {% elif request.endpoint == 'progress.progress' %}
                     <span class="breadcrumb-active">Progress</span>
+                {% elif request.endpoint == 'progress_gallery.gallery' %}
+                    <span class="breadcrumb-active">Photo Gallery</span>
                 {% elif request.endpoint == 'health.health_profile' %}
                     <span class="breadcrumb-active">Profile</span>
                 {% elif request.endpoint == 'water.water_tracker' %}
                     <span class="breadcrumb-active">Water Tracker</span>
                 {% elif request.endpoint == 'feedback.feedback_form' %}
                     <span class="breadcrumb-active">Feedback</span>
+                {% elif request.endpoint == 'marketplace.trainers_list' %}
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Marketplace</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Hire Trainer</span>
+                {% elif request.endpoint == 'marketplace.dieticians_list' %}
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Marketplace</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Hire Dietician</span>
+                {% elif request.endpoint == 'marketplace.profile' %}
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Marketplace</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active">Professional Profile</span>
                 {% else %}
                     <span class="breadcrumb-active">Page</span>
                 {% endif %}
@@ -208,18 +280,30 @@
             'diet.diet_plan': '/diet-plan',
             'workout.workout_plan': '/workout-plan',
             'progress.progress': '/progress',
+            'progress_gallery.gallery': '/gallery',
             'health.health_profile': '/health',
             'water.water_tracker': '/water-tracker',
-            'feedback.feedback_form': '/feedback'
+            'feedback.feedback_form': '/feedback',
+            'marketplace.trainers_list': '/marketplace/trainers',
+            'marketplace.dieticians_list': '/marketplace/dieticians',
+            'marketplace.profile': null
         };
         
         navItems.forEach(item => {
             const href = item.getAttribute('href');
             item.classList.remove('active');
-            if (menuMap[currentEndpoint] === href) {
+            const mapped = menuMap[currentEndpoint];
+            if (mapped && mapped === href) {
                 item.classList.add('active');
             }
         });
+
+        /* Marketplace sub-highlight: keep parent nav-item active on profile page */
+        if (currentEndpoint === 'marketplace.profile') {
+            const path = window.location.pathname;
+            /* We can't know trainer vs dietician from endpoint alone,
+               so highlight both marketplace links subtly via URL referrer if available */
+        }
 
         // Initialize Lucide Icons
         if (typeof lucide !== 'undefined') {
@@ -281,7 +365,7 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
-    document.addEventListener('DOMContentLoaded', () => showToast("{{ message }}", "{{ category }}"));
+    document.addEventListener('DOMContentLoaded', function() { showToast("{{ message }}", "{{ category }}"); });
     {% endfor %}
     {% endif %}
     {% endwith %}

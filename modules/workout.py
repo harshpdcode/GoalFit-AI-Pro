@@ -16,6 +16,44 @@ def workout_plan():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
+    # CHECK IF HIRED A TRAINER
+    cursor.execute("""
+        SELECT ca.*, p.full_name as prof_name 
+        FROM client_assignments ca
+        JOIN professionals p ON ca.professional_id = p.id
+        WHERE ca.user_id=%s AND ca.status='active' AND p.role IN ('trainer', 'both')
+    """, (user_id,))
+    active_trainer = cursor.fetchone()
+
+    if active_trainer:
+        # Load custom plans
+        cursor.execute("SELECT * FROM custom_workout_plans WHERE user_id=%s AND professional_id=%s ORDER BY created_at DESC LIMIT 1", (user_id, active_trainer['professional_id']))
+        custom_plan = cursor.fetchone()
+        custom_exercises = []
+        if custom_plan:
+            cursor.execute("""
+                SELECT e.workout_day, w.workout_name, w.target_muscle, w.sets, w.reps, w.rest_time, w.instructions
+                FROM custom_workout_plan_exercises e
+                JOIN professional_workouts w ON e.workout_id = w.id
+                WHERE e.plan_id=%s
+            """, (custom_plan['id'],))
+            custom_exercises = cursor.fetchall()
+            
+        cursor.close()
+        conn.close()
+        
+        # Group custom exercises by day
+        grouped_custom = {}
+        for ex in custom_exercises:
+            day = ex['workout_day']
+            grouped_custom.setdefault(day, []).append(ex)
+
+        return render_template('workout/workout_plan.html', 
+                               coach=active_trainer,
+                               custom_plan=custom_plan,
+                               custom_exercises=grouped_custom,
+                               user_name=session.get('user_name'))
+
     # ---------- USER HEALTH ----------
     cursor.execute("""
         SELECT goal_type, activity_level

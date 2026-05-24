@@ -1,0 +1,59 @@
+{% extends "admin/admin_base.html" %}
+
+{% block breadcrumb %}
+<a href="/admin/dashboard" class="breadcrumb-link">Dashboard</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-active">Payments</span>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title" data-aos="fade-up">Payment <span>Transactions</span></h1>
+<div class="accent-line"></div>
+
+<div class="admin-section" data-aos="fade-up" data-aos-delay="100">
+    <div class="admin-chart-card full-width">
+        <div class="gf-card-header">
+            <i data-lucide="credit-card"></i>
+            <h3>Transactions Log</h3>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>User</th>
+                        <th>Professional</th>
+                        <th>Total Amount</th>
+                        <th>Platform Comm.</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td>{{ p.razorpay_payment_id }}</td>
+                        <td>{{ p.user_name }}</td>
+                        <td>{{ p.prof_name }}</td>
+                        <td class="fw-bold">₹{{ p.amount }}</td>
+                        <td class="text-success fw-bold">₹{{ p.commission_amount }}</td>
+                        <td>
+                            {% if p.payment_status == 'paid' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ p.payment_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.created_at.strftime('%b %d, %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not payments %}
+                    <tr><td colspan="7" class="empty-cell">No payments found</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

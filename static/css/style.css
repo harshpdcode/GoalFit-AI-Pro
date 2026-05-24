@@ -69,7 +69,7 @@ body {
     position:sticky;
     top:0;
     height:100vh;
-    overflow:hidden;
+    overflow:auto;
     transition: width 0.3s, background 0.3s;
     z-index: 100;
 }
@@ -379,7 +379,7 @@ body {
     box-shadow: 0 0 10px rgba(18,214,197,0.2);
 }
 .number-control input { 
-    text-align:center; -moz-appearance:textfield; 
+    text-align:center; -moz-appearance:textfield; appearance:none; 
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
@@ -630,4 +630,25 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 ::-webkit-scrollbar { width:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:rgba(18,214,197,0.2); border-radius:3px; }
-::-webkit-scrollbar-thumb:hover { background:rgba(18,214,197,0.4); }
+::-webkit-scrollbar-thumb:hover { background:rgba(18,214,197,0.4); }:root {
+  --pro-primary: #f59e0b;
+  --pro-secondary: #ea580c;
+  --pro-gradient: linear-gradient(135deg, #f59e0b, #ea580c);
+  --pro-border: rgba(245, 158, 11, 0.25);
+}
+
+.pro-mode .content {
+  background: radial-gradient(circle at 20% 20%, rgba(245, 158, 11, 0.12), transparent 45%), radial-gradient(circle at 80% 80%, rgba(234, 88, 12, 0.10), transparent 40%), linear-gradient(180deg, #020617, #000);
+}
+
+.pro-mode .text-gradient {
+  background: var(--pro-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pro-mode .btn-primary {
+  background: var(--pro-gradient);
+  border: none;
+  color: #fff;
+}

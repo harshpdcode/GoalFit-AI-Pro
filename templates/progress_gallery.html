@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold mb-0">My Progress Gallery</h2>
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#uploadModal" style="background: var(--gradient-primary); border:none;">
+                <i data-lucide="camera" class="me-2" style="width: 18px;"></i> Add Photo
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content gf-card border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Upload Daily Progress</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="{{ url_for('progress_gallery.upload_photo') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label class="form-label text-muted">Select Photo</label>
+                            <input class="form-control bg-dark text-white border-secondary" type="file" name="photo" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn w-100 rounded-pill py-2 fw-bold text-dark" style="background: var(--accent-primary);">Upload Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if hired_pro %}
+    <div class="alert alert-info border-0 rounded-4 mb-4" style="background: rgba(18, 214, 197, 0.1); color: var(--accent-primary);">
+        <i data-lucide="info" class="me-2" style="width: 18px;"></i>
+        You are currently working with <strong>{{ hired_pro.full_name }}</strong>. You can toggle the visibility of your photos to share them with your professional.
+    </div>
+    {% endif %}
+
+    <div class="row g-4" id="gallery-grid">
+        {% for photo in photos %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="gf-card h-100 overflow-hidden position-relative group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                <img src="/{{ photo.photo_path }}" class="img-fluid w-100 object-fit-cover" style="height: 250px;" alt="Progress Photo">
+                
+                <div class="position-absolute bottom-0 start-0 w-100 p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                    <span class="text-white small fw-bold"><i data-lucide="calendar" class="me-1" style="width: 14px;"></i> {{ photo.log_date }}</span>
+                    
+                    {% if hired_pro %}
+                    <button class="btn btn-sm btn-icon border-0 share-toggle" data-id="{{ photo.id }}" data-shared="{{ 'true' if photo.is_shared else 'false' }}">
+                        {% if photo.is_shared %}
+                            <i data-lucide="eye" class="text-success" style="width: 18px;" title="Visible to Professional"></i>
+                        {% else %}
+                            <i data-lucide="eye-off" class="text-muted" style="width: 18px;" title="Hidden from Professional"></i>
+                        {% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="gf-card d-inline-block p-5">
+                <i data-lucide="image" class="text-muted mb-3 mx-auto" style="width: 64px; height: 64px;"></i>
+                <h4 class="fw-bold">No Photos Yet</h4>
+                <p class="text-muted mb-0">Upload your first progress photo to start tracking your journey!</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Toggle share status
+    document.querySelectorAll('.share-toggle').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const photoId = btn.dataset.id;
+            const currentShared = btn.dataset.shared === 'true';
+            const newShared = !currentShared;
+            
+            try {
+                const res = await fetch("{{ url_for('progress_gallery.toggle_share') }}", {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({photo_id: photoId, is_shared: newShared})
+                });
+                
+                const data = await res.json();
+                if(data.success) {
+                    btn.dataset.shared = newShared;
+                    if(newShared) {
+                        btn.innerHTML = '<i data-lucide="eye" class="text-success" style="width: 18px;" title="Visible to Professional"></i>';
+                    } else {
+                        btn.innerHTML = '<i data-lucide="eye-off" class="text-muted" style="width: 18px;" title="Hidden from Professional"></i>';
+                    }
+                    lucide.createIcons(); // re-render icons
+                }
+            } catch(err) {
+                console.error("Failed to toggle share", err);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

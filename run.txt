@@ -10,7 +10,17 @@ password:123
 Admin:admin@goalfit.ai
 password:admin123
 
-git remote set-url origin https://github.com/harshpdcode/GoalFit-AI.git
+
+Admin: admin@goalfit.com | admin123
+Test User: user@test.com | password123
+Trainer 1: alex@trainer.com | password123
+Trainer 2: mike@trainer.com | password123
+Dietician 1: sarah@dietician.com | password123
+Dietician 2: emma@dietician.com | password123
+Nutritionist (Both): john@health.com | password123
+
+
+git remote set-url origin https://github.com/harshpdcode/GoalFit-AI-Pro.git
 git fetch origin
 git pull --rebase origin main   # make sure you’re up to date
 git push origin main

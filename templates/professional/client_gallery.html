@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <a href="/trainer/dashboard" class="btn btn-sm btn-outline-secondary mb-2 rounded-pill px-3"><i data-lucide="arrow-left" class="me-1" style="width: 14px;"></i> Back to Dashboard</a>
+                <h2 class="fw-bold mb-0 text-gradient">{{ client.name }}'s Progress Gallery</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4" id="gallery-grid">
+        {% for photo in photos %}
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="gf-card h-100 overflow-hidden position-relative group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+                <img src="/{{ photo.photo_path }}" class="img-fluid w-100 object-fit-cover" style="height: 250px;" alt="Progress Photo">
+                
+                <div class="position-absolute bottom-0 start-0 w-100 p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                    <span class="text-white small fw-bold"><i data-lucide="calendar" class="me-1" style="width: 14px;"></i> {{ photo.log_date }}</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="gf-card d-inline-block p-5">
+                <i data-lucide="image" class="text-muted mb-3 mx-auto" style="width: 64px; height: 64px;"></i>
+                <h4 class="fw-bold text-muted">No Shared Photos Yet</h4>
+                <p class="text-muted mb-0">The client hasn't shared any progress photos with you yet.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
