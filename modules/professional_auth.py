@@ -65,15 +65,10 @@ def login():
             session['user_id'] = professional['id']
             session['user_name'] = professional['full_name']
             session['email'] = professional['email']
-            session['role'] = f"prof_{professional['role']}" # e.g., prof_trainer
+            session['role'] = professional['role'] # 'trainer', 'dietician', or 'both'
             
-            # Redirect to appropriate dashboard
-            if professional['role'] == 'trainer':
-                return redirect(url_for('trainer_dashboard.dashboard'))
-            elif professional['role'] == 'dietician':
-                return redirect(url_for('dietician_dashboard.dashboard'))
-            else: # both
-                return redirect(url_for('trainer_dashboard.dashboard')) # They'll have a hybrid view later
+            # Redirect to the unified professional dashboard
+            return redirect(url_for('pro_bp.dashboard'))
         else:
             flash("Invalid Email or Password", "danger")
 

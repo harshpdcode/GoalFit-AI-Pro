@@ -1,0 +1,60 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Create Exercise{% endblock %}
+{% block page_title %}Create Exercise{% endblock %}
+{% block page_subtitle %}Add a new exercise movement to your library{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8" data-aos="fade-up">
+        <div class="pro-card">
+            <form action="/pro/workout/exercise/create" method="POST">
+                
+                <div class="mb-4">
+                    <label class="pro-form-label">Exercise Name</label>
+                    <input type="text" name="workout_name" class="pro-form-control" placeholder="e.g. Barbell Back Squat" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Target Muscle Group</label>
+                    <select name="target_muscle" class="pro-form-control" required>
+                        <option value="">-- Select Muscle --</option>
+                        <option value="Chest">Chest</option>
+                        <option value="Back">Back</option>
+                        <option value="Legs">Legs</option>
+                        <option value="Shoulders">Shoulders</option>
+                        <option value="Arms">Arms</option>
+                        <option value="Core">Core</option>
+                        <option value="Full Body">Full Body</option>
+                        <option value="Cardio">Cardio</option>
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4 col-12">
+                        <label class="pro-form-label">Sets</label>
+                        <input type="number" name="sets" class="pro-form-control" placeholder="3" required>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <label class="pro-form-label">Reps</label>
+                        <input type="text" name="reps" class="pro-form-control" placeholder="8-12" required>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <label class="pro-form-label">Rest Time (seconds)</label>
+                        <input type="number" name="rest_time" class="pro-form-control" placeholder="60" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Form Instructions</label>
+                    <textarea name="instructions" class="pro-form-control" rows="4" placeholder="Important cues for correct form..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/pro/workout/library" class="btn-pro-ghost" style="padding:10px 20px;">Cancel</a>
+                    <button type="submit" class="btn-pro-primary" style="padding:10px 24px;">Save Exercise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

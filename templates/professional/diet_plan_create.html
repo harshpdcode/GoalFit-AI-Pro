@@ -1,0 +1,116 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Create Diet Plan{% endblock %}
+{% block page_title %}Plan Builder{% endblock %}
+{% block page_subtitle %}Assign a customized diet plan to your client{% endblock %}
+
+{% block content %}
+<div class="row" data-aos="fade-up">
+    <div class="col-12">
+        <div class="pro-card">
+            <form action="/pro/diet/plan/create" method="POST">
+                
+                <div class="row g-4 mb-4">
+                    <!-- Client Selection -->
+                    <div class="col-md-4">
+                        <label class="pro-form-label">Select Client</label>
+                        <select name="client_id" class="pro-form-control" required>
+                            <option value="">-- Choose Active Client --</option>
+                            {% for client in clients %}
+                            <option value="{{ client.user_id }}" {% if prefill_client == client.user_id|string %}selected{% endif %}>
+                                {{ client.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="pro-form-label">Plan Name</label>
+                        <input type="text" name="plan_name" class="pro-form-control" placeholder="e.g. 4-Week Fat Loss Diet" required>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="pro-form-label">Primary Goal</label>
+                        <input type="text" name="goal" class="pro-form-control" placeholder="e.g. Fat Loss & Retention" required>
+                    </div>
+                </div>
+
+                <div class="pro-divider my-4"></div>
+
+                <h5 class="fw-bold mb-4">Meal Selection</h5>
+                
+                <!-- Daily Structure -->
+                <div class="row g-4">
+                    {% for meal_type in ['breakfast', 'lunch', 'dinner', 'snacks'] %}
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-4" style="background:rgba(255,255,255,0.02);border:1px solid var(--pro-border);">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0 text-capitalize text-white">{{ meal_type }}</h6>
+                                <i data-lucide="plus-circle" style="color:var(--pro-primary);cursor:pointer;" onclick="addMealSelect('{{ meal_type }}')"></i>
+                            </div>
+                            <div id="container_{{ meal_type }}" class="d-flex flex-column gap-2">
+                                <select name="meal_{{ meal_type }}[]" class="pro-form-control" style="font-size:0.85rem;">
+                                    <option value="">-- Select a meal --</option>
+                                    {% for meal in meals %}
+                                    <option value="{{ meal.id }}">{{ meal.meal_name }} ({{ meal.calories }} kcal)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="pro-divider my-4"></div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Coach Notes / Instructions</label>
+                    <textarea name="notes" class="pro-form-control" rows="3" placeholder="Hydration guidelines, supplement timing, etc."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="/pro/dashboard" class="btn-pro-ghost" style="padding:10px 20px;">Cancel</a>
+                    <button type="submit" class="btn-pro-primary" style="padding:10px 30px;">
+                        <i data-lucide="send" style="width:16px;height:16px;"></i> Assign Plan
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden select template for JS -->
+<div id="mealSelectTemplate" style="display:none;">
+    <div class="d-flex gap-2">
+        <select class="pro-form-control flex-grow-1" style="font-size:0.85rem;">
+            <option value="">-- Select a meal --</option>
+            {% for meal in meals %}
+            <option value="{{ meal.id }}">{{ meal.meal_name }} ({{ meal.calories }} kcal)</option>
+            {% endfor %}
+        </select>
+        <button type="button" class="btn-pro-ghost" style="padding:0 10px;color:var(--pro-danger);" onclick="this.parentElement.remove()">
+            <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addMealSelect(mealType) {
+    const container = document.getElementById('container_' + mealType);
+    const template = document.getElementById('mealSelectTemplate').innerHTML;
+    
+    // Create new element
+    const div = document.createElement('div');
+    div.innerHTML = template;
+    
+    // Update name attribute to match meal_type
+    const select = div.querySelector('select');
+    select.name = 'meal_' + mealType + '[]';
+    
+    container.appendChild(div.firstElementChild);
+    lucide.createIcons();
+}
+</script>
+{% endblock %}

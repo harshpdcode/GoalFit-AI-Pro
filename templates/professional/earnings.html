@@ -1,0 +1,24 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Earnings{% endblock %}
+{% block page_title %}Earnings & Revenue{% endblock %}
+{% block page_subtitle %}Track your business growth and payouts{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon-wrap primary">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+            <div class="stat-details">
+                <h3>$0.00</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="pro-card">
+    <h5>Recent Payouts</h5>
+    <p class="text-secondary mt-3">No payouts yet.</p>
+</div>
+{% endblock %}

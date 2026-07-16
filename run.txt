@@ -11,13 +11,19 @@ Admin:admin@goalfit.ai
 password:admin123
 
 
-Admin: admin@goalfit.com | admin123
-Test User: user@test.com | password123
-Trainer 1: alex@trainer.com | password123
-Trainer 2: mike@trainer.com | password123
-Dietician 1: sarah@dietician.com | password123
-Dietician 2: emma@dietician.com | password123
-Nutritionist (Both): john@health.com | password123
+Admin: admin@goalfit.ai | admin123
+User 1 (Harsh Pandya): harsh@goalfit.ai | password123
+User 2 (Rahul Sharma): rahul@test.com | password123
+User 3 (Priya Verma): priya@test.com | password123
+User 4 (Arjun Singh): arjun@test.com | password123
+User 5 (Neha Gupta): neha@test.com | password123
+
+Trainer (Alex): alex@trainer.com | password123
+Dietician (Sarah): sarah@dietician.com | password123
+Both (Mike): mike@trainer.com | password123
+Trainer (Emma): emma@dietician.com | password123
+Dietician (John): john@health.com | password123
+
 
 
 git remote set-url origin https://github.com/harshpdcode/GoalFit-AI-Pro.git

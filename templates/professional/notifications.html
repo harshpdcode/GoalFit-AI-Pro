@@ -1,0 +1,63 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Stay updated on client activity and platform alerts{% endblock %}
+
+{% block content %}
+<div class="pro-page-header">
+    <div>
+        <h2 class="pro-page-title">Notifications</h2>
+        <p class="pro-page-subtitle">{{ notifications|length }} notification{{ 's' if notifications|length != 1 else '' }}</p>
+    </div>
+</div>
+
+<div class="pro-card" data-aos="fade-up">
+    {% if notifications %}
+        <div style="display:flex;flex-direction:column;gap:0;">
+            {% for notif in notifications %}
+            <div class="notif-item {% if not notif.is_read %}unread{% endif %}"
+                 style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 0.5rem;border-bottom:1px solid var(--pro-border);transition:background 0.2s;">
+                <!-- Icon -->
+                <div style="width:40px;height:40px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+                    {% if notif.notification_type == 'hire_request' %}background:rgba(0,242,195,0.12);
+                    {% elif notif.notification_type == 'payment' %}background:rgba(0,194,255,0.12);
+                    {% elif notif.notification_type == 'review' %}background:rgba(255,200,0,0.12);
+                    {% else %}background:rgba(255,255,255,0.07);{% endif %}">
+                    {% if notif.notification_type == 'hire_request' %}
+                        <i data-lucide="user-plus" style="width:18px;height:18px;color:var(--pro-primary);"></i>
+                    {% elif notif.notification_type == 'payment' %}
+                        <i data-lucide="indian-rupee" style="width:18px;height:18px;color:var(--pro-secondary);"></i>
+                    {% elif notif.notification_type == 'review' %}
+                        <i data-lucide="star" style="width:18px;height:18px;color:var(--pro-warning);"></i>
+                    {% else %}
+                        <i data-lucide="bell" style="width:18px;height:18px;color:var(--pro-text-muted);"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Content -->
+                <div style="flex:1;min-width:0;">
+                    <p style="margin:0;font-size:0.87rem;font-weight:{{ '600' if not notif.is_read else '400' }};color:var(--pro-text-main);line-height:1.5;">
+                        {{ notif.message }}
+                    </p>
+                    <p style="margin:4px 0 0;font-size:0.72rem;color:var(--pro-text-muted);">
+                        <i data-lucide="clock" style="width:11px;height:11px;"></i>
+                        {{ notif.created_at.strftime('%d %b %Y · %I:%M %p') if notif.created_at else '' }}
+                    </p>
+                </div>
+
+                <!-- Unread dot -->
+                {% if not notif.is_read %}
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--pro-primary);flex-shrink:0;margin-top:6px;"></div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="pro-empty">
+            <i data-lucide="bell-off" style="width:48px;height:48px;stroke-width:1;margin-bottom:1rem;color:var(--pro-text-muted);"></i>
+            <h5>No Notifications</h5>
+            <p>You're all caught up! New activity will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

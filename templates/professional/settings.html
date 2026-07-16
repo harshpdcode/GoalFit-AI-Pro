@@ -1,0 +1,170 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Profile Settings{% endblock %}
+{% block page_title %}Profile Settings{% endblock %}
+{% block page_subtitle %}Manage your professional profile and account{% endblock %}
+
+{% block content %}
+<div class="pro-page-header">
+    <div>
+        <h2 class="pro-page-title">Profile Settings</h2>
+        <p class="pro-page-subtitle">Keep your information up to date</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+        <div class="pro-card" data-aos="fade-right">
+            <div class="text-center" style="padding: 1.5rem 0;">
+                <div style="position:relative;display:inline-block;margin-bottom:1.2rem;">
+                    {% if pro and pro.profile_photo and pro.profile_photo != 'static/images/profile_img/default_prof.jpg' %}
+                        <img src="/{{ pro.profile_photo }}" alt="Profile"
+                             style="width:100px;height:100px;border-radius:18px;object-fit:cover;border:3px solid var(--pro-primary);">
+                    {% else %}
+                        <div style="width:100px;height:100px;border-radius:18px;background:linear-gradient(135deg,var(--pro-primary),var(--pro-secondary));display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;color:#000;margin:0 auto;">
+                            {{ pro.full_name[0]|upper if pro else 'P' }}
+                        </div>
+                    {% endif %}
+                    <label for="photoInput" style="position:absolute;bottom:-6px;right:-6px;background:var(--pro-primary);width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                        <i data-lucide="camera" style="width:14px;height:14px;color:#000;"></i>
+                    </label>
+                </div>
+                <h5 style="font-weight:700;margin-bottom:4px;">{{ pro.full_name if pro else 'Professional' }}</h5>
+                <p style="font-size:0.82rem;color:var(--pro-text-muted);">
+                    {% if pro %}
+                        {% if pro.role == 'both' %}Trainer & Dietician
+                        {% elif pro.role == 'trainer' %}Personal Trainer
+                        {% elif pro.role == 'dietician' %}Dietician
+                        {% else %}{{ pro.role }}{% endif %}
+                    {% endif %}
+                </p>
+                <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--pro-border);">
+                    <div class="text-center">
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--pro-primary);">{{ pro.experience_years or 0 }}</div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Yrs Exp.</div>
+                    </div>
+                    <div class="text-center">
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--pro-secondary);">
+                            {{ pro.specialization[:8] if pro and pro.specialization else '—' }}
+                        </div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Focus</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="pro-card mt-3" data-aos="fade-right" data-aos-delay="100">
+            <h6 style="font-weight:700;margin-bottom:1rem;font-size:0.9rem;">Account Info</h6>
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:34px;height:34px;border-radius:10px;background:rgba(var(--pro-primary-rgb,0,242,195),0.1);display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="mail" style="width:15px;height:15px;color:var(--pro-primary);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Email</div>
+                        <div style="font-size:0.82rem;font-weight:600;">{{ pro.email if pro else '—' }}</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:34px;height:34px;border-radius:10px;background:rgba(var(--pro-primary-rgb,0,242,195),0.1);display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="shield-check" style="width:15px;height:15px;color:var(--pro-secondary);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Account Status</div>
+                        <div style="font-size:0.82rem;font-weight:600;color:var(--pro-success);">
+                            {{ pro.approval_status|title if pro and pro.approval_status else 'Active' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:34px;height:34px;border-radius:10px;background:rgba(var(--pro-primary-rgb,0,242,195),0.1);display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="calendar" style="width:15px;height:15px;color:var(--pro-warning);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Member Since</div>
+                        <div style="font-size:0.82rem;font-weight:600;">
+                            {{ pro.created_at.strftime('%b %Y') if pro and pro.created_at else '—' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="col-lg-8">
+        <div class="pro-card" data-aos="fade-left">
+            <h6 style="font-weight:700;margin-bottom:1.5rem;font-size:0.95rem;">Edit Profile</h6>
+            <form method="POST" action="/pro/settings" enctype="multipart/form-data" id="settingsForm">
+                <input type="file" id="photoInput" name="profile_photo" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="pro-label">Full Name</label>
+                        <input type="text" name="full_name" class="pro-form-control"
+                               value="{{ pro.full_name if pro else '' }}" required placeholder="Your full name">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pro-label">Phone Number</label>
+                        <input type="text" name="phone" class="pro-form-control"
+                               value="{{ pro.phone if pro else '' }}" placeholder="+91 98765 43210">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pro-label">Years of Experience</label>
+                        <input type="number" name="experience_years" class="pro-form-control" min="0" max="50"
+                               value="{{ pro.experience_years if pro else '' }}" placeholder="e.g. 5">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="pro-label">Specialization</label>
+                        <input type="text" name="specialization" class="pro-form-control"
+                               value="{{ pro.specialization if pro else '' }}" placeholder="e.g. Weight Loss, HIIT">
+                    </div>
+                    <div class="col-12">
+                        <label class="pro-label">Bio / About You</label>
+                        <textarea name="bio" class="pro-form-control" rows="4"
+                                  placeholder="Tell your clients about yourself, your approach and achievements...">{{ pro.bio if pro else '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn-pro-primary">
+                        <i data-lucide="save" style="width:15px;height:15px;"></i> Save Changes
+                    </button>
+                    <a href="/pro/dashboard" class="btn-pro-ghost" style="padding:10px 20px;border-radius:10px;text-decoration:none;">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="pro-card mt-3" data-aos="fade-left" data-aos-delay="100">
+            <h6 style="font-weight:700;margin-bottom:1.2rem;font-size:0.95rem;">Security</h6>
+            <p style="font-size:0.82rem;color:var(--pro-text-muted);margin-bottom:1rem;">
+                To change your password, please contact support or use the forgot password flow.
+            </p>
+            <a href="/pro/support" class="btn-pro-outline" style="font-size:0.82rem;padding:9px 18px;border-radius:10px;text-decoration:none;">
+                <i data-lucide="lock" style="width:14px;height:14px;"></i> Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarEl = document.querySelector('.sidebar-profile-img, .sidebar-profile-avatar');
+            // Optionally show a preview above the form
+        };
+        reader.readAsDataURL(input.files[0]);
+        // Auto-submit on photo change
+        document.getElementById('settingsForm').submit();
+    }
+}
+</script>
+{% endblock %}

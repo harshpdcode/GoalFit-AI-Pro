@@ -27,7 +27,9 @@ def create_schema():
             "user_workouts", "user_meals", "workout_exercises",
             "diet_meals", "progress_logs", "step_recommendations", 
             "goal_predictions", "bmi_records", "user_health", "users",
-            "chat_messages", "diet_logs", "progress_photos"
+            "chat_messages", "diet_logs", "progress_photos",
+            "appointments", "professional_availability", "professional_reviews",
+            "notifications", "professional_settings"
         ]
         for t in tables:
             cursor.execute(f"DROP TABLE IF EXISTS {t};")
@@ -278,6 +280,7 @@ def create_schema():
             client_name VARCHAR(100),
             before_weight FLOAT,
             after_weight FLOAT,
+            duration VARCHAR(50),
             description TEXT,
             image VARCHAR(255),
             rating FLOAT,
@@ -416,6 +419,74 @@ def create_schema():
             log_date DATE,
             is_shared BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """)
+
+        # ===========================
+        # PRO PORTAL SaaS TABLES
+        # ===========================
+        cursor.execute("""
+        CREATE TABLE appointments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            user_id INT,
+            appointment_date DATE,
+            appointment_time TIME,
+            mode VARCHAR(50),
+            status VARCHAR(50) DEFAULT 'scheduled',
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_availability (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            day_of_week VARCHAR(20),
+            start_time TIME,
+            end_time TIME,
+            is_active BOOLEAN DEFAULT TRUE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_reviews (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            user_id INT,
+            rating FLOAT,
+            review_text TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NULL,
+            professional_id INT NULL,
+            notification_type VARCHAR(50),
+            message TEXT,
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE professional_settings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            notification_prefs TEXT,
+            theme_prefs VARCHAR(20) DEFAULT 'dark',
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
         );
         """)
 

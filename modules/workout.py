@@ -52,7 +52,8 @@ def workout_plan():
                                coach=active_trainer,
                                custom_plan=custom_plan,
                                custom_exercises=grouped_custom,
-                               user_name=session.get('user_name'))
+                               user_name=session.get('user_name'),
+                               current_role=session.get('role', 'user'))
 
     # ---------- USER HEALTH ----------
     cursor.execute("""

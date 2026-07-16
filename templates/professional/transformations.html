@@ -1,0 +1,64 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Transformations{% endblock %}
+{% block page_title %}Transformations{% endblock %}
+{% block page_subtitle %}Showcase your clients' success stories{% endblock %}
+
+{% block fab %}
+<div class="fab-container">
+    <button class="fab-main" onclick="window.location.href='/pro/transformations/add'">
+        <i data-lucide="plus"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if transformations %}
+<div class="row g-4">
+    {% for trans in transformations %}
+    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+        <div class="pro-card h-100 p-0 overflow-hidden">
+            <div class="p-4" style="background:rgba(255,255,255,0.02);">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold mb-0 text-white">{{ trans.client_name }}</h5>
+                    <span class="pro-badge active">Transformation</span>
+                </div>
+                
+                <div class="row text-center mb-3 g-2">
+                    <div class="col-6">
+                        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+                            <div style="font-size:0.75rem;color:var(--pro-text-muted);text-transform:uppercase;">Before</div>
+                            <div style="font-size:1.2rem;font-weight:700;color:var(--pro-text-main);">{{ trans.before_weight }}kg</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:rgba(245,158,11,0.1);border:1px solid var(--pro-border-glow);border-radius:10px;padding:12px;">
+                            <div style="font-size:0.75rem;color:var(--pro-primary);text-transform:uppercase;">After</div>
+                            <div style="font-size:1.2rem;font-weight:700;color:var(--pro-primary);">{{ trans.after_weight }}kg</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i data-lucide="clock" style="width:16px;height:16px;color:var(--pro-text-muted);"></i>
+                    <span style="font-size:0.85rem;color:var(--pro-text-main);font-weight:500;">Time: {{ trans.duration }}</span>
+                </div>
+                
+                {% if trans.description %}
+                <p style="font-size:0.8rem;color:var(--pro-text-muted);line-height:1.5;margin:0;">
+                    "{{ trans.description }}"
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="pro-empty" style="padding:60px 20px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="opacity:0.5;margin-bottom:15px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <h5>No Transformations Yet</h5>
+    <p>Upload before and after photos to build your portfolio.</p>
+    <a href="/pro/transformations/add" class="btn-pro-primary mt-3">Add Transformation</a>
+</div>
+{% endif %}
+{% endblock %}

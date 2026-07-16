@@ -1,0 +1,156 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}My Clients{% endblock %}
+{% block page_title %}Client Management{% endblock %}
+{% block page_subtitle %}Manage your active, pending and completed clients{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="pro-page-header">
+    <div>
+        <h2 class="pro-page-title">My Clients</h2>
+        <p class="pro-page-subtitle">{{ clients|length }} total clients</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <select class="pro-form-control w-auto" id="filterSelect" onchange="filterClients(this.value)" style="padding:9px 14px;font-size:0.82rem;">
+            <option value="all">All Clients</option>
+            <option value="fat_loss">Fat Loss</option>
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="weight_gain">Weight Gain</option>
+            <option value="diet">Diet Only</option>
+            <option value="workout">Workout Only</option>
+        </select>
+        <div class="topbar-search" style="display:block!important;">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" placeholder="Search clients..." id="clientSearch" onkeyup="searchClients(this.value)"
+                   style="background:rgba(255,255,255,0.05);border:1px solid var(--pro-border);border-radius:10px;padding:8px 14px 8px 34px;color:var(--pro-text-main);font-size:0.82rem;width:200px;font-family:Outfit,sans-serif;">
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="/pro/clients" class="pro-tab {% if status == 'active' or not status %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
+        Active
+    </a>
+    <a href="/pro/clients/pending" class="pro-tab {% if status == 'pending' %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
+        Pending
+        {% if pending_count > 0 %}
+        <span class="ms-1" style="background:var(--pro-warning);color:#000;font-size:0.65rem;padding:1px 6px;border-radius:10px;font-weight:700;">{{ pending_count }}</span>
+        {% endif %}
+    </a>
+    <a href="/pro/clients/completed" class="pro-tab {% if status == 'completed' %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
+        Completed
+    </a>
+</div>
+
+<!-- Client Grid -->
+<div class="row g-3" id="clientGrid">
+    {% for client in clients %}
+    <div class="col-md-6 col-lg-4 client-item" data-goal="{{ client.goal_type|lower|replace(' ', '_') }}" data-plan="{{ client.plan_type|lower }}" data-name="{{ client.name|lower }}">
+        <div class="client-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 }}">
+            <!-- Header -->
+            <div class="d-flex align-items-center gap-3">
+                <div class="client-avatar">{{ client.name[0]|upper }}</div>
+                <div class="flex-grow-1 min-w-0">
+                    <h6 class="mb-0 fw-bold" style="font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ client.name }}</h6>
+                    <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">{{ client.email }}</p>
+                </div>
+                {% if status == 'active' or not status %}
+                    <span class="pro-badge active">Active</span>
+                {% elif status == 'pending' %}
+                    <span class="pro-badge pending">Pending</span>
+                {% else %}
+                    <span class="pro-badge completed">Done</span>
+                {% endif %}
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="client-stat-row">
+                <div class="client-stat-item">
+                    <div class="label">Goal</div>
+                    <div class="value" style="font-size:0.8rem;">{{ client.goal_type or 'N/A' }}</div>
+                </div>
+                <div class="client-stat-item">
+                    <div class="label">Weight</div>
+                    <div class="value">{{ client.weight_kg or '—' }} <span style="font-size:0.7rem;color:var(--pro-text-muted);">kg</span></div>
+                </div>
+                <div class="client-stat-item">
+                    <div class="label">Plan</div>
+                    <div class="value" style="font-size:0.78rem;">{{ client.plan_type or 'N/A' }}</div>
+                </div>
+                <div class="client-stat-item">
+                    <div class="label">Since</div>
+                    <div class="value" style="font-size:0.78rem;">{{ client.start_date.strftime('%b %Y') if client.start_date else 'N/A' }}</div>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div>
+                <div class="d-flex justify-content-between mb-1">
+                    <span style="font-size:0.72rem;color:var(--pro-text-muted);">Goal Progress</span>
+                    <span style="font-size:0.72rem;font-weight:600;color:var(--pro-primary);">{{ client.progress or 45 }}%</span>
+                </div>
+                <div class="pro-progress">
+                    <div class="pro-progress-bar" style="width:{{ client.progress or 45 }}%;"></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex gap-2 mt-auto">
+                <a href="/pro/client/{{ client.user_id }}" class="btn-pro-primary flex-grow-1" style="justify-content:center;border-radius:10px;padding:9px 12px;font-size:0.82rem;">
+                    <i data-lucide="user" style="width:14px;height:14px;"></i> View Profile
+                </a>
+                <a href="/gallery/client/{{ client.user_id }}" class="btn-pro-ghost" style="padding:9px 12px;border-radius:10px;">
+                    <i data-lucide="image" style="width:14px;height:14px;"></i>
+                </a>
+                <a href="/pro/chat/{{ client.user_id }}" class="btn-pro-ghost" style="padding:9px 12px;border-radius:10px;">
+                    <i data-lucide="message-circle" style="width:14px;height:14px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="pro-card">
+            <div class="pro-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <h5>No Clients Found</h5>
+                <p>
+                    {% if status == 'pending' %}No pending hire requests at the moment.
+                    {% elif status == 'completed' %}No completed clients yet.
+                    {% else %}You have no active clients. Share your profile to get started!{% endif %}
+                </p>
+                <a href="/" class="btn-pro-primary mt-3">
+                    <i data-lucide="store" style="width:15px;height:15px;"></i> Go to Marketplace
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function searchClients(val) {
+    val = val.toLowerCase();
+    document.querySelectorAll('.client-item').forEach(el => {
+        el.style.display = el.dataset.name.includes(val) ? '' : 'none';
+    });
+}
+
+function filterClients(val) {
+    document.querySelectorAll('.client-item').forEach(el => {
+        if (val === 'all') { el.style.display = ''; return; }
+        const goal = el.dataset.goal || '';
+        const plan = el.dataset.plan || '';
+        if (val === 'fat_loss')    el.style.display = goal.includes('fat_loss') || goal.includes('weight_loss') ? '' : 'none';
+        else if (val === 'muscle_gain') el.style.display = goal.includes('muscle') ? '' : 'none';
+        else if (val === 'weight_gain') el.style.display = goal.includes('weight_gain') ? '' : 'none';
+        else if (val === 'diet')   el.style.display = plan.includes('diet') ? '' : 'none';
+        else if (val === 'workout')el.style.display = plan.includes('workout') || plan.includes('training') ? '' : 'none';
+        else el.style.display = '';
+    });
+}
+</script>
+{% endblock %}

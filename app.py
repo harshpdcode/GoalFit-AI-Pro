@@ -22,10 +22,21 @@ from modules.pdf_generator import pdf_generator_bp
 from modules.chat import chat_bp
 from modules.diet_tracking import diet_tracking_bp
 from modules.progress_gallery import progress_gallery_bp
+from modules.professional_dashboard import pro_bp
+from modules.diet_management import pro_diet_bp
+from modules.workout_management import pro_workout_bp
+from modules.transformation_management import pro_transformations_bp
+from modules.earnings_management import pro_earnings_bp
+from modules.schedule_management import pro_schedule_bp
+import os
 
 
 app = Flask(__name__)
 app.secret_key = "goalfit_secret_key"
+app.config['DB_HOST'] = os.getenv("DB_HOST", "localhost")
+app.config['DB_USER'] = os.getenv("DB_USER", "root")
+app.config['DB_PASSWORD'] = os.getenv("DB_PASSWORD", "hmpandya528@")
+app.config['DB_NAME'] = "goalfit_ai"
 
 # Initialize Limiter
 limiter = Limiter(
@@ -57,6 +68,12 @@ app.register_blueprint(pdf_generator_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(diet_tracking_bp)
 app.register_blueprint(progress_gallery_bp)
+app.register_blueprint(pro_bp)
+app.register_blueprint(pro_diet_bp)
+app.register_blueprint(pro_workout_bp)
+app.register_blueprint(pro_transformations_bp)
+app.register_blueprint(pro_earnings_bp)
+app.register_blueprint(pro_schedule_bp)
 
 
 # First-time login protection
@@ -75,10 +92,8 @@ def home():
     if 'user_id' in session:
         if session.get('role') == 'admin':
             return redirect(url_for('admin.admin_dashboard'))
-        elif session.get('role') in ['prof_trainer', 'prof_both']:
-            return redirect(url_for('trainer_dashboard.dashboard'))
-        elif session.get('role') == 'prof_dietician':
-            return redirect(url_for('dietician_dashboard.dashboard'))
+        elif session.get('role') in ['trainer', 'dietician', 'both', 'prof_trainer', 'prof_both', 'prof_dietician']:
+            return redirect(url_for('pro_bp.dashboard'))
         return redirect(url_for('dashboard.dashboard'))
     return redirect(url_for('auth.login'))
 

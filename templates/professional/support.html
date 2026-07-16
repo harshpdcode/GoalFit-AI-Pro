@@ -1,0 +1,101 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Support{% endblock %}
+{% block page_title %}Support Center{% endblock %}
+{% block page_subtitle %}Get help and contact the GoalFit Pro team{% endblock %}
+
+{% block content %}
+<div class="pro-page-header">
+    <div>
+        <h2 class="pro-page-title">Support Center</h2>
+        <p class="pro-page-subtitle">We're here to help</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Contact Form -->
+    <div class="col-lg-7">
+        <div class="pro-card" data-aos="fade-right">
+            <h6 style="font-weight:700;margin-bottom:1.5rem;">Send a Support Request</h6>
+            <form method="POST" action="/pro/support">
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="pro-label">Subject</label>
+                        <select name="subject" class="pro-form-control" required>
+                            <option value="" disabled selected>Choose a topic...</option>
+                            <option value="account">Account & Login</option>
+                            <option value="payment">Payment & Earnings</option>
+                            <option value="client">Client Management</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="pro-label">Message</label>
+                        <textarea name="message" class="pro-form-control" rows="5" required
+                                  placeholder="Describe your issue or question in detail..."></textarea>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-pro-primary">
+                            <i data-lucide="send" style="width:15px;height:15px;"></i>
+                            Send Message
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Help -->
+    <div class="col-lg-5">
+        <div class="pro-card mb-3" data-aos="fade-left">
+            <h6 style="font-weight:700;margin-bottom:1.2rem;">Quick Help</h6>
+            <div style="display:flex;flex-direction:column;gap:0.8rem;">
+                {% set faqs = [
+                    ('How do I accept a client request?', 'Go to Clients → Pending, then click Accept on the request.'),
+                    ('When do I get paid?', 'Payouts are processed within 3-5 business days after a client payment clears.'),
+                    ('How do I update my profile photo?', 'Go to Profile Settings and click the camera icon on your avatar.'),
+                    ('Can I change my professional role?', 'Please contact support — role changes require admin verification.'),
+                ] %}
+                {% for q, a in faqs %}
+                <div style="border-radius:12px;border:1px solid var(--pro-border);overflow:hidden;">
+                    <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'"
+                            style="width:100%;background:none;border:none;padding:0.9rem 1rem;color:var(--pro-text-main);font-size:0.84rem;font-weight:600;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:Outfit,sans-serif;">
+                        {{ q }}
+                        <i data-lucide="chevron-down" style="width:15px;height:15px;color:var(--pro-text-muted);flex-shrink:0;"></i>
+                    </button>
+                    <div style="display:none;padding:0 1rem 0.9rem;font-size:0.8rem;color:var(--pro-text-muted);line-height:1.6;">
+                        {{ a }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="pro-card" data-aos="fade-left" data-aos-delay="100">
+            <h6 style="font-weight:700;margin-bottom:1rem;">Contact Us Directly</h6>
+            <div style="display:flex;flex-direction:column;gap:0.9rem;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,242,195,0.1);display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="mail" style="width:16px;height:16px;color:var(--pro-primary);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Email Support</div>
+                        <div style="font-size:0.83rem;font-weight:600;">support@goalfit.ai</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,194,255,0.1);display:flex;align-items:center;justify-content:center;">
+                        <i data-lucide="clock" style="width:16px;height:16px;color:var(--pro-secondary);"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--pro-text-muted);">Response Time</div>
+                        <div style="font-size:0.83rem;font-weight:600;">Within 24 hours</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

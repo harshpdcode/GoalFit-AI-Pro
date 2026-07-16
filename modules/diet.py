@@ -44,23 +44,14 @@ def diet_plan():
         logs = cursor.fetchall()
         diet_logs = {log['meal_id']: log['is_completed'] for log in logs}
             
-        cursor.close()
-        conn.close()
-        
         return render_template('diet/diet_plan.html', 
                                coach=active_dietician,
                                custom_plan=custom_plan,
                                custom_meals=custom_meals,
                                diet_logs=diet_logs,
                                log_date=today,
-                               user_name=session.get('user_name'))
-        conn.close()
-        
-        return render_template('diet/diet_plan.html', 
-                               coach=active_dietician,
-                               custom_plan=custom_plan,
-                               custom_meals=custom_meals,
-                               user_name=session.get('user_name'))
+                               user_name=session.get('user_name'),
+                               current_role=session.get('role', 'user'))
 
     try:
         # ---------- FETCH USER HEALTH ----------

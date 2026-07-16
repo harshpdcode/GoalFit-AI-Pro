@@ -1,0 +1,19 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Availability{% endblock %}
+{% block page_title %}Set Availability{% endblock %}
+{% block page_subtitle %}Configure your working hours for consultations{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="pro-card">
+            <form action="/pro/schedule/availability" method="POST">
+                <p>Availability scheduler to be implemented.</p>
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="submit" class="btn-pro-primary" style="padding:10px 24px;">Save Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

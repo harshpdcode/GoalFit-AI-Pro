@@ -1,0 +1,86 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Meal Library{% endblock %}
+{% block page_title %}Meal Library{% endblock %}
+{% block page_subtitle %}Manage your custom recipes and meals{% endblock %}
+
+{% block fab %}
+<div class="fab-container">
+    <button class="fab-main" onclick="window.location.href='/pro/diet/meal/create'">
+        <i data-lucide="plus"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="topbar-search" style="display:block!important;">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="mealSearch" placeholder="Search meals..." onkeyup="searchMeals()"
+               style="background:rgba(255,255,255,0.05);border:1px solid var(--pro-border);border-radius:10px;padding:8px 14px 8px 34px;color:var(--pro-text-main);width:250px;">
+    </div>
+    <a href="/pro/diet/meal/create" class="btn-pro-primary" style="padding:9px 16px;border-radius:10px;">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Add New Meal
+    </a>
+</div>
+
+<div class="row g-3" id="mealGrid">
+    {% for meal in meals %}
+    <div class="col-md-6 col-lg-4 col-xl-3 meal-item" data-name="{{ meal.meal_name|lower }}">
+        <div class="pro-card h-100 p-0 overflow-hidden d-flex flex-column" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 30 }}">
+            <div style="position:relative;height:160px;width:100%;">
+                <img src="/{{ meal.image or 'static/images/diet/default_meal.jpg' }}" alt="{{ meal.meal_name }}" style="width:100%;height:100%;object-fit:cover;">
+                <div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;backdrop-filter:blur(4px);">
+                    🔥 {{ meal.calories }} kcal
+                </div>
+            </div>
+            <div class="p-3 flex-grow-1 d-flex flex-column">
+                <h6 class="fw-bold mb-2">{{ meal.meal_name }}</h6>
+                
+                <div class="d-flex justify-content-between mb-3 text-center" style="font-size:0.75rem;background:rgba(255,255,255,0.03);padding:8px;border-radius:8px;">
+                    <div><span style="color:var(--pro-text-muted);">Pro</span><br><strong style="color:var(--pro-primary);">{{ meal.protein }}g</strong></div>
+                    <div><span style="color:var(--pro-text-muted);">Carb</span><br><strong style="color:var(--pro-accent);">{{ meal.carbs }}g</strong></div>
+                    <div><span style="color:var(--pro-text-muted);">Fat</span><br><strong style="color:var(--pro-warning);">{{ meal.fats }}g</strong></div>
+                </div>
+                
+                <p class="mb-3 text-truncate" style="font-size:0.75rem;color:var(--pro-text-muted);" title="{{ meal.ingredients }}">
+                    {{ meal.ingredients }}
+                </p>
+                
+                <div class="mt-auto d-flex gap-2">
+                    <button class="btn-pro-outline flex-grow-1" style="padding:6px;font-size:0.75rem;border-radius:8px;">Edit</button>
+                    <button class="btn-pro-ghost" style="padding:6px 10px;border-radius:8px;color:var(--pro-danger);"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="pro-empty" style="padding:60px 20px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="opacity:0.5;margin-bottom:15px;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            <h5>Your Meal Library is Empty</h5>
+            <p>Start adding your custom recipes to assign them to your clients.</p>
+            <a href="/pro/diet/meal/create" class="btn-pro-primary mt-3">Create First Meal</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function searchMeals() {
+    let input = document.getElementById('mealSearch').value.toLowerCase();
+    let items = document.querySelectorAll('.meal-item');
+    
+    items.forEach(item => {
+        let name = item.getAttribute('data-name');
+        if(name.includes(input)) {
+            item.style.display = "";
+        } else {
+            item.style.display = "none";
+        }
+    });
+}
+</script>
+{% endblock %}

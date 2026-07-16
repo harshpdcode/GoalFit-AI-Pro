@@ -1,0 +1,360 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Welcome back, {{ current_pro.full_name.split()[0] if current_pro else 'Coach' }}! 👋{% endblock %}
+{% block page_subtitle %}Here's what's happening with your coaching business today{% endblock %}
+
+{% block content %}
+<!-- ===== STAT CARDS ===== -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl anim-1">
+        <div class="pro-stat-card">
+            <div class="stat-icon-wrap cyan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <p class="stat-label">Active Clients</p>
+            <h2 class="stat-value">{{ active_clients }}</h2>
+            <div class="stat-change up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                All active
+            </div>
+            <div class="stat-bg-blob"></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl anim-2">
+        <div class="pro-stat-card">
+            <div class="stat-icon-wrap green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+            </div>
+            <p class="stat-label">Active Plans</p>
+            <h2 class="stat-value">{{ active_plans }}</h2>
+            <div class="stat-change up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                Diet + Workout
+            </div>
+            <div class="stat-bg-blob"></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl anim-3">
+        <div class="pro-stat-card">
+            <div class="stat-icon-wrap amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            </div>
+            <p class="stat-label">Pending Requests</p>
+            <h2 class="stat-value">{{ pending_reqs }}</h2>
+            <div class="stat-change {% if pending_reqs > 0 %}up{% else %}neutral{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Awaiting review
+            </div>
+            <div class="stat-bg-blob"></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl anim-4">
+        <div class="pro-stat-card">
+            <div class="stat-icon-wrap green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <p class="stat-label">Monthly Revenue</p>
+            <h2 class="stat-value">₹{{ "{:,}".format(revenue|int) }}</h2>
+            <div class="stat-change up">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                Net earnings
+            </div>
+            <div class="stat-bg-blob"></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl anim-5">
+        <div class="pro-stat-card">
+            <div class="stat-icon-wrap amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <p class="stat-label">Avg Rating</p>
+            <h2 class="stat-value">{{ rating }}<small style="font-size:1rem;color:var(--pro-text-muted)">/5</small></h2>
+            <div class="stat-change up" style="color:var(--pro-warning)">
+                ★★★★☆ Excellent
+            </div>
+            <div class="stat-bg-blob"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CHARTS ROW ===== -->
+<div class="row g-3 mb-4">
+    <!-- Revenue Chart -->
+    <div class="col-lg-8" data-aos="fade-right">
+        <div class="pro-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h5 class="fw-bold mb-0" style="font-size:1rem;">Revenue Analytics</h5>
+                    <p class="mb-0" style="font-size:0.75rem;color:var(--pro-text-muted);">Monthly earnings breakdown</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="pro-tab active" id="tabMonth" onclick="switchChart('month')">Month</button>
+                    <button class="pro-tab" id="tabWeek" onclick="switchChart('week')">Week</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client Growth Donut -->
+    <div class="col-lg-4" data-aos="fade-left">
+        <div class="pro-card h-100">
+            <h5 class="fw-bold mb-1" style="font-size:1rem;">Client Distribution</h5>
+            <p class="mb-3" style="font-size:0.75rem;color:var(--pro-text-muted);">By plan type</p>
+            <div class="chart-container-sm d-flex align-items-center justify-content-center">
+                <canvas id="donutChart"></canvas>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                <div class="d-flex align-items-center gap-1">
+                    <div style="width:10px;height:10px;border-radius:50%;background:var(--pro-primary);"></div>
+                    <span style="font-size:0.75rem;color:var(--pro-text-muted);">Diet Only</span>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <div style="width:10px;height:10px;border-radius:50%;background:var(--pro-accent);"></div>
+                    <span style="font-size:0.75rem;color:var(--pro-text-muted);">Workout Only</span>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <div style="width:10px;height:10px;border-radius:50%;background:var(--pro-success);"></div>
+                    <span style="font-size:0.75rem;color:var(--pro-text-muted);">Both</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== ACTIVITY + QUICK ACTIONS ===== -->
+<div class="row g-3 mb-4">
+    <!-- Recent Hire Requests -->
+    <div class="col-lg-6" data-aos="fade-up">
+        <div class="pro-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0" style="font-size:1rem;">Pending Hire Requests</h5>
+                <a href="/pro/clients/pending" class="btn-pro-ghost" style="padding:5px 12px;font-size:0.75rem;">View All</a>
+            </div>
+            {% if recent_requests %}
+                <div class="d-flex flex-column gap-2">
+                    {% for req in recent_requests %}
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);transition:all 0.2s;" onmouseenter="this.style.background='rgba(0,242,254,0.04)'" onmouseleave="this.style.background='rgba(255,255,255,0.03)'">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="client-avatar" style="width:38px;height:38px;border-radius:10px;font-size:0.9rem;">
+                                {{ req.client_name[0]|upper }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-600" style="font-size:0.875rem;">{{ req.client_name }}</h6>
+                                <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">{{ req.plan_type }} • {{ req.goal_type }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="/pro/requests/{{ req.id }}/accept" class="btn-pro-primary" style="padding:6px 14px;font-size:0.75rem;border-radius:8px;">Accept</a>
+                            <a href="/pro/requests/{{ req.id }}/reject" class="btn-pro-ghost" style="padding:6px 12px;font-size:0.75rem;color:var(--pro-danger);border-color:rgba(255,82,82,0.2);">Reject</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="pro-empty" style="padding:40px 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z"/><path d="M16 3H8"/></svg>
+                    <h5>No Pending Requests</h5>
+                    <p>New hire requests from clients will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="80">
+        <div class="pro-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0" style="font-size:1rem;">Recent Payments</h5>
+                <a href="/pro/earnings/transactions" class="btn-pro-ghost" style="padding:5px 12px;font-size:0.75rem;">View All</a>
+            </div>
+            {% if recent_payments %}
+                <div class="d-flex flex-column gap-2">
+                    {% for pay in recent_payments %}
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:38px;height:38px;border-radius:10px;background:rgba(0,230,118,0.1);display:flex;align-items:center;justify-content:center;color:var(--pro-success);">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <div>
+                                <h6 class="mb-0" style="font-size:0.875rem;font-weight:600;">{{ pay.client_name }}</h6>
+                                <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">{{ pay.created_at.strftime('%b %d') if pay.created_at else 'Recent' }}</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div style="font-size:0.9rem;font-weight:700;color:var(--pro-success);">+₹{{ pay.professional_amount|int }}</div>
+                            <span class="pro-badge active" style="font-size:0.65rem;padding:2px 8px;">Paid</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="pro-empty" style="padding:40px 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <h5>No Payments Yet</h5>
+                    <p>Your payment history will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ===== QUICK ACTIONS ===== -->
+<div data-aos="fade-up" data-aos-delay="100">
+    <div class="pro-card">
+        <h5 class="fw-bold mb-3" style="font-size:1rem;">Quick Actions</h5>
+        <div class="d-flex flex-wrap gap-3">
+            {% if current_pro and current_pro.role in ['dietician', 'both'] %}
+            <a href="/pro/diet/meal/create" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Create Meal
+            </a>
+            <a href="/pro/diet/plan/create" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 2H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 2v20m0 0h10a2 2 0 0 0 2-2V8M9 22H5a2 2 0 0 1-2-2V8m0 0h18"/></svg>
+                Create Diet Plan
+            </a>
+            {% endif %}
+            {% if current_pro and current_pro.role in ['trainer', 'both'] %}
+            <a href="/pro/workout/exercise/create" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 2v5"/><path d="M21 2v5"/><path d="M3 22v-5"/><path d="M21 22v-5"/><rect x="2" y="7" width="4" height="10" rx="1"/><rect x="18" y="7" width="4" height="10" rx="1"/></svg>
+                Add Exercise
+            </a>
+            <a href="/pro/workout/plan/create" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Create Workout Plan
+            </a>
+            {% endif %}
+            <a href="/pro/transformations/add" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Add Transformation
+            </a>
+            <a href="/pro/schedule/availability" class="btn-pro-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Update Availability
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ----- Revenue Chart -----
+    const monthData = [12000, 18500, 15000, 22000, 19500, 28000, 25000, 31000, 27500, 34000, 29000, 38000];
+    const weekData  = [4200, 6800, 5900, 8100];
+    const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const weekLabels  = ['Week 1','Week 2','Week 3','Week 4'];
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, 'rgba(0,242,254,0.25)');
+    grad.addColorStop(1, 'rgba(0,242,254,0.0)');
+
+    let revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: monthData,
+                borderColor: '#00f2fe',
+                backgroundColor: grad,
+                borderWidth: 2.5,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#00f2fe',
+                pointBorderColor: '#080c14',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(14,20,32,0.95)',
+                    borderColor: 'rgba(0,242,254,0.2)',
+                    borderWidth: 1,
+                    titleFont: { family: 'Outfit', size: 13, weight: '600' },
+                    bodyFont: { family: 'Outfit', size: 13 },
+                    padding: 12,
+                    cornerRadius: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: ctx => '₹ ' + ctx.parsed.y.toLocaleString('en-IN')
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#7a8599', font: { family: 'Outfit', size: 11 },
+                             callback: v => '₹' + (v/1000)+'k' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#7a8599', font: { family: 'Outfit', size: 11 } }
+                }
+            }
+        }
+    });
+
+    // Tab switch
+    window.switchChart = function(type) {
+        document.querySelectorAll('.pro-tab').forEach(t => t.classList.remove('active'));
+        if (type === 'month') {
+            document.getElementById('tabMonth').classList.add('active');
+            revenueChart.data.labels = monthLabels;
+            revenueChart.data.datasets[0].data = monthData;
+        } else {
+            document.getElementById('tabWeek').classList.add('active');
+            revenueChart.data.labels = weekLabels;
+            revenueChart.data.datasets[0].data = weekData;
+        }
+        revenueChart.update('active');
+    };
+
+    // ----- Donut Chart -----
+    const dc = document.getElementById('donutChart').getContext('2d');
+    new Chart(dc, {
+        type: 'doughnut',
+        data: {
+            labels: ['Diet Only', 'Workout Only', 'Both'],
+            datasets: [{
+                data: [{{ diet_only }}, {{ workout_only }}, {{ both_plans }}],
+                backgroundColor: ['rgba(0,242,254,0.8)', 'rgba(167,139,250,0.8)', 'rgba(0,230,118,0.8)'],
+                borderColor: '#0e1420',
+                borderWidth: 3,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '72%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(14,20,32,0.95)',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    titleFont: { family: 'Outfit' },
+                    bodyFont: { family: 'Outfit' },
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -96,3 +96,40 @@ def profile(prof_id):
         transformations=transformations,
         active_hire=active_hire
     )
+
+@marketplace_bp.route('/my-professionals')
+def my_professionals():
+    if 'user_id' not in session or session.get('role') != 'user':
+        return redirect(url_for('auth.login'))
+        
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("""
+        SELECT ca.*, p.full_name as prof_name, p.role as prof_role, p.profile_photo as prof_photo,
+               p.specialization, p.experience_years
+        FROM client_assignments ca
+        JOIN professionals p ON ca.professional_id = p.id
+        WHERE ca.user_id=%s AND ca.status='active'
+        ORDER BY ca.start_date DESC
+    """, (session['user_id'],))
+    active_professionals = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT ca.*, p.full_name as prof_name, p.role as prof_role, p.profile_photo as prof_photo,
+               p.specialization, p.experience_years
+        FROM client_assignments ca
+        JOIN professionals p ON ca.professional_id = p.id
+        WHERE ca.user_id=%s AND ca.status='completed'
+        ORDER BY ca.end_date DESC
+    """, (session['user_id'],))
+    past_professionals = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return render_template(
+        'marketplace/my_professionals.html',
+        active_professionals=active_professionals,
+        past_professionals=past_professionals
+    )

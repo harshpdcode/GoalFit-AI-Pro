@@ -1,0 +1,63 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Create Meal{% endblock %}
+{% block page_title %}Create Meal{% endblock %}
+{% block page_subtitle %}Add a new recipe to your library{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8" data-aos="fade-up">
+        <div class="pro-card">
+            <form action="/pro/diet/meal/create" method="POST" enctype="multipart/form-data">
+                <div class="mb-4 text-center">
+                    <div style="width:120px;height:120px;border-radius:20px;background:rgba(255,255,255,0.05);border:2px dashed var(--pro-border);margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--pro-text-muted);cursor:pointer;transition:0.3s;" onmouseover="this.style.borderColor='var(--pro-primary)';this.style.color='var(--pro-primary)';" onmouseout="this.style.borderColor='var(--pro-border)';this.style.color='var(--pro-text-muted)';">
+                        <div class="text-center">
+                            <i data-lucide="image-plus" style="width:32px;height:32px;margin-bottom:8px;"></i>
+                            <div style="font-size:0.7rem;font-weight:600;">Upload Photo</div>
+                        </div>
+                    </div>
+                    <!-- File input would go here in actual implementation -->
+                </div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Meal Name</label>
+                    <input type="text" name="meal_name" class="pro-form-control" placeholder="e.g. Grilled Chicken Salad" required>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-6">
+                        <label class="pro-form-label">Calories (kcal)</label>
+                        <input type="number" name="calories" class="pro-form-control" placeholder="0" required>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="pro-form-label">Protein (g)</label>
+                        <input type="number" name="protein" class="pro-form-control" placeholder="0" required>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="pro-form-label">Carbs (g)</label>
+                        <input type="number" name="carbs" class="pro-form-control" placeholder="0" required>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <label class="pro-form-label">Fats (g)</label>
+                        <input type="number" name="fats" class="pro-form-control" placeholder="0" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Ingredients</label>
+                    <textarea name="ingredients" class="pro-form-control" rows="3" placeholder="List the ingredients separated by commas..." required></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="pro-form-label">Preparation Instructions</label>
+                    <textarea name="instructions" class="pro-form-control" rows="4" placeholder="Step-by-step instructions..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/pro/diet/library" class="btn-pro-ghost" style="padding:10px 20px;">Cancel</a>
+                    <button type="submit" class="btn-pro-primary" style="padding:10px 24px;">Save Meal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GoalFit AI Professional Portal — Coach Dashboard">
+    <title>{% block title %}GoalFit AI Pro{% endblock %} | GoalFit Pro</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Professional CSS -->
+    <link href="{{ url_for('static', filename='css/professional.css') }}" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+<body class="pro-body">
+
+<!-- ===== SIDEBAR OVERLAY (mobile) ===== -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="pro-sidebar" id="proSidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-header">
+        <a href="/pro/dashboard" class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" width="20" height="20">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+            </div>
+            <span class="sidebar-brand-text">GoalFit <span>Pro</span></span>
+        </a>
+        <button class="topbar-icon-btn d-lg-none" onclick="closeSidebar()" style="width:30px;height:30px;border-radius:8px;">
+            <i data-lucide="x" style="width:16px;height:16px;"></i>
+        </button>
+    </div>
+
+    <!-- Profile Strip -->
+    <div class="sidebar-profile">
+        {% if current_pro and current_pro.profile_photo and current_pro.profile_photo != 'static/images/profile_img/default_prof.jpg' %}
+            <img src="/{{ current_pro.profile_photo }}" alt="Profile" class="sidebar-profile-img">
+        {% else %}
+            <div class="sidebar-profile-avatar">
+                {{ current_pro.full_name[0]|upper if current_pro else 'P' }}
+            </div>
+        {% endif %}
+        <div class="sidebar-profile-info">
+            <h6>{{ current_pro.full_name if current_pro else 'Professional' }}</h6>
+            <small>
+                {% if current_pro %}
+                    {% if current_pro.role == 'both' %}Trainer & Dietician
+                    {% elif current_pro.role == 'trainer' %}Personal Trainer
+                    {% elif current_pro.role == 'dietician' %}Dietician
+                    {% else %}{{ current_pro.role }}{% endif %}
+                {% endif %}
+            </small>
+        </div>
+    </div>
+
+    <!-- Nav -->
+    <ul class="sidebar-nav">
+
+        <!-- Main -->
+        <li class="sidebar-section-label">Main</li>
+
+        <li class="nav-item">
+            <a href="/pro/dashboard" class="nav-link {% if request.path == '/pro/dashboard' or request.path == '/pro/' %}active{% endif %}">
+                <i data-lucide="layout-dashboard" class="nav-icon"></i>
+                Dashboard
+            </a>
+        </li>
+
+        <!-- Clients -->
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/clients' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="users" class="nav-icon"></i>
+                Clients
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/clients' in request.path %}open{% endif %}">
+                <li><a href="/pro/clients" class="sub-link {% if request.path == '/pro/clients' %}active{% endif %}">Active Clients</a></li>
+                <li><a href="/pro/clients/pending" class="sub-link {% if '/pending' in request.path %}active{% endif %}">Pending Requests</a></li>
+                <li><a href="/pro/clients/completed" class="sub-link {% if '/completed' in request.path %}active{% endif %}">Completed Clients</a></li>
+            </ul>
+        </li>
+
+        <!-- Diet Plans (dietician / both) -->
+        {% if current_pro and current_pro.role in ['dietician', 'both'] %}
+        <li class="sidebar-section-label">Diet & Nutrition</li>
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/diet' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="salad" class="nav-icon"></i>
+                Diet Plans
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/diet' in request.path %}open{% endif %}">
+                <li><a href="/pro/diet/meal/create" class="sub-link {% if '/meal/create' in request.path %}active{% endif %}">Create Meal</a></li>
+                <li><a href="/pro/diet/library" class="sub-link {% if '/diet/library' in request.path or request.path == '/pro/diet/' or request.path == '/pro/diet' %}active{% endif %}">Meal Library</a></li>
+                <li><a href="/pro/diet/plan/create" class="sub-link {% if '/diet/plan/create' in request.path %}active{% endif %}">Create Diet Plan</a></li>
+                <li><a href="/pro/diet/plans" class="sub-link {% if '/diet/plans' in request.path %}active{% endif %}">Assigned Plans</a></li>
+            </ul>
+        </li>
+        {% endif %}
+
+        <!-- Workout Plans (trainer / both) -->
+        {% if current_pro and current_pro.role in ['trainer', 'both'] %}
+        <li class="sidebar-section-label">Training</li>
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/workout' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="dumbbell" class="nav-icon"></i>
+                Workout Plans
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/workout' in request.path %}open{% endif %}">
+                <li><a href="/pro/workout/exercise/create" class="sub-link {% if '/exercise/create' in request.path %}active{% endif %}">Create Exercise</a></li>
+                <li><a href="/pro/workout/library" class="sub-link {% if '/workout/library' in request.path or request.path == '/pro/workout/' or request.path == '/pro/workout' %}active{% endif %}">Exercise Library</a></li>
+                <li><a href="/pro/workout/plan/create" class="sub-link {% if '/workout/plan/create' in request.path %}active{% endif %}">Create Workout Plan</a></li>
+                <li><a href="/pro/workout/plans" class="sub-link {% if '/workout/plans' in request.path %}active{% endif %}">Assigned Plans</a></li>
+            </ul>
+        </li>
+        {% endif %}
+
+        <!-- Content -->
+        <li class="sidebar-section-label">Content</li>
+
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/transformations' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="sparkles" class="nav-icon"></i>
+                Transformations
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/transformations' in request.path %}open{% endif %}">
+                <li><a href="/pro/transformations/add" class="sub-link {% if '/transformations/add' in request.path %}active{% endif %}">Add Transformation</a></li>
+                <li><a href="/pro/transformations" class="sub-link {% if request.path == '/pro/transformations' %}active{% endif %}">Transformation Gallery</a></li>
+            </ul>
+        </li>
+
+        <!-- Business -->
+        <li class="sidebar-section-label">Business</li>
+
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/schedule' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="calendar-days" class="nav-icon"></i>
+                Schedule
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/schedule' in request.path %}open{% endif %}">
+                <li><a href="/pro/schedule" class="sub-link {% if request.path == '/pro/schedule' %}active{% endif %}">Appointments</a></li>
+                <li><a href="/pro/schedule/availability" class="sub-link {% if '/availability' in request.path %}active{% endif %}">Set Availability</a></li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="#" class="nav-link has-submenu {% if '/pro/earnings' in request.path %}active submenu-open{% endif %}"
+               onclick="toggleSubmenu(this, event)">
+                <i data-lucide="indian-rupee" class="nav-icon"></i>
+                Payments
+                <i data-lucide="chevron-right" class="nav-arrow"></i>
+            </a>
+            <ul class="sidebar-submenu {% if '/pro/earnings' in request.path %}open{% endif %}">
+                <li><a href="/pro/earnings" class="sub-link {% if request.path == '/pro/earnings' %}active{% endif %}">Earnings Overview</a></li>
+                <li><a href="/pro/earnings/transactions" class="sub-link {% if '/transactions' in request.path %}active{% endif %}">Transactions</a></li>
+                <li><a href="/pro/earnings/commission" class="sub-link {% if '/commission' in request.path %}active{% endif %}">Commission Breakdown</a></li>
+            </ul>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pro/reviews" class="nav-link {% if '/pro/reviews' in request.path %}active{% endif %}">
+                <i data-lucide="star" class="nav-icon"></i>
+                Reviews & Ratings
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="sidebar-section-label">Account</li>
+
+        <li class="nav-item">
+            <a href="/pro/settings" class="nav-link {% if '/pro/settings' in request.path %}active{% endif %}">
+                <i data-lucide="settings-2" class="nav-icon"></i>
+                Profile Settings
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pro/notifications" class="nav-link {% if '/pro/notifications' in request.path %}active{% endif %}">
+                <i data-lucide="bell" class="nav-icon"></i>
+                Notifications
+                {% if unread_count and unread_count > 0 %}
+                <span class="ms-auto badge" style="background:var(--pro-danger);font-size:0.65rem;padding:2px 7px;border-radius:20px;">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="/pro/support" class="nav-link {% if '/pro/support' in request.path %}active{% endif %}">
+                <i data-lucide="life-buoy" class="nav-icon"></i>
+                Support
+            </a>
+        </li>
+
+    </ul><!-- /sidebar-nav -->
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <a href="/logout" class="btn-logout">
+            <i data-lucide="log-out" style="width:16px;height:16px;"></i>
+            Sign Out
+        </a>
+    </div>
+
+</aside><!-- /pro-sidebar -->
+
+<!-- ===== MAIN AREA ===== -->
+<div class="pro-main" id="proMain">
+
+    <!-- TOPBAR -->
+    <header class="pro-topbar">
+        <div class="topbar-left">
+            <!-- Mobile hamburger -->
+            <button class="sidebar-toggle" onclick="openSidebar()" id="sidebarToggle">
+                <i data-lucide="menu"></i>
+            </button>
+
+            <div class="topbar-title">
+                <h5>{% block page_title %}Welcome back, {{ current_pro.full_name.split()[0] if current_pro else 'Coach' }}!{% endblock %}</h5>
+                <p>{% block page_subtitle %}{{ current_pro.role|title if current_pro else '' }} Portal{% endblock %}</p>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <!-- Search -->
+            <div class="topbar-search d-none d-md-block">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" placeholder="Search clients, plans...">
+            </div>
+
+            <!-- Quick Add Dropdown -->
+            <div class="dropdown d-none d-md-block">
+                <button class="btn-pro-primary dropdown-toggle" type="button" id="quickAddMenu" data-bs-toggle="dropdown" aria-expanded="false" style="padding:7px 16px;font-size:0.78rem;border-radius:8px;">
+                    <i data-lucide="plus" style="width:14px;height:14px;margin-right:4px;"></i> Add to Library
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickAddMenu" style="background:var(--pro-surface);border:1px solid var(--pro-border);">
+                    {% if current_pro and current_pro.role in ['dietician', 'both'] %}
+                    <li><a class="dropdown-item text-light" href="/pro/diet/meal/create"><i data-lucide="utensils" style="width:14px;height:14px;margin-right:8px;"></i> Add Meal</a></li>
+                    {% endif %}
+                    {% if current_pro and current_pro.role in ['trainer', 'both'] %}
+                    <li><a class="dropdown-item text-light" href="/pro/workout/exercise/create"><i data-lucide="dumbbell" style="width:14px;height:14px;margin-right:8px;"></i> Add Exercise</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider" style="border-color:var(--pro-border);"></li>
+                    <li><a class="dropdown-item text-light" href="/pro/transformations/add"><i data-lucide="sparkles" style="width:14px;height:14px;margin-right:8px;"></i> Add Transformation</a></li>
+                </ul>
+            </div>
+
+            <!-- View marketplace -->
+            <a href="/" class="btn-pro-outline d-none d-lg-flex" style="padding:7px 16px;font-size:0.78rem;border-radius:8px;">
+                <i data-lucide="store" style="width:14px;height:14px;"></i> Marketplace
+            </a>
+
+            <!-- Notifications -->
+            <a href="/pro/notifications" class="topbar-icon-btn">
+                <i data-lucide="bell"></i>
+                {% if unread_count and unread_count > 0 %}
+                <span class="notif-badge"></span>
+                {% endif %}
+            </a>
+
+            <!-- Profile -->
+            <a href="/pro/settings" class="topbar-icon-btn" style="overflow:hidden;">
+                {% if current_pro and current_pro.profile_photo and current_pro.profile_photo != 'static/images/profile_img/default_prof.jpg' %}
+                    <img src="/{{ current_pro.profile_photo }}" style="width:100%;height:100%;object-fit:cover;border-radius:9px;" alt="Profile">
+                {% else %}
+                    <span style="font-size:0.82rem;font-weight:700;color:var(--pro-primary);">
+                        {{ current_pro.full_name[0]|upper if current_pro else 'P' }}
+                    </span>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <!-- PAGE CONTENT -->
+    <div class="pro-content">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="pro-alert alert-{{ category }} d-flex align-items-center justify-content-between gap-3">
+                        <span>{{ message }}</span>
+                        <button onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;padding:0;opacity:0.7;">
+                            <i data-lucide="x" style="width:15px;height:15px;"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+</div><!-- /pro-main -->
+
+<!-- ===== FLOATING ACTION BUTTON ===== -->
+{% block fab %}
+<div class="fab-container" id="fabContainer">
+    <div class="fab-actions" id="fabActions">
+        {% if current_pro and current_pro.role in ['dietician', 'both'] %}
+        <a href="/pro/diet/meal/create" class="fab-action-item">
+            <span class="fab-action-label">Create Meal</span>
+            <div class="fab-action-btn"><i data-lucide="utensils" ></i></div>
+        </a>
+        <a href="/pro/diet/plan/create" class="fab-action-item">
+            <span class="fab-action-label">Diet Plan</span>
+            <div class="fab-action-btn"><i data-lucide="clipboard-list"></i></div>
+        </a>
+        {% endif %}
+        {% if current_pro and current_pro.role in ['trainer', 'both'] %}
+        <a href="/pro/workout/exercise/create" class="fab-action-item">
+            <span class="fab-action-label">Add Exercise</span>
+            <div class="fab-action-btn"><i data-lucide="dumbbell"></i></div>
+        </a>
+        <a href="/pro/workout/plan/create" class="fab-action-item">
+            <span class="fab-action-label">Workout Plan</span>
+            <div class="fab-action-btn"><i data-lucide="zap"></i></div>
+        </a>
+        {% endif %}
+        <a href="/pro/transformations/add" class="fab-action-item">
+            <span class="fab-action-label">Add Transformation</span>
+            <div class="fab-action-btn"><i data-lucide="sparkles"></i></div>
+        </a>
+    </div>
+    <button class="fab-main" id="fabMain" onclick="toggleFab()">
+        <i data-lucide="plus"></i>
+    </button>
+</div>
+{% endblock %}
+
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<script>
+// Init
+lucide.createIcons();
+AOS.init({ duration: 700, once: true, easing: 'ease-out-cubic' });
+
+// ---- Sidebar ----
+function openSidebar() {
+    document.getElementById('proSidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+    document.getElementById('proSidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// ---- Submenu toggle ----
+function toggleSubmenu(linkEl, e) {
+    e.preventDefault();
+    const submenu = linkEl.nextElementSibling;
+    if (!submenu || !submenu.classList.contains('sidebar-submenu')) return;
+
+    const isOpen = submenu.classList.contains('open');
+
+    // Close other open submenus
+    document.querySelectorAll('.sidebar-submenu.open').forEach(sm => sm.classList.remove('open'));
+    document.querySelectorAll('.nav-link.submenu-open').forEach(l => l.classList.remove('submenu-open'));
+
+    if (!isOpen) {
+        submenu.classList.add('open');
+        linkEl.classList.add('submenu-open');
+    }
+}
+
+// ---- FAB ----
+function toggleFab() {
+    const actions = document.getElementById('fabActions');
+    const btn = document.getElementById('fabMain');
+    actions.classList.toggle('open');
+    btn.classList.toggle('active');
+    lucide.createIcons();
+}
+
+// Close FAB on outside click
+document.addEventListener('click', function(e) {
+    const fab = document.getElementById('fabContainer');
+    if (fab && !fab.contains(e.target)) {
+        document.getElementById('fabActions').classList.remove('open');
+        document.getElementById('fabMain').classList.remove('active');
+    }
+});
+
+// ---- Card glow on mouse move ----
+document.querySelectorAll('.pro-card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+        const rect = this.getBoundingClientRect();
+        this.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+        this.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+    });
+});
+
+// ---- Re-run lucide after DOM changes safely to avoid infinite loop ----
+const observer = new MutationObserver((mutations, obs) => {
+    obs.disconnect(); // stop observing
+    lucide.createIcons(); // mutate DOM
+    obs.observe(document.body, { childList: true, subtree: true }); // resume observing
+});
+observer.observe(document.body, { childList: true, subtree: true });
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
