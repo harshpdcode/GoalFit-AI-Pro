@@ -31,12 +31,25 @@ from modules.schedule_management import pro_schedule_bp
 import os
 
 
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "goalfit_secret_key"
+# Secret key for Flask sessions — read from environment variable in production
+app.secret_key = os.getenv("SECRET_KEY", "goalfit_secret_key")
+
+# Database configurations read from environment variables with local defaults
 app.config['DB_HOST'] = os.getenv("DB_HOST", "localhost")
 app.config['DB_USER'] = os.getenv("DB_USER", "root")
 app.config['DB_PASSWORD'] = os.getenv("DB_PASSWORD", "hmpandya528@")
-app.config['DB_NAME'] = "goalfit_ai"
+app.config['DB_NAME'] = os.getenv("DB_NAME", "goalfit_ai")
+app.config['DB_PORT'] = int(os.getenv("DB_PORT", 3306))
+
+# Ensure required upload directories exist on startup
+os.makedirs('static/images/progress_photos', exist_ok=True)
+os.makedirs('static/images/diet', exist_ok=True)
 
 # Initialize Limiter
 limiter = Limiter(
@@ -125,4 +138,7 @@ def inject_globals():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Bind to PORT provided by host environment (e.g., Render) or default to 5000 for local dev
+    port = int(os.getenv("PORT", 5000))
+    debug = os.getenv("FLASK_DEBUG", "True").lower() == "true"
+    app.run(debug=debug, host='0.0.0.0', port=port)

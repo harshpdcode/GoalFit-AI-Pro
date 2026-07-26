@@ -4,13 +4,26 @@ import mysql.connector
 
 pro_bp = Blueprint('pro_bp', __name__, url_prefix='/pro')
 
+from database.db_connection import get_db_connection as centralized_db_connection
+
 def get_db_connection():
-    return mysql.connector.connect(
-        host=current_app.config['DB_HOST'],
-        user=current_app.config['DB_USER'],
-        password=current_app.config['DB_PASSWORD'],
-        database=current_app.config['DB_NAME']
-    )
+    """
+    Centralized database connection helper.
+    Delegates to database.db_connection.get_db_connection() to support environment variables,
+    DATABASE_URL, custom ports, and cloud MySQL hosts.
+    """
+    conn = centralized_db_connection()
+    if conn is None:
+        # Fallback to current_app.config if needed
+        import mysql.connector
+        return mysql.connector.connect(
+            host=current_app.config.get('DB_HOST', 'localhost'),
+            user=current_app.config.get('DB_USER', 'root'),
+            password=current_app.config.get('DB_PASSWORD', 'hmpandya528@'),
+            database=current_app.config.get('DB_NAME', 'goalfit_ai'),
+            port=int(current_app.config.get('DB_PORT', 3306))
+        )
+    return conn
 
 def pro_required(f):
     @wraps(f)

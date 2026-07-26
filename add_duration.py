@@ -4,13 +4,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from database.db_connection import get_db_connection
+
 try:
-    conn = mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", "hmpandya528@"),
-        database="goalfit_ai"
-    )
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("ALTER TABLE transformations ADD COLUMN duration VARCHAR(50);")
     conn.commit()

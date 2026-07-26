@@ -11,13 +11,10 @@ import datetime
 
 load_dotenv()
 
+from database.db_connection import get_db_connection
+
 def get_conn():
-    return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", "hmpandya528@"),
-        database="goalfit_ai"
-    )
+    return get_db_connection()
 
 def seed():
     conn = get_conn()

@@ -6,16 +6,36 @@ from werkzeug.security import generate_password_hash
 load_dotenv()
 
 def create_schema():
+    db_name = os.getenv("DB_NAME", "goalfit_ai")
+    db_host = os.getenv("DB_HOST", "localhost")
+    db_user = os.getenv("DB_USER", "root")
+    db_pass = os.getenv("DB_PASSWORD", "hmpandya528@")
+    db_port = int(os.getenv("DB_PORT", 3306))
+
     try:
-        conn = mysql.connector.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            user=os.getenv("DB_USER", "root"),
-            password=os.getenv("DB_PASSWORD", "hmpandya528@")
-        )
-        cursor = conn.cursor()
-        
-        cursor.execute("CREATE DATABASE IF NOT EXISTS goalfit_ai;")
-        cursor.execute("USE goalfit_ai;")
+        # First attempt: Connect directly to the specified database (for cloud hosts like Aiven / Railway / Clever Cloud)
+        try:
+            conn = mysql.connector.connect(
+                host=db_host,
+                user=db_user,
+                password=db_pass,
+                database=db_name,
+                port=db_port
+            )
+            cursor = conn.cursor()
+            print(f"Connected to database '{db_name}'.")
+        except mysql.connector.Error:
+            # Second attempt: Connect without database specified and create database
+            conn = mysql.connector.connect(
+                host=db_host,
+                user=db_user,
+                password=db_pass,
+                port=db_port
+            )
+            cursor = conn.cursor()
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_name}`;")
+            cursor.execute(f"USE `{db_name}`;")
+            print(f"Database '{db_name}' initialized successfully.")
 
         cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
         tables = [
