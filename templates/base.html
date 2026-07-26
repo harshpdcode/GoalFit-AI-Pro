@@ -198,16 +198,13 @@
             <!-- Bottom Section -->
             <div class="sidebar-bottom">
                 
-                <!-- Theme Picker -->
+                <!-- Theme Picker Button -->
                 <div class="theme-picker-wrap">
-                    <span class="theme-picker-label">🎨 Theme</span>
-                    <div class="theme-swatches" id="sidebarSwatches">
-                        <div class="theme-swatch active" data-theme="dark" onclick="setTheme('dark')" title="Dark Teal"></div>
-                        <div class="theme-swatch" data-theme="light" onclick="setTheme('light')" title="Light Mode"></div>
-                        <div class="theme-swatch" data-theme="midnight-purple" onclick="setTheme('midnight-purple')" title="Midnight Purple"></div>
-                        <div class="theme-swatch" data-theme="ocean-blue" onclick="setTheme('ocean-blue')" title="Ocean Blue"></div>
-                        <div class="theme-swatch" data-theme="sunset-gold" onclick="setTheme('sunset-gold')" title="Sunset Gold"></div>
-                    </div>
+                    <button class="theme-trigger-btn" id="sidebarThemeBtn" onclick="openThemeModal()">
+                        <span class="theme-btn-dot" id="sidebarThemeDot"></span>
+                        <span class="theme-btn-label">Theme</span>
+                        <i data-lucide="chevron-right" style="width:14px;height:14px;stroke:var(--text-muted);margin-left:auto;"></i>
+                    </button>
                 </div>
 
                 <!-- User Box -->
@@ -352,17 +349,11 @@
                     <i data-lucide="smartphone"></i>
                     <span>Install App</span>
                 </button>
-                <!-- Theme Picker -->
-                <div class="mobile-theme-picker">
-                    <div class="theme-swatches" id="mobileSwatches">
-                        <div class="theme-swatch" data-theme="dark" onclick="setTheme('dark')" title="Dark Teal"></div>
-                        <div class="theme-swatch" data-theme="light" onclick="setTheme('light')" title="Light"></div>
-                        <div class="theme-swatch" data-theme="midnight-purple" onclick="setTheme('midnight-purple')" title="Purple"></div>
-                        <div class="theme-swatch" data-theme="ocean-blue" onclick="setTheme('ocean-blue')" title="Ocean"></div>
-                        <div class="theme-swatch" data-theme="sunset-gold" onclick="setTheme('sunset-gold')" title="Gold"></div>
-                    </div>
+                <!-- Theme Picker Button -->
+                <button type="button" class="mobile-nav-item" onclick="openThemeModal()" style="background:transparent; border:none; flex-direction:column;">
+                    <span class="mobile-theme-dot" id="mobileThemeDot" style="width:20px;height:20px;border-radius:50%;display:block;flex-shrink:0;"></span>
                     <span>Theme</span>
-                </div>
+                </button>
             </div>
         </div>
         {% endif %}
@@ -426,13 +417,58 @@
     function setTheme(name) {
         document.documentElement.setAttribute('data-theme', name);
         localStorage.setItem('goalfit-theme', name);
-        // Update all swatch sets
-        document.querySelectorAll('.theme-swatch').forEach(s => {
-            s.classList.toggle('active', s.getAttribute('data-theme') === name);
+    // Theme metadata for modal labels
+    const THEMES = [
+        { id: 'dark',            name: 'Dark Teal',       desc: 'Default dark mode',    grad: 'linear-gradient(135deg,#12d6c5,#0ea5e9)' },
+        { id: 'light',           name: 'Light Mode',       desc: 'Clean & bright',       grad: 'linear-gradient(135deg,#0ea5e9,#12d6c5)' },
+        { id: 'midnight-purple', name: 'Midnight Purple',  desc: 'Deep purple vibes',    grad: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
+        { id: 'ocean-blue',      name: 'Ocean Blue',       desc: 'Cool deep ocean',      grad: 'linear-gradient(135deg,#38bdf8,#0284c7)' },
+        { id: 'sunset-gold',     name: 'Sunset Gold',      desc: 'Warm amber energy',    grad: 'linear-gradient(135deg,#f59e0b,#d97706)' },
+    ];
+
+    function getThemeGrad(id) {
+        const t = THEMES.find(x => x.id === id);
+        return t ? t.grad : 'linear-gradient(135deg,#12d6c5,#0ea5e9)';
+    }
+
+    function updateThemeDots(name) {
+        const grad = getThemeGrad(name);
+        const dot = document.getElementById('sidebarThemeDot');
+        if (dot) dot.style.background = grad;
+        const mdot = document.getElementById('mobileThemeDot');
+        if (mdot) mdot.style.background = grad;
+        // Update modal cards active state
+        document.querySelectorAll('.theme-card').forEach(c => {
+            c.classList.toggle('active', c.getAttribute('data-theme') === name);
         });
     }
 
-    // Legacy toggle for backward compat (now cycles through 2 themes)
+    // ===== THEME SYSTEM (5 palettes) =====
+    function setTheme(name) {
+        document.documentElement.setAttribute('data-theme', name);
+        localStorage.setItem('goalfit-theme', name);
+        updateThemeDots(name);
+        closeThemeModal();
+    }
+
+    function openThemeModal() {
+        const modal = document.getElementById('themeModal');
+        if (modal) {
+            modal.classList.add('active');
+            // Update active card
+            const cur = localStorage.getItem('goalfit-theme') || 'dark';
+            document.querySelectorAll('.theme-card').forEach(c => {
+                c.classList.toggle('active', c.getAttribute('data-theme') === cur);
+            });
+        }
+    }
+
+    function closeThemeModal() {
+        const modal = document.getElementById('themeModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    // Legacy toggle
     function toggleTheme() {
         const current = document.documentElement.getAttribute('data-theme') || 'dark';
         setTheme(current === 'dark' ? 'light' : 'dark');
@@ -442,11 +478,9 @@
     (function() {
         const saved = localStorage.getItem('goalfit-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', saved);
-        // Mark active swatch after DOM ready
+        // Update indicator dots after DOM ready
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.theme-swatch').forEach(s => {
-                s.classList.toggle('active', s.getAttribute('data-theme') === saved);
-            });
+            updateThemeDots(saved);
         });
     })();
 
@@ -628,7 +662,338 @@
             switchMobileNavMode(savedMode);
         }
     });
-</script>
+<!-- ===== THEME SELECTION MODAL ===== -->
+<div id="themeModal" class="theme-modal-overlay" onclick="closeThemeModal()">
+    <div class="theme-modal-panel" onclick="event.stopPropagation()">
+        <div class="theme-modal-header">
+            <h3>Choose Theme</h3>
+            <button class="theme-modal-close" onclick="closeThemeModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="theme-modal-grid">
+
+            <div class="theme-card" data-theme="dark" onclick="setTheme('dark')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#05070b 50%,#12d6c5 100%)">
+                    <div class="tcp-sidebar" style="background:#070a10"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#12d6c5;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.07);width:50%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#12d6c5,#0ea5e9)"></div>
+                    <div>
+                        <strong>Dark Teal</strong>
+                        <span>Default dark mode</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="light" onclick="setTheme('light')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#f1f5f9 50%,#0ea5e9 100%)">
+                    <div class="tcp-sidebar" style="background:#ffffff;border-right:1px solid rgba(0,0,0,0.08)"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#0ea5e9;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(0,0,0,0.1);width:80%"></div>
+                        <div class="tcp-bar" style="background:rgba(0,0,0,0.06);width:50%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#0ea5e9,#12d6c5)"></div>
+                    <div>
+                        <strong>Light Mode</strong>
+                        <span>Clean &amp; bright</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="midnight-purple" onclick="setTheme('midnight-purple')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#0a0514 50%,#a855f7 100%)">
+                    <div class="tcp-sidebar" style="background:#0d0720"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#a855f7;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(168,85,247,0.15);width:80%"></div>
+                        <div class="tcp-bar" style="background:rgba(168,85,247,0.08);width:50%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#a855f7,#7c3aed)"></div>
+                    <div>
+                        <strong>Midnight Purple</strong>
+                        <span>Deep purple vibes</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="ocean-blue" onclick="setTheme('ocean-blue')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#030d1f 50%,#38bdf8 100%)">
+                    <div class="tcp-sidebar" style="background:#050d1f"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#38bdf8;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(56,189,248,0.15);width:80%"></div>
+                        <div class="tcp-bar" style="background:rgba(56,189,248,0.07);width:50%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#38bdf8,#0284c7)"></div>
+                    <div>
+                        <strong>Ocean Blue</strong>
+                        <span>Cool deep ocean</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="sunset-gold" onclick="setTheme('sunset-gold')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#0f0a02 50%,#f59e0b 100%)">
+                    <div class="tcp-sidebar" style="background:#16100a"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#f59e0b;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(245,158,11,0.15);width:80%"></div>
+                        <div class="tcp-bar" style="background:rgba(245,158,11,0.07);width:50%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#f59e0b,#d97706)"></div>
+                    <div>
+                        <strong>Sunset Gold</strong>
+                        <span>Warm amber energy</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== THEME TRIGGER BUTTON (sidebar) ===== */
+.theme-picker-wrap {
+    padding: 10px 0 8px;
+    border-top: 1px solid var(--border-subtle);
+    margin-bottom: 10px;
+}
+.theme-trigger-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--accent-glow-sm);
+    border: 1px solid var(--accent-border);
+    color: var(--text-label);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    text-align: left;
+}
+.theme-trigger-btn:hover {
+    background: var(--accent-glow);
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+}
+.theme-btn-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15);
+}
+.theme-btn-label {
+    flex: 1;
+}
+
+/* ===== THEME MODAL ===== */
+.theme-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 19999;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 0 0 var(--mobile-nav-height, 0) 0;
+}
+.theme-modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+.theme-modal-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 500px;
+    padding: 24px 20px 32px;
+    transform: translateY(30px);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+}
+.theme-modal-overlay.active .theme-modal-panel {
+    transform: translateY(0);
+}
+.theme-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.theme-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+.theme-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+.theme-modal-close i { width: 16px; height: 16px; stroke: currentColor; }
+.theme-modal-close:hover { background: var(--accent-glow-sm); color: var(--text-primary); }
+
+.theme-modal-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Theme Card */
+.theme-card {
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    background: var(--bg-card);
+}
+.theme-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+    transform: translateY(-1px);
+}
+.theme-card.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+/* Mini app preview inside card */
+.theme-card-preview {
+    height: 52px;
+    display: flex;
+    overflow: hidden;
+}
+.tcp-sidebar {
+    width: 28px;
+    flex-shrink: 0;
+}
+.tcp-content {
+    flex: 1;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    justify-content: center;
+}
+.tcp-bar {
+    height: 5px;
+    border-radius: 3px;
+}
+
+/* Theme card bottom info row */
+.theme-card-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+.theme-card-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.15);
+}
+.theme-card-info > div:nth-child(2) {
+    flex: 1;
+}
+.theme-card-info strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.theme-card-info span {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+.theme-card-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    opacity: 0;
+}
+.theme-card-check i { width: 13px; height: 13px; stroke: var(--accent-primary); }
+.theme-card.active .theme-card-check {
+    opacity: 1;
+    background: var(--accent-gradient);
+    border-color: transparent;
+}
+.theme-card.active .theme-card-check i { stroke: var(--text-on-accent); }
+
+/* On desktop: panel becomes a centered dialog */
+@media (min-width: 769px) {
+    .theme-modal-overlay {
+        align-items: center;
+    }
+    .theme-modal-panel {
+        border-radius: 20px;
+        max-width: 420px;
+        padding-bottom: 24px;
+    }
+    .theme-modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+}
+
+/* Mobile: extra bottom padding for nav bar */
+@media (max-width: 768px) {
+    .theme-modal-overlay {
+        padding-bottom: 125px;
+    }
+}
+</style>
 
 </body>
 
