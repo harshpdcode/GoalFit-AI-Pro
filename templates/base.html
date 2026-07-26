@@ -402,13 +402,17 @@
         }
     });
 
-    // ===== THEME SYSTEM (5 palettes) =====
+    // ===== THEME SYSTEM (9 Designer Palettes) =====
     const THEMES = [
-        { id: 'dark',            name: 'Dark Teal',       desc: 'Default dark mode',    grad: 'linear-gradient(135deg,#12d6c5,#0ea5e9)' },
-        { id: 'light',           name: 'Light Mode',       desc: 'Clean & bright',       grad: 'linear-gradient(135deg,#0ea5e9,#12d6c5)' },
-        { id: 'midnight-purple', name: 'Midnight Purple',  desc: 'Deep purple vibes',    grad: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
-        { id: 'ocean-blue',      name: 'Ocean Blue',       desc: 'Cool deep ocean',      grad: 'linear-gradient(135deg,#38bdf8,#0284c7)' },
-        { id: 'sunset-gold',     name: 'Sunset Gold',      desc: 'Warm amber energy',    grad: 'linear-gradient(135deg,#f59e0b,#d97706)' },
+        { id: 'ocean-blue',      name: 'Ocean Blue Neon', desc: 'Vibrant neon blue',    grad: 'linear-gradient(135deg,#00C2FF,#1E88E5)' },
+        { id: 'lavender-glass',  name: 'Lavender Glass',  desc: 'Soft purple light',    grad: 'linear-gradient(135deg,#8B5CF6,#C4B5FD)' },
+        { id: 'sunset-orange',   name: 'Sunset Orange',   desc: 'Warm sunset glow',     grad: 'linear-gradient(135deg,#FF6A00,#FFB066)' },
+        { id: 'aqua-mint',       name: 'Aqua Mint',       desc: 'Refreshing mint',      grad: 'linear-gradient(135deg,#1CB5C9,#8FE9E6)' },
+        { id: 'lime-cyber',      name: 'Lime Cyber',      desc: 'Cyberpunk lime dark',  grad: 'linear-gradient(135deg,#A3E635,#7CB518)' },
+        { id: 'arctic-blue',     name: 'Arctic Blue',     desc: 'Crisp arctic light',   grad: 'linear-gradient(135deg,#3B82F6,#7CC4FF)' },
+        { id: 'neon-pink',       name: 'Neon Pink Purple',desc: 'Vibrant pink synth',   grad: 'linear-gradient(135deg,#FF3EA5,#8B5CF6)' },
+        { id: 'coffee-beige',    name: 'Coffee Beige',    desc: 'Cozy warm neutral',    grad: 'linear-gradient(135deg,#B7793A,#E7C7A1)' },
+        { id: 'cyber-magenta',   name: 'Cyber Magenta',   desc: 'Futuristic magenta',   grad: 'linear-gradient(135deg,#FF00B8,#8A2BE2)' },
     ];
 
     function getThemeGrad(id) {
@@ -631,101 +635,168 @@
 <div id="themeModal" class="theme-modal-overlay" onclick="closeThemeModal()">
     <div class="theme-modal-panel" onclick="event.stopPropagation()">
         <div class="theme-modal-header">
-            <h3>Choose Theme</h3>
+            <h3>Choose Color Theme</h3>
             <button class="theme-modal-close" onclick="closeThemeModal()"><i data-lucide="x"></i></button>
         </div>
         <div class="theme-modal-grid">
 
-            <div class="theme-card" data-theme="dark" onclick="setTheme('dark')">
-                <div class="theme-card-preview" style="background:linear-gradient(135deg,#05070b 50%,#12d6c5 100%)">
-                    <div class="tcp-sidebar" style="background:#070a10"></div>
-                    <div class="tcp-content">
-                        <div class="tcp-bar" style="background:#12d6c5;width:60%"></div>
-                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
-                        <div class="tcp-bar" style="background:rgba(255,255,255,0.07);width:50%"></div>
-                    </div>
-                </div>
-                <div class="theme-card-info">
-                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#12d6c5,#0ea5e9)"></div>
-                    <div>
-                        <strong>Dark Teal</strong>
-                        <span>Default dark mode</span>
-                    </div>
-                    <div class="theme-card-check"><i data-lucide="check"></i></div>
-                </div>
-            </div>
-
-            <div class="theme-card" data-theme="light" onclick="setTheme('light')">
-                <div class="theme-card-preview" style="background:linear-gradient(135deg,#f1f5f9 50%,#0ea5e9 100%)">
-                    <div class="tcp-sidebar" style="background:#ffffff;border-right:1px solid rgba(0,0,0,0.08)"></div>
-                    <div class="tcp-content">
-                        <div class="tcp-bar" style="background:#0ea5e9;width:60%"></div>
-                        <div class="tcp-bar" style="background:rgba(0,0,0,0.1);width:80%"></div>
-                        <div class="tcp-bar" style="background:rgba(0,0,0,0.06);width:50%"></div>
-                    </div>
-                </div>
-                <div class="theme-card-info">
-                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#0ea5e9,#12d6c5)"></div>
-                    <div>
-                        <strong>Light Mode</strong>
-                        <span>Clean &amp; bright</span>
-                    </div>
-                    <div class="theme-card-check"><i data-lucide="check"></i></div>
-                </div>
-            </div>
-
-            <div class="theme-card" data-theme="midnight-purple" onclick="setTheme('midnight-purple')">
-                <div class="theme-card-preview" style="background:linear-gradient(135deg,#0a0514 50%,#a855f7 100%)">
-                    <div class="tcp-sidebar" style="background:#0d0720"></div>
-                    <div class="tcp-content">
-                        <div class="tcp-bar" style="background:#a855f7;width:60%"></div>
-                        <div class="tcp-bar" style="background:rgba(168,85,247,0.15);width:80%"></div>
-                        <div class="tcp-bar" style="background:rgba(168,85,247,0.08);width:50%"></div>
-                    </div>
-                </div>
-                <div class="theme-card-info">
-                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#a855f7,#7c3aed)"></div>
-                    <div>
-                        <strong>Midnight Purple</strong>
-                        <span>Deep purple vibes</span>
-                    </div>
-                    <div class="theme-card-check"><i data-lucide="check"></i></div>
-                </div>
-            </div>
-
             <div class="theme-card" data-theme="ocean-blue" onclick="setTheme('ocean-blue')">
-                <div class="theme-card-preview" style="background:linear-gradient(135deg,#030d1f 50%,#38bdf8 100%)">
-                    <div class="tcp-sidebar" style="background:#050d1f"></div>
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#061324 50%,#00C2FF 100%)">
+                    <div class="tcp-sidebar" style="background:#0E1B2E"></div>
                     <div class="tcp-content">
-                        <div class="tcp-bar" style="background:#38bdf8;width:60%"></div>
-                        <div class="tcp-bar" style="background:rgba(56,189,248,0.15);width:80%"></div>
-                        <div class="tcp-bar" style="background:rgba(56,189,248,0.07);width:50%"></div>
+                        <div class="tcp-bar" style="background:#00C2FF;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
                     </div>
                 </div>
                 <div class="theme-card-info">
-                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#38bdf8,#0284c7)"></div>
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#00C2FF,#1E88E5)"></div>
                     <div>
-                        <strong>Ocean Blue</strong>
-                        <span>Cool deep ocean</span>
+                        <strong>Ocean Blue Neon</strong>
+                        <span>Deep neon blue dark</span>
                     </div>
                     <div class="theme-card-check"><i data-lucide="check"></i></div>
                 </div>
             </div>
 
-            <div class="theme-card" data-theme="sunset-gold" onclick="setTheme('sunset-gold')">
-                <div class="theme-card-preview" style="background:linear-gradient(135deg,#0f0a02 50%,#f59e0b 100%)">
-                    <div class="tcp-sidebar" style="background:#16100a"></div>
+            <div class="theme-card" data-theme="lavender-glass" onclick="setTheme('lavender-glass')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#F7F8FC 50%,#8B5CF6 100%)">
+                    <div class="tcp-sidebar" style="background:#FFFFFF;border-right:1px solid #E5E7EB"></div>
                     <div class="tcp-content">
-                        <div class="tcp-bar" style="background:#f59e0b;width:60%"></div>
-                        <div class="tcp-bar" style="background:rgba(245,158,11,0.15);width:80%"></div>
-                        <div class="tcp-bar" style="background:rgba(245,158,11,0.07);width:50%"></div>
+                        <div class="tcp-bar" style="background:#8B5CF6;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(0,0,0,0.1);width:80%"></div>
                     </div>
                 </div>
                 <div class="theme-card-info">
-                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#f59e0b,#d97706)"></div>
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#8B5CF6,#C4B5FD)"></div>
                     <div>
-                        <strong>Sunset Gold</strong>
-                        <span>Warm amber energy</span>
+                        <strong>Lavender Glass</strong>
+                        <span>Soft purple light</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="sunset-orange" onclick="setTheme('sunset-orange')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#FFF4E8 50%,#FF6A00 100%)">
+                    <div class="tcp-sidebar" style="background:#FFF9F2;border-right:1px solid #FFD8B5"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#FF6A00;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(58,42,32,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#FF6A00,#FFB066)"></div>
+                    <div>
+                        <strong>Sunset Orange</strong>
+                        <span>Warm sunset glow</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="aqua-mint" onclick="setTheme('aqua-mint')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#EAFBFB 50%,#1CB5C9 100%)">
+                    <div class="tcp-sidebar" style="background:#FFFFFF;border-right:1px solid #C6F4F4"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#1CB5C9;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(36,67,74,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#1CB5C9,#8FE9E6)"></div>
+                    <div>
+                        <strong>Aqua Mint</strong>
+                        <span>Refreshing mint light</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="lime-cyber" onclick="setTheme('lime-cyber')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#0E1117 50%,#A3E635 100%)">
+                    <div class="tcp-sidebar" style="background:#171B22"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#A3E635;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#A3E635,#7CB518)"></div>
+                    <div>
+                        <strong>Lime Cyber</strong>
+                        <span>Cyberpunk lime dark</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="arctic-blue" onclick="setTheme('arctic-blue')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#F4FAFF 50%,#3B82F6 100%)">
+                    <div class="tcp-sidebar" style="background:#FFFFFF;border-right:1px solid #D6EFFF"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#3B82F6;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(34,50,74,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#3B82F6,#7CC4FF)"></div>
+                    <div>
+                        <strong>Arctic Blue</strong>
+                        <span>Crisp arctic light</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="neon-pink" onclick="setTheme('neon-pink')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#1A1033 50%,#FF3EA5 100%)">
+                    <div class="tcp-sidebar" style="background:#241A45"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#FF3EA5;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#FF3EA5,#8B5CF6)"></div>
+                    <div>
+                        <strong>Neon Pink Purple</strong>
+                        <span>Vibrant pink synth</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="coffee-beige" onclick="setTheme('coffee-beige')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#FFF9F2 50%,#B7793A 100%)">
+                    <div class="tcp-sidebar" style="background:#FFFFFF;border-right:1px solid #F0DFC8"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#B7793A;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(74,55,40,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#B7793A,#E7C7A1)"></div>
+                    <div>
+                        <strong>Coffee Beige</strong>
+                        <span>Cozy warm neutral</span>
+                    </div>
+                    <div class="theme-card-check"><i data-lucide="check"></i></div>
+                </div>
+            </div>
+
+            <div class="theme-card" data-theme="cyber-magenta" onclick="setTheme('cyber-magenta')">
+                <div class="theme-card-preview" style="background:linear-gradient(135deg,#090812 50%,#FF00B8 100%)">
+                    <div class="tcp-sidebar" style="background:#14111E"></div>
+                    <div class="tcp-content">
+                        <div class="tcp-bar" style="background:#FF00B8;width:60%"></div>
+                        <div class="tcp-bar" style="background:rgba(255,255,255,0.1);width:80%"></div>
+                    </div>
+                </div>
+                <div class="theme-card-info">
+                    <div class="theme-card-dot" style="background:linear-gradient(135deg,#FF00B8,#8A2BE2)"></div>
+                    <div>
+                        <strong>Cyber Magenta</strong>
+                        <span>Futuristic magenta</span>
                     </div>
                     <div class="theme-card-check"><i data-lucide="check"></i></div>
                 </div>

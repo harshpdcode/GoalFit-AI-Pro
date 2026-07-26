@@ -267,6 +267,9 @@
 
             /* ===== BMI + WEIGHT COMBINED CHART ===== */
 
+            const themePrimary = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#00C2FF';
+            const themeSecondary = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#1E88E5';
+
             new Chart(document.getElementById("trendChart"), {
 
                 type: "line",
@@ -278,8 +281,8 @@
                         {
                             label: "Weight (kg)",
                             data: weightValues,
-                            borderColor: "#12d6c5",
-                            backgroundColor: "rgba(18,214,197,0.15)",
+                            borderColor: themePrimary,
+                            backgroundColor: themePrimary + "22",
                             tension: 0.4,
                             fill: true
                         },
@@ -287,8 +290,8 @@
                         {
                             label: "BMI",
                             data: bmiValues,
-                            borderColor: "#38bdf8",
-                            backgroundColor: "rgba(56,189,248,0.12)",
+                            borderColor: themeSecondary,
+                            backgroundColor: themeSecondary + "22",
                             tension: 0.4,
                             fill: true
                         }
