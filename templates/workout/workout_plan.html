@@ -35,16 +35,16 @@
 <div class="workout-grid">
 {% for day, ex_list in custom_exercises.items() %}
 {% for ex in ex_list %}
-<div class="workout-card" data-muscle="{{ day }}">
-    <div class="workout-info">
-        <h3>{{ ex.workout_name }}</h3>
-        <p class="text-muted small">Target: {{ ex.target_muscle }}</p>
-        <div class="meta">
-            <span>🏋️ Sets: {{ ex.sets }}</span>
-            <span>🔄 Reps: {{ ex.reps }}</span>
-            <span>⏱️ Rest: {{ ex.rest_time }}s</span>
+<div class="workout-card" data-muscle="{{ day }}" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 20px;">
+    <div class="workout-info" style="padding: 0;">
+        <h3 style="color: var(--text-primary); font-size: 1.25rem; font-weight: 800; margin-bottom: 6px;">{{ ex.workout_name }}</h3>
+        <p style="color: var(--accent-primary); font-size: 0.82rem; font-weight: 600; margin-bottom: 14px;">Target: {{ ex.target_muscle }}</p>
+        <div class="meta" style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+            <span style="background: var(--bg-input); color: var(--text-primary); padding: 5px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border-subtle);">🏋️ Sets: {{ ex.sets }}</span>
+            <span style="background: var(--bg-input); color: var(--text-primary); padding: 5px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border-subtle);">🔄 Reps: {{ ex.reps }}</span>
+            <span style="background: var(--bg-input); color: var(--text-primary); padding: 5px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: 1px solid var(--border-subtle);">⏱️ Rest: {{ ex.rest_time }}s</span>
         </div>
-        <p class="small text-secondary">{{ ex.instructions }}</p>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; margin: 0;">{{ ex.instructions }}</p>
     </div>
 </div>
 {% endfor %}

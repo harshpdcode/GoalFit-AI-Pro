@@ -969,6 +969,24 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
 
+/* ===== GLOBAL HIGH-CONTRAST UTILITY OVERRIDES ===== */
+.text-muted, small.text-muted {
+    color: var(--text-muted) !important;
+}
+.text-secondary, small.text-secondary {
+    color: var(--text-secondary) !important;
+}
+.text-primary {
+    color: var(--accent-primary) !important;
+}
+.text-dark {
+    color: var(--text-primary) !important;
+}
+.text-white-50 {
+    color: var(--text-on-accent) !important;
+    opacity: 0.85 !important;
+}
+
 :root {
   --pro-primary: #f59e0b;
   --pro-secondary: #ea580c;
