@@ -226,43 +226,54 @@
         <!-- ===== MAIN CONTENT ===== -->
         <main class="content" id="mainContent">
             
-            <!-- Breadcrumb -->
-            <nav class="breadcrumb-nav" aria-label="breadcrumb">
-                <a href="/dashboard">Home</a>
-                <span class="breadcrumb-sep">/</span>
-                {% if request.endpoint == 'dashboard.dashboard' %}
-                    <span class="breadcrumb-active">Dashboard</span>
-                {% elif request.endpoint == 'diet.diet_plan' %}
-                    <span class="breadcrumb-active">Diet Plan</span>
-                {% elif request.endpoint == 'workout.workout_plan' %}
-                    <span class="breadcrumb-active">Workouts</span>
-                {% elif request.endpoint == 'progress.progress' %}
-                    <span class="breadcrumb-active">Progress</span>
-                {% elif request.endpoint == 'progress_gallery.gallery' %}
-                    <span class="breadcrumb-active">Photo Gallery</span>
-                {% elif request.endpoint == 'health.health_profile' %}
-                    <span class="breadcrumb-active">Profile</span>
-                {% elif request.endpoint == 'water.water_tracker' %}
-                    <span class="breadcrumb-active">Water Tracker</span>
-                {% elif request.endpoint == 'feedback.feedback_form' %}
-                    <span class="breadcrumb-active">Feedback</span>
-                {% elif request.endpoint == 'marketplace.trainers_list' %}
+            <!-- Breadcrumb Header Bar with Mobile Logout -->
+            <nav class="breadcrumb-nav" aria-label="breadcrumb" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <a href="/dashboard">Home</a>
                     <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Marketplace</span>
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Hire Trainer</span>
-                {% elif request.endpoint == 'marketplace.dieticians_list' %}
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Marketplace</span>
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Hire Dietician</span>
-                {% elif request.endpoint == 'marketplace.profile' %}
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Marketplace</span>
-                    <span class="breadcrumb-sep">/</span>
-                    <span class="breadcrumb-active">Professional Profile</span>
-                {% else %}
-                    <span class="breadcrumb-active">Page</span>
+                    {% if request.endpoint == 'dashboard.dashboard' %}
+                        <span class="breadcrumb-active">Dashboard</span>
+                    {% elif request.endpoint == 'diet.diet_plan' %}
+                        <span class="breadcrumb-active">Diet Plan</span>
+                    {% elif request.endpoint == 'workout.workout_plan' %}
+                        <span class="breadcrumb-active">Workouts</span>
+                    {% elif request.endpoint == 'progress.progress' %}
+                        <span class="breadcrumb-active">Progress</span>
+                    {% elif request.endpoint == 'progress_gallery.gallery' %}
+                        <span class="breadcrumb-active">Photo Gallery</span>
+                    {% elif request.endpoint == 'health.health_profile' %}
+                        <span class="breadcrumb-active">Profile</span>
+                    {% elif request.endpoint == 'water.water_tracker' %}
+                        <span class="breadcrumb-active">Water Tracker</span>
+                    {% elif request.endpoint == 'feedback.feedback_form' %}
+                        <span class="breadcrumb-active">Feedback</span>
+                    {% elif request.endpoint == 'marketplace.trainers_list' %}
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Marketplace</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Hire Trainer</span>
+                    {% elif request.endpoint == 'marketplace.dieticians_list' %}
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Marketplace</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Hire Dietician</span>
+                    {% elif request.endpoint == 'marketplace.profile' %}
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Marketplace</span>
+                        <span class="breadcrumb-sep">/</span>
+                        <span class="breadcrumb-active">Professional Profile</span>
+                    {% else %}
+                        <span class="breadcrumb-active">Page</span>
+                    {% endif %}
+                </div>
+
+                {% if session.get('user_name') %}
+                <div class="mobile-top-user">
+                    <span class="mobile-user-name">{{ session.get('user_name') }}</span>
+                    <a href="/logout" class="mobile-top-logout" title="Logout">
+                        <i data-lucide="log-out"></i>
+                    </a>
+                </div>
                 {% endif %}
             </nav>
 
@@ -353,6 +364,11 @@
                     <i data-lucide="palette"></i>
                     <span>Theme</span>
                 </button>
+                <!-- Logout Button -->
+                <a href="/logout" class="mobile-nav-item mobile-logout-nav" style="color: #ef4444;">
+                    <i data-lucide="log-out" style="stroke: #ef4444;"></i>
+                    <span>Logout</span>
+                </a>
             </div>
         </div>
         {% endif %}
@@ -980,21 +996,46 @@
 }
 .theme-card.active .theme-card-check i { stroke: var(--text-on-accent); }
 
+/* Mobile Top Header Logout Button */
+.mobile-top-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.mobile-user-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.mobile-top-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.mobile-top-logout i {
+    width: 14px;
+    height: 14px;
+    stroke: #ef4444;
+}
+.mobile-top-logout:hover {
+    background: #ef4444;
+    color: #fff;
+}
+.mobile-top-logout:hover i {
+    stroke: #fff;
+}
+
 @media (min-width: 769px) {
-    .theme-modal-overlay {
-        align-items: center;
-    }
-    .theme-modal-panel {
-        border-radius: 20px;
-        max-width: 560px;
-        max-height: 85vh;
-        margin-bottom: 0;
-    }
-    .theme-modal-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        max-height: calc(85vh - 80px);
+    .mobile-top-user {
+        display: none !important;
     }
 }
 </style>

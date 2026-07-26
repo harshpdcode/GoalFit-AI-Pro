@@ -15,9 +15,15 @@
 <div class="profile-page">
 
     <!-- HEADER -->
-    <div class="page-head">
-        <h1>Health Profile</h1>
-        <p>Shape your journey — body, habit, and intention aligned.</p>
+    <div class="page-head" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+            <h1>Health Profile</h1>
+            <p>Shape your journey — body, habit, and intention aligned.</p>
+        </div>
+        <a href="/logout" class="btn-edit-profile" style="color:#ef4444; border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08);">
+            <i data-lucide="log-out" style="width:15px; height:15px; stroke:#ef4444;"></i>
+            Logout
+        </a>
     </div>
 
     {% if health %}
