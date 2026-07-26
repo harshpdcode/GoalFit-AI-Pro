@@ -1,0 +1,26 @@
+{
+  "name": "GoalFit-AI Pro — AI Fitness & Nutrition",
+  "short_name": "GoalFit AI",
+  "description": "Personalized AI-powered workouts, smart diet plans, macro tracking, and trainer portals.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070b",
+  "theme_color": "#12d6c5",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

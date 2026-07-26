@@ -148,14 +148,22 @@ def check_session():
 def inject_globals():
     is_premium = False
     if 'user_id' in session and session.get('role') == 'user':
-        from database.db_connection import get_db_connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT 1 FROM client_assignments WHERE user_id=%s AND status='active'", (session['user_id'],))
-        if cursor.fetchone():
-            is_premium = True
-        cursor.close()
-        conn.close()
+        if 'is_premium' in session:
+            is_premium = session['is_premium']
+        else:
+            try:
+                from database.db_connection import get_db_connection
+                conn = get_db_connection()
+                if conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT 1 FROM client_assignments WHERE user_id=%s AND status='active'", (session['user_id'],))
+                    if cursor.fetchone():
+                        is_premium = True
+                    cursor.close()
+                    conn.close()
+                    session['is_premium'] = is_premium
+            except Exception:
+                is_premium = False
         
     return {
         'current_role': session.get('role', 'user'),

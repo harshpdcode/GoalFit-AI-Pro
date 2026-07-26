@@ -16,7 +16,14 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- PWA Manifest & iOS Mobile App Compatibility -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#12d6c5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GoalFit AI">
+    <link rel="apple-touch-icon" href="/static/images/logo.png">
 </head>
 
 <body class="{% if is_premium %}pro-mode{% endif %}">
@@ -37,17 +44,18 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-    // Hide loading overlay when page is fully loaded
-    window.addEventListener('load', function() {
+    // Fast Page Loader dismissal on DOMReady for instant navigation
+    function hideLoader() {
         const loader = document.getElementById('pageLoader');
-        if (loader) {
-            loader.style.transition = 'opacity 0.6s ease-in-out';
+        if (loader && loader.style.display !== 'none') {
+            loader.style.transition = 'opacity 0.25s ease-out';
             loader.style.opacity = '0';
-            setTimeout(() => {
-                loader.style.display = 'none';
-            }, 600);
+            setTimeout(() => { loader.style.display = 'none'; }, 250);
         }
-    });
+    }
+    document.addEventListener('DOMContentLoaded', hideLoader);
+    window.addEventListener('load', hideLoader);
+    setTimeout(hideLoader, 400); // Safety fallback
 </script>
 
 {% set is_auth = request.endpoint in ['auth.login', 'auth.register', 'professional_auth.login', 'professional_auth.register'] %}
@@ -377,9 +385,59 @@
     {% endwith %}
 </script>
 
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- Floating PWA Mobile Install Banner -->
+<div id="pwaInstallBanner" class="pwa-install-banner">
+    <div class="pwa-banner-content">
+        <img src="/static/images/logo.png" alt="GoalFit AI" class="pwa-banner-logo">
+        <div class="pwa-banner-text">
+            <strong>Install GoalFit AI App</strong>
+            <p>Access workouts, diet &amp; hydration directly from your phone!</p>
+        </div>
+    </div>
+    <div class="pwa-banner-actions">
+        <button id="pwaInstallBtn" class="pwa-btn-install">Install App</button>
+        <button onclick="dismissPwaBanner()" class="pwa-btn-close">&times;</button>
+    </div>
+</div>
+
 <script>
-    AOS.init({ duration: 800, once: true });
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('PWA ServiceWorker active:', reg.scope))
+                .catch(err => console.log('PWA ServiceWorker notice:', err));
+        });
+    }
+
+    // PWA Install Prompt Handler
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner && !localStorage.getItem('pwa-dismissed')) {
+            banner.style.display = 'flex';
+        }
+    });
+
+    const installBtn = document.getElementById('pwaInstallBtn');
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                dismissPwaBanner();
+            }
+        });
+    }
+
+    function dismissPwaBanner() {
+        const banner = document.getElementById('pwaInstallBanner');
+        if (banner) banner.style.display = 'none';
+        localStorage.setItem('pwa-dismissed', 'true');
+    }
 </script>
 
 </body>
