@@ -630,7 +630,9 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 ::-webkit-scrollbar { width:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:rgba(18,214,197,0.2); border-radius:3px; }
-::-webkit-scrollbar-thumb:hover { background:rgba(18,214,197,0.4); }:root {
+::-webkit-scrollbar-thumb:hover { background:rgba(18,214,197,0.4); }
+
+:root {
   --pro-primary: #f59e0b;
   --pro-secondary: #ea580c;
   --pro-gradient: linear-gradient(135deg, #f59e0b, #ea580c);
