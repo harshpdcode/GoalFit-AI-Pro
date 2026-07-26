@@ -1,35 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container-fluid py-4 d-flex justify-content-center align-items-center">
+<div class="container-fluid py-4 d-flex justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="col-md-6 col-lg-5">
-        <div class="gf-card" data-aos="fade-up">
-            <div class="card-body p-4 text-center">
-                <img src="/{{ professional.profile_photo if professional.profile_photo else 'static/images/profile_img/default_prof.jpg' }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid var(--primary-color);" onerror="this.onerror=null; this.src='/static/images/profile_img/default_prof.jpg';">
-                <h4 class="fw-bold mb-1" style="color: var(--text-primary);">Hire {{ professional.full_name }}</h4>
-                <p class="mb-4" style="color: var(--text-secondary); font-size: 0.9rem;">{{ professional.role | title }}</p>
+        <div class="gf-card" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 28px; box-shadow: var(--shadow-card);">
+            <div class="text-center">
+                {% set photo_path = professional.profile_photo if professional.profile_photo else 'static/images/profile_img/default_prof.png' %}
+                {% if not photo_path.startswith('/') and not photo_path.startswith('http') %}
+                    {% set photo_path = '/' ~ photo_path %}
+                {% endif %}
+                <img src="{{ photo_path }}" class="rounded-circle mb-3" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid var(--accent-primary); box-shadow: 0 0 16px var(--accent-glow);" onerror="this.onerror=null; this.src='/static/images/profile_img/default_prof.png';">
+                
+                <h4 class="fw-bold mb-1" style="color: var(--text-primary); font-size: 1.35rem;">Hire {{ professional.full_name }}</h4>
+                <p class="mb-4" style="color: var(--text-muted); font-size: 0.85rem;">{{ professional.role | title }}</p>
 
-                <div class="rounded p-3 mb-4 text-start" style="background: var(--bg-body); border: 1px solid var(--border-color);">
-                    <h6 class="fw-bold text-gradient mb-2">Plan Details</h6>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span style="color: var(--text-secondary);">Plan Name:</span>
-                        <span class="fw-bold">{{ plan.plan_type }}</span>
+                <div class="rounded p-3 mb-4 text-start" style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 14px;">
+                    <h6 class="fw-bold mb-3" style="color: var(--accent-primary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.8px;">Plan Details</h6>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Plan Name:</span>
+                        <span class="fw-bold" style="color: var(--text-primary); font-size: 0.88rem;">{{ plan.plan_type }}</span>
                     </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span style="color: var(--text-secondary);">Duration:</span>
-                        <span class="fw-bold" style="color: var(--text-primary);">{{ plan.duration_days }} Days</span>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span style="color: var(--text-muted); font-size: 0.88rem;">Duration:</span>
+                        <span class="fw-bold" style="color: var(--text-primary); font-size: 0.88rem;">{{ plan.duration_days }} Days</span>
                     </div>
-                    <div class="d-flex justify-content-between pt-2 mt-2" style="border-top: 1px dashed var(--border-color);">
-                        <span style="color: var(--text-secondary);">Total Amount:</span>
-                        <span class="fw-bold text-success fs-5">₹{{ plan.price }}</span>
+                    <div class="d-flex justify-content-between pt-2 mt-2" style="border-top: 1px dashed var(--border-subtle);">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Total Amount:</span>
+                        <span class="fw-bold fs-5" style="color: var(--success, #10b981);">₹{{ plan.price }}</span>
                     </div>
                 </div>
 
                 <form method="POST" action="/payment/checkout/{{ professional.id }}/{{ plan.id }}">
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" style="background: var(--gradient-primary); border:none;">
+                    <button type="submit" class="w-100 py-3" style="background: var(--accent-gradient); color: var(--text-on-accent); border: none; border-radius: 12px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px var(--accent-glow);">
                         Proceed to Payment
                     </button>
                 </form>
-                <a href="/marketplace/profile/{{ professional.id }}" class="btn btn-link text-muted mt-2 text-decoration-none">Cancel</a>
+                
+                <a href="/marketplace/profile/{{ professional.id }}" class="d-block text-center mt-3" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: color 0.2s;">
+                    Cancel
+                </a>
             </div>
         </div>
     </div>

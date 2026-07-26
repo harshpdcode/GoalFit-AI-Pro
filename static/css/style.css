@@ -37,6 +37,12 @@
     --scrollbar-thumb:  rgba(0,194,255,0.25);
     --scrollbar-hover:  rgba(0,194,255,0.45);
     --auth-bg:          #061324;
+    
+    /* Legacy Aliases */
+    --gradient-primary: var(--accent-gradient);
+    --primary-color:    var(--accent-primary);
+    --border-color:     var(--border-subtle);
+    --bg-body:          var(--bg-primary);
 }
 
 /* 2. 💜 Lavender Glass */
