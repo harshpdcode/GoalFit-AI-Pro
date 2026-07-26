@@ -3,45 +3,48 @@
    Theme: Dark/Light toggle via CSS variables
    ============================================ */
 
-/* ===== CSS VARIABLES (THEME) ===== */
+/* ===== CSS VARIABLES (THEME - ELECTRIC VIOLET & SUNSET CORAL) ===== */
 :root, [data-theme="dark"] {
-    --bg-primary: #05070b;
-    --bg-secondary: #070a10;
-    --bg-card: rgba(255,255,255,0.03);
-    --bg-card-hover: rgba(255,255,255,0.05);
-    --bg-input: #020617;
-    --border-subtle: rgba(255,255,255,0.05);
-    --border-hover: rgba(18,214,197,0.3);
+    --bg-primary: #0b0814;
+    --bg-secondary: #120e22;
+    --bg-card: rgba(26, 20, 46, 0.65);
+    --bg-card-hover: rgba(38, 30, 64, 0.8);
+    --bg-input: #080512;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(139, 92, 246, 0.4);
     --text-primary: #ffffff;
-    --text-secondary: #d1d5db;
-    --text-muted: #6b7280;
-    --text-label: #9aa4b2;
-    --accent-primary: #12d6c5;
-    --accent-secondary: #0ea5e9;
-    --accent-gradient: linear-gradient(135deg, #12d6c5, #0ea5e9);
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-label: #a78bfa;
+    --accent-primary: #8b5cf6;
+    --accent-secondary: #ff5e62;
+    --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ff5e62 100%);
     --danger: #ef4444;
     --success: #10b981;
     --warning: #f59e0b;
-    --shadow-card: 0 0 18px rgba(18,214,197,0.15);
-    --sidebar-bg: #070a10;
-    --auth-bg: #000;
+    --shadow-card: 0 8px 32px rgba(139, 92, 246, 0.2);
+    --sidebar-bg: #0d091a;
+    --auth-bg: #080512;
 }
 
 [data-theme="light"] {
-    --bg-primary: #f1f5f9;
+    --bg-primary: #f5f3ff;
     --bg-secondary: #ffffff;
-    --bg-card: rgba(255,255,255,0.85);
-    --bg-card-hover: rgba(255,255,255,0.95);
-    --bg-input: #f8fafc;
-    --border-subtle: rgba(0,0,0,0.08);
-    --border-hover: rgba(18,214,197,0.4);
-    --text-primary: #0f172a;
-    --text-secondary: #374151;
-    --text-muted: #6b7280;
-    --text-label: #4b5563;
-    --shadow-card: 0 4px 20px rgba(0,0,0,0.08);
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-card-hover: rgba(255, 255, 255, 1);
+    --bg-input: #f1f5f9;
+    --border-subtle: rgba(139, 92, 246, 0.12);
+    --border-hover: rgba(139, 92, 246, 0.4);
+    --text-primary: #1e1b4b;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --text-label: #6d28d9;
+    --accent-primary: #7c3aed;
+    --accent-secondary: #f43f5e;
+    --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #f43f5e 100%);
+    --shadow-card: 0 4px 20px rgba(124, 58, 237, 0.12);
     --sidebar-bg: #ffffff;
-    --auth-bg: #f8fafc;
+    --auth-bg: #f5f3ff;
 }
 
 /* ===== GLOBAL RESET ===== */
@@ -638,7 +641,7 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 }
 
 .pro-mode .content {
-  background: radial-gradient(circle at 20% 20%, rgba(245, 158, 11, 0.12), transparent 45%), radial-gradient(circle at 80% 80%, rgba(234, 88, 12, 0.10), transparent 40%), linear-gradient(180deg, #020617, #000);
+    background: radial-gradient(circle at 20% 20%, rgb(65 154 211 / 12%), #00000000 45%), radial-gradient(circle at 80% 80%, rgb(72 115 224 / 10%), transparent 40%), linear-gradient(180deg, #020617, #000);
 }
 
 .pro-mode .text-gradient {
