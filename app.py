@@ -51,6 +51,33 @@ app.config['DB_PORT'] = int(os.getenv("DB_PORT", 3306))
 os.makedirs('static/images/progress_photos', exist_ok=True)
 os.makedirs('static/images/diet', exist_ok=True)
 
+def init_db_on_startup():
+    """Automatic database schema & seed data initialization check on app startup"""
+    try:
+        from database.db_connection import get_db_connection
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SHOW TABLES LIKE 'users';")
+            has_users = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if not has_users:
+                print("[Auto-Init DB] Table 'users' missing. Creating schema and seeding demo data...")
+                from setup_db import create_schema
+                from seed_data import seed
+                create_schema()
+                seed()
+                print("[Auto-Init DB] Schema and seed data initialized successfully!")
+            else:
+                print("[Auto-Init DB] Database tables verified.")
+    except Exception as err:
+        print(f"[Auto-Init DB Error] {err}")
+
+# Execute database check on app load
+init_db_on_startup()
+
 # Initialize Limiter
 limiter = Limiter(
     get_remote_address,
