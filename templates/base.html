@@ -348,10 +348,9 @@
                 <button type="button" id="mobileInstallBtn" onclick="triggerPwaInstall()" class="mobile-nav-item btn-link-theme" style="background:transparent; border:none; display:none;">
                     <i data-lucide="smartphone"></i>
                     <span>Install App</span>
-                </button>
-                <!-- Theme Picker Button -->
-                <button type="button" class="mobile-nav-item" onclick="openThemeModal()" style="background:transparent; border:none; flex-direction:column;">
-                    <span class="mobile-theme-dot" id="mobileThemeDot" style="width:20px;height:20px;border-radius:50%;display:block;flex-shrink:0;"></span>
+                </button>                <!-- Theme Picker Button -->
+                <button type="button" class="mobile-nav-item" onclick="openThemeModal()" style="background:transparent; border:none; cursor:pointer;">
+                    <i data-lucide="palette"></i>
                     <span>Theme</span>
                 </button>
             </div>
@@ -380,32 +379,22 @@
             'dashboard.dashboard': '/dashboard',
             'diet.diet_plan': '/diet-plan',
             'workout.workout_plan': '/workout-plan',
+            'water.water_tracker': '/water-tracker',
             'progress.progress': '/progress',
             'progress_gallery.gallery': '/gallery',
             'health.health_profile': '/health',
-            'water.water_tracker': '/water-tracker',
             'feedback.feedback_form': '/feedback',
             'marketplace.trainers_list': '/marketplace/trainers',
             'marketplace.dieticians_list': '/marketplace/dieticians',
-            'marketplace.my_professionals': '/marketplace/my-professionals',
-            'marketplace.profile': null
+            'marketplace.my_professionals': '/marketplace/my-professionals'
         };
-        
+
         navItems.forEach(item => {
             const href = item.getAttribute('href');
-            item.classList.remove('active');
-            const mapped = menuMap[currentEndpoint];
-            if (mapped && mapped === href) {
+            if (menuMap[currentEndpoint] && href === menuMap[currentEndpoint]) {
                 item.classList.add('active');
             }
         });
-
-        /* Marketplace sub-highlight: keep parent nav-item active on profile page */
-        if (currentEndpoint === 'marketplace.profile') {
-            const path = window.location.pathname;
-            /* We can't know trainer vs dietician from endpoint alone,
-               so highlight both marketplace links subtly via URL referrer if available */
-        }
 
         // Initialize Lucide Icons
         if (typeof lucide !== 'undefined') {
@@ -414,10 +403,6 @@
     });
 
     // ===== THEME SYSTEM (5 palettes) =====
-    function setTheme(name) {
-        document.documentElement.setAttribute('data-theme', name);
-        localStorage.setItem('goalfit-theme', name);
-    // Theme metadata for modal labels
     const THEMES = [
         { id: 'dark',            name: 'Dark Teal',       desc: 'Default dark mode',    grad: 'linear-gradient(135deg,#12d6c5,#0ea5e9)' },
         { id: 'light',           name: 'Light Mode',       desc: 'Clean & bright',       grad: 'linear-gradient(135deg,#0ea5e9,#12d6c5)' },
@@ -437,13 +422,11 @@
         if (dot) dot.style.background = grad;
         const mdot = document.getElementById('mobileThemeDot');
         if (mdot) mdot.style.background = grad;
-        // Update modal cards active state
         document.querySelectorAll('.theme-card').forEach(c => {
             c.classList.toggle('active', c.getAttribute('data-theme') === name);
         });
     }
 
-    // ===== THEME SYSTEM (5 palettes) =====
     function setTheme(name) {
         document.documentElement.setAttribute('data-theme', name);
         localStorage.setItem('goalfit-theme', name);
@@ -455,11 +438,11 @@
         const modal = document.getElementById('themeModal');
         if (modal) {
             modal.classList.add('active');
-            // Update active card
             const cur = localStorage.getItem('goalfit-theme') || 'dark';
             document.querySelectorAll('.theme-card').forEach(c => {
                 c.classList.toggle('active', c.getAttribute('data-theme') === cur);
             });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }
 
@@ -468,17 +451,14 @@
         if (modal) modal.classList.remove('active');
     }
 
-    // Legacy toggle
     function toggleTheme() {
         const current = document.documentElement.getAttribute('data-theme') || 'dark';
         setTheme(current === 'dark' ? 'light' : 'dark');
     }
 
-    // Load saved theme on page load
     (function() {
         const saved = localStorage.getItem('goalfit-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', saved);
-        // Update indicator dots after DOM ready
         document.addEventListener('DOMContentLoaded', () => {
             updateThemeDots(saved);
         });
@@ -487,10 +467,9 @@
     // ===== SIDEBAR TOGGLE (mobile) =====
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('expanded');
+        if (sidebar) sidebar.classList.toggle('expanded');
     }
 
-    // Close sidebar on outside click (mobile)
     document.addEventListener('click', function(e) {
         const sidebar = document.getElementById('sidebar');
         const toggle = document.getElementById('sidebarToggle');
@@ -519,7 +498,6 @@
         }, 4000);
     }
 
-    // Show flash messages as toasts
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -545,7 +523,6 @@
 </div>
 
 <script>
-    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/static/sw.js')
@@ -554,9 +531,6 @@
         });
     }
 
-    // ===== SMART PWA INSTALL BANNER =====
-    // Shows max 2 times total, auto-dismisses after 30s each time.
-    // After 2 shows: never shown again. "Install App" moves to Services menu.
     let deferredPrompt = null;
     const PWA_MAX_SHOWS = 2;
     const PWA_AUTO_DISMISS_MS = 30000;
@@ -570,14 +544,10 @@
         const banner = document.getElementById('pwaInstallBanner');
 
         if (showCount < PWA_MAX_SHOWS && banner) {
-            // Show banner
             banner.style.display = 'flex';
-            // Increment counter
             localStorage.setItem('pwa-show-count', showCount + 1);
-            // Auto-dismiss after 30 seconds
             pwaAutoDismissTimer = setTimeout(() => dismissPwaBanner(false), PWA_AUTO_DISMISS_MS);
         } else {
-            // Max shows reached — reveal the Install App button in Services menu
             const mobileBtn = document.getElementById('mobileInstallBtn');
             if (mobileBtn) mobileBtn.style.display = 'flex';
         }
@@ -589,17 +559,12 @@
             const { outcome } = await deferredPrompt.userChoice;
             deferredPrompt = null;
             if (outcome === 'accepted') {
-                localStorage.setItem('pwa-show-count', PWA_MAX_SHOWS); // max out count
+                localStorage.setItem('pwa-show-count', PWA_MAX_SHOWS);
                 const mobileBtn = document.getElementById('mobileInstallBtn');
                 if (mobileBtn) mobileBtn.style.display = 'none';
             }
             dismissPwaBanner(true);
         }
-    }
-
-    const installBtn = document.getElementById('pwaInstallBtn');
-    if (installBtn) {
-        installBtn.addEventListener('click', () => triggerPwaInstall());
     }
 
     function dismissPwaBanner(permanent) {
@@ -611,7 +576,6 @@
             banner.style.transform = 'translateY(20px)';
             setTimeout(() => { banner.style.display = 'none'; }, 400);
         }
-        // If user clicked X (not permanently accepted), show Install in menu if max reached
         const showCount = parseInt(localStorage.getItem('pwa-show-count') || '0');
         if (showCount >= PWA_MAX_SHOWS || permanent) {
             const mobileBtn = document.getElementById('mobileInstallBtn');
@@ -619,7 +583,6 @@
         }
     }
 
-    // Check on page load if we should show Install App in Services menu
     document.addEventListener('DOMContentLoaded', () => {
         const showCount = parseInt(localStorage.getItem('pwa-show-count') || '0');
         if (showCount >= PWA_MAX_SHOWS && deferredPrompt) {
@@ -662,6 +625,8 @@
             switchMobileNavMode(savedMode);
         }
     });
+</script>
+
 <!-- ===== THEME SELECTION MODAL ===== -->
 <div id="themeModal" class="theme-modal-overlay" onclick="closeThemeModal()">
     <div class="theme-modal-panel" onclick="event.stopPropagation()">
@@ -771,45 +736,6 @@
 </div>
 
 <style>
-/* ===== THEME TRIGGER BUTTON (sidebar) ===== */
-.theme-picker-wrap {
-    padding: 10px 0 8px;
-    border-top: 1px solid var(--border-subtle);
-    margin-bottom: 10px;
-}
-.theme-trigger-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 10px;
-    background: var(--accent-glow-sm);
-    border: 1px solid var(--accent-border);
-    color: var(--text-label);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
-    text-align: left;
-}
-.theme-trigger-btn:hover {
-    background: var(--accent-glow);
-    color: var(--text-primary);
-    border-color: var(--border-hover);
-}
-.theme-btn-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.15);
-}
-.theme-btn-label {
-    flex: 1;
-}
-
 /* ===== THEME MODAL ===== */
 .theme-modal-overlay {
     position: fixed;
@@ -823,7 +749,6 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
-    padding: 0 0 var(--mobile-nav-height, 0) 0;
 }
 .theme-modal-overlay.active {
     opacity: 1;
@@ -839,6 +764,7 @@
     transform: translateY(30px);
     transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
     box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+    margin-bottom: 70px;
 }
 .theme-modal-overlay.active .theme-modal-panel {
     transform: translateY(0);
@@ -876,7 +802,6 @@
     gap: 10px;
 }
 
-/* Theme Card */
 .theme-card {
     border: 1.5px solid var(--border-subtle);
     border-radius: 14px;
@@ -895,9 +820,8 @@
     box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
-/* Mini app preview inside card */
 .theme-card-preview {
-    height: 52px;
+    height: 48px;
     display: flex;
     overflow: hidden;
 }
@@ -918,7 +842,6 @@
     border-radius: 3px;
 }
 
-/* Theme card bottom info row */
 .theme-card-info {
     display: flex;
     align-items: center;
@@ -970,7 +893,6 @@
 }
 .theme-card.active .theme-card-check i { stroke: var(--text-on-accent); }
 
-/* On desktop: panel becomes a centered dialog */
 @media (min-width: 769px) {
     .theme-modal-overlay {
         align-items: center;
@@ -979,18 +901,12 @@
         border-radius: 20px;
         max-width: 420px;
         padding-bottom: 24px;
+        margin-bottom: 0;
     }
     .theme-modal-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-    }
-}
-
-/* Mobile: extra bottom padding for nav bar */
-@media (max-width: 768px) {
-    .theme-modal-overlay {
-        padding-bottom: 125px;
     }
 }
 </style>
