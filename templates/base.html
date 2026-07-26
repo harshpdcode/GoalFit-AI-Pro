@@ -270,30 +270,87 @@
             {% block content %}{% endblock %}
         </main>
 
-        <!-- ===== MOBILE BOTTOM NAVIGATION BAR ===== -->
+        <!-- ===== MOBILE DUAL-MODE BOTTOM NAVIGATION ===== -->
         {% if session.get('role') == 'user' or not session.get('role') %}
-        <nav class="mobile-bottom-nav">
-            <a href="/dashboard" class="mobile-nav-item {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
-                <i data-lucide="layout-grid"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="/progress" class="mobile-nav-item {% if request.endpoint == 'progress.progress' %}active{% endif %}">
-                <i data-lucide="trending-up"></i>
-                <span>Progress</span>
-            </a>
-            <a href="/diet-plan" class="mobile-nav-item {% if request.endpoint == 'diet.diet_plan' %}active{% endif %}">
-                <i data-lucide="file-text"></i>
-                <span>Plans</span>
-            </a>
-            <a href="/chat" class="mobile-nav-item {% if request.endpoint and 'chat' in request.endpoint %}active{% endif %}">
-                <i data-lucide="message-square"></i>
-                <span>Chat</span>
-            </a>
-            <a href="/health" class="mobile-nav-item {% if request.endpoint == 'health.health_profile' %}active{% endif %}">
-                <i data-lucide="user"></i>
-                <span>Profile</span>
-            </a>
-        </nav>
+        <div class="mobile-nav-container">
+            <!-- Mode Switcher Bar -->
+            <div class="mobile-mode-switcher">
+                <button type="button" class="mode-tab-btn active" id="btnFitnessMode" onclick="switchMobileNavMode('fitness')">
+                    <i data-lucide="dumbbell"></i> Fitness Hub
+                </button>
+                <button type="button" class="mode-tab-btn" id="btnServicesMode" onclick="switchMobileNavMode('services')">
+                    <i data-lucide="briefcase"></i> Services &amp; Tools
+                </button>
+            </div>
+
+            <!-- Mode 1: Fitness Hub Options -->
+            <div class="mobile-nav-scroll" id="navGroupFitness">
+                <a href="/dashboard" class="mobile-nav-item {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/diet-plan" class="mobile-nav-item {% if request.endpoint == 'diet.diet_plan' %}active{% endif %}">
+                    <i data-lucide="salad"></i>
+                    <span>Diet Plan</span>
+                </a>
+                <a href="/workout-plan" class="mobile-nav-item {% if request.endpoint == 'workout.workout_plan' %}active{% endif %}">
+                    <i data-lucide="dumbbell"></i>
+                    <span>Workouts</span>
+                </a>
+                <a href="/water-tracker" class="mobile-nav-item {% if request.endpoint == 'water.water_tracker' %}active{% endif %}">
+                    <i data-lucide="droplets"></i>
+                    <span>Water Tracker</span>
+                </a>
+                <a href="/progress" class="mobile-nav-item {% if request.endpoint == 'progress.progress' %}active{% endif %}">
+                    <i data-lucide="trending-up"></i>
+                    <span>Progress</span>
+                </a>
+                <a href="/gallery" class="mobile-nav-item {% if request.endpoint == 'progress_gallery.gallery' %}active{% endif %}">
+                    <i data-lucide="camera"></i>
+                    <span>Gallery</span>
+                </a>
+                <a href="/health" class="mobile-nav-item {% if request.endpoint == 'health.health_profile' %}active{% endif %}">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+            </div>
+
+            <!-- Mode 2: Services & Tools Options -->
+            <div class="mobile-nav-scroll d-none" id="navGroupServices">
+                <a href="/marketplace/trainers" class="mobile-nav-item {% if request.endpoint == 'marketplace.trainers_list' %}active{% endif %}">
+                    <i data-lucide="users"></i>
+                    <span>Marketplace</span>
+                </a>
+                <a href="/marketplace/trainers" class="mobile-nav-item">
+                    <i data-lucide="user-check"></i>
+                    <span>Hire Trainer</span>
+                </a>
+                <a href="/marketplace/dieticians" class="mobile-nav-item {% if request.endpoint == 'marketplace.dieticians_list' %}active{% endif %}">
+                    <i data-lucide="apple"></i>
+                    <span>Hire Dietician</span>
+                </a>
+                <a href="/marketplace/my-professionals" class="mobile-nav-item {% if request.endpoint == 'marketplace.my_professionals' %}active{% endif %}">
+                    <i data-lucide="briefcase"></i>
+                    <span>My Pros</span>
+                </a>
+                <a href="/feedback" class="mobile-nav-item {% if request.endpoint == 'feedback.feedback_form' %}active{% endif %}">
+                    <i data-lucide="message-square"></i>
+                    <span>Feedback</span>
+                </a>
+                <a href="/download-report" class="mobile-nav-item">
+                    <i data-lucide="file-down"></i>
+                    <span>PDF Report</span>
+                </a>
+                <a href="/pdf/download-custom-plan" class="mobile-nav-item">
+                    <i data-lucide="download"></i>
+                    <span>Custom PDF</span>
+                </a>
+                <button type="button" onclick="toggleTheme()" class="mobile-nav-item btn-link-theme" style="background:transparent; border:none;">
+                    <i data-lucide="moon"></i>
+                    <span>Theme</span>
+                </button>
+            </div>
+        </div>
         {% endif %}
 
     </div>
@@ -464,6 +521,41 @@
         if (banner) banner.style.display = 'none';
         localStorage.setItem('pwa-dismissed', 'true');
     }
+
+    // ===== DUAL MODE MOBILE NAVIGATION HANDLER =====
+    function switchMobileNavMode(mode) {
+        const fitnessBtn = document.getElementById('btnFitnessMode');
+        const servicesBtn = document.getElementById('btnServicesMode');
+        const fitnessGroup = document.getElementById('navGroupFitness');
+        const servicesGroup = document.getElementById('navGroupServices');
+
+        if (!fitnessBtn || !servicesBtn || !fitnessGroup || !servicesGroup) return;
+
+        if (mode === 'fitness') {
+            fitnessBtn.classList.add('active');
+            servicesBtn.classList.remove('active');
+            fitnessGroup.classList.remove('d-none');
+            servicesGroup.classList.add('d-none');
+            localStorage.setItem('mobile-nav-mode', 'fitness');
+        } else {
+            servicesBtn.classList.add('active');
+            fitnessBtn.classList.remove('active');
+            servicesGroup.classList.remove('d-none');
+            fitnessGroup.classList.add('d-none');
+            localStorage.setItem('mobile-nav-mode', 'services');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentEndpoint = '{{ request.endpoint }}';
+        const serviceEndpoints = ['marketplace.trainers_list', 'marketplace.dieticians_list', 'marketplace.my_professionals', 'feedback.feedback_form'];
+        if (serviceEndpoints.includes(currentEndpoint)) {
+            switchMobileNavMode('services');
+        } else {
+            const savedMode = localStorage.getItem('mobile-nav-mode') || 'fitness';
+            switchMobileNavMode(savedMode);
+        }
+    });
 </script>
 
 </body>
