@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1 class="page-title">Welcome Back, <span>{{ session.get('user_name') }}</span></h1>
-<div class="accent-line"></div>
+<div class="welcome-header flex-between mb-4">
+    <div>
+        <h1 class="welcome-title">Welcome back, <span>{{ session.get('user_name', 'Harsh') }}</span>! 👋</h1>
+        <p class="welcome-subtext">Here’s your health overview</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('health.health_profile') }}" class="btn-icon-circle" title="Edit Profile">
+            <i data-lucide="bell"></i>
+        </a>
+    </div>
+</div>
 
 <!-- ================= KPI GRID ================= -->
 
@@ -107,92 +116,122 @@
         </div>
 
     </div>
-    <a href="{{ url_for('diet.diet_plan') }}" class="card-link">
 
-    <div class="gf-card">
-
-        <div class="gf-card-header">
-            <i data-lucide="salad" class="gf-card-icon"></i>
-            <h3>Diet Plan</h3>
+    <!-- PROFILE SNAPSHOT (2-COLUMN GRID WITH ICON BADGES) -->
+    <div class="gf-card profile-card-v2">
+        <div class="gf-card-header flex-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="header-icon-badge"><i data-lucide="user"></i></div>
+                <h3 class="m-0">Profile Snapshot</h3>
+            </div>
+            <a href="{{ url_for('health.health_profile') }}" class="btn-edit-profile">
+                <i data-lucide="edit-3"></i> Edit Profile
+            </a>
         </div>
 
-        <div class="big">{{ meal_counts.total_meals }}</div>
-        <p>Meals Available</p>
+        <div class="profile-grid-2col">
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">HEIGHT</span>
+                    <strong class="stat-val">{{ health.height_cm }} cm</strong>
+                </div>
+                <div class="stat-badge cyan"><i data-lucide="ruler"></i></div>
+            </div>
 
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">WEIGHT</span>
+                    <strong class="stat-val">{{ health.weight_kg }} kg</strong>
+                </div>
+                <div class="stat-badge blue"><i data-lucide="scale"></i></div>
+            </div>
+
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">TARGET</span>
+                    <strong class="stat-val">{{ health.target_weight }} kg</strong>
+                </div>
+                <div class="stat-badge emerald"><i data-lucide="target"></i></div>
+            </div>
+
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">ACTIVITY</span>
+                    <strong class="stat-val">{{ health.activity_level }}</strong>
+                </div>
+                <div class="stat-badge sky"><i data-lucide="activity"></i></div>
+            </div>
+
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">DIET</span>
+                    <strong class="stat-val">{{ health.diet_preference }}</strong>
+                </div>
+                <div class="stat-badge teal"><i data-lucide="utensils"></i></div>
+            </div>
+
+            <div class="profile-stat-box">
+                <div class="stat-info">
+                    <span class="stat-label">BMR</span>
+                    <strong class="stat-val">{{ health.bmr if health.bmr else '—' }} kcal</strong>
+                </div>
+                <div class="stat-badge orange"><i data-lucide="flame"></i></div>
+            </div>
+        </div>
     </div>
 
-</a>
-
-<a href="{{ url_for('workout.workout_plan') }}" class="card-link">
-
-    <div class="gf-card">
-
-        <div class="gf-card-header">
-            <i data-lucide="dumbbell" class="gf-card-icon"></i>
-            <h3>Workouts</h3>
+    <!-- QUICK TIP CARD WITH GLOW BORDER -->
+    <div class="gf-card tip-card-v2">
+        <div class="tip-content-wrap">
+            <div>
+                <div class="gf-card-header mb-2" style="border:none; padding:0;">
+                    <div class="header-icon-badge yellow"><i data-lucide="zap"></i></div>
+                    <h3 class="m-0">Quick Tip</h3>
+                </div>
+                <p class="tip-text">
+                    Stay consistent! Log your weight daily and keep hydrated to accelerate your progress. You’ve got this 💪
+                </p>
+            </div>
+            <div class="tip-icon-hero">
+                <i data-lucide="droplet"></i>
+            </div>
         </div>
-
-        <div class="big">{{ workout.total_exercises }}</div>
-        <p>Exercises</p>
-
     </div>
 
-</a>
-<div class="gf-card profile-card">
-
-    <div class="gf-card-header">
-        <i data-lucide="user" class="gf-card-icon"></i>
-        <h3>Profile Snapshot</h3>
-    </div>
-
-    <div class="profile-grid">
-
-        <div class="profile-item">
-            <span>Height</span>
-            <strong>{{ health.height_cm }} cm</strong>
+    <!-- PROGRESS OVERVIEW -->
+    <div class="gf-card progress-overview-card">
+        <div class="gf-card-header flex-between mb-3">
+            <h3 class="m-0">Progress Overview</h3>
+            <a href="{{ url_for('progress.progress') }}" class="link-view-all">View All</a>
         </div>
+        <div class="progress-mini-grid">
+            <div class="mini-stat-card">
+                <div class="mini-stat-top">
+                    <span class="mini-val">7</span>
+                    <span class="mini-icon-fire">🔥</span>
+                </div>
+                <span class="mini-label">Day Streak</span>
+                <div class="mini-bar-track"><div class="mini-bar-fill" style="width: 75%;"></div></div>
+            </div>
 
-        <div class="profile-item">
-            <span>Weight</span>
-            <strong>{{ health.weight_kg }} kg</strong>
+            <div class="mini-stat-card">
+                <div class="mini-stat-top">
+                    <span class="mini-val">85%</span>
+                    <span class="mini-icon-circle">⭕</span>
+                </div>
+                <span class="mini-label">Goal Progress</span>
+                <div class="mini-bar-track"><div class="mini-bar-fill cyan" style="width: 85%;"></div></div>
+            </div>
+
+            <div class="mini-stat-card">
+                <div class="mini-stat-top">
+                    <span class="mini-val">2.4 kg</span>
+                    <span class="mini-icon-trend">📉</span>
+                </div>
+                <span class="mini-label">Weight Lost</span>
+                <div class="mini-bar-track"><div class="mini-bar-fill green" style="width: 60%;"></div></div>
+            </div>
         </div>
-
-        <div class="profile-item">
-            <span>Target</span>
-            <strong>{{ health.target_weight }} kg</strong>
-        </div>
-
-        <div class="profile-item">
-            <span>Activity</span>
-            <strong>{{ health.activity_level }}</strong>
-        </div>
-
-        <div class="profile-item">
-            <span>Diet</span>
-            <strong>{{ health.diet_preference }}</strong>
-        </div>
-
-        <div class="profile-item">
-            <span>BMR</span>
-            <strong>
-                {{ health.bmr if health.bmr else '—' }} kcal
-            </strong>
-        </div>
-
-    </div>
-
-</div>
-
-    <!-- MOTIVATION TIP -->
-    <div class="gf-card tip-card">
-        <div class="gf-card-header">
-            <i data-lucide="zap" class="gf-card-icon"></i>
-            <h3>Quick Tip</h3>
-        </div>
-        <p style="color:#d1d5db; padding:0 10px; line-height:1.5;">
-            Stay consistent! Log your weight daily and keep hydrated to
-            accelerate your progress. You’ve got this 💪
-        </p>
     </div>
 
 </div>

@@ -270,6 +270,32 @@
             {% block content %}{% endblock %}
         </main>
 
+        <!-- ===== MOBILE BOTTOM NAVIGATION BAR ===== -->
+        {% if session.get('role') == 'user' or not session.get('role') %}
+        <nav class="mobile-bottom-nav">
+            <a href="/dashboard" class="mobile-nav-item {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
+                <i data-lucide="layout-grid"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/progress" class="mobile-nav-item {% if request.endpoint == 'progress.progress' %}active{% endif %}">
+                <i data-lucide="trending-up"></i>
+                <span>Progress</span>
+            </a>
+            <a href="/diet-plan" class="mobile-nav-item {% if request.endpoint == 'diet.diet_plan' %}active{% endif %}">
+                <i data-lucide="file-text"></i>
+                <span>Plans</span>
+            </a>
+            <a href="/chat" class="mobile-nav-item {% if request.endpoint and 'chat' in request.endpoint %}active{% endif %}">
+                <i data-lucide="message-square"></i>
+                <span>Chat</span>
+            </a>
+            <a href="/health" class="mobile-nav-item {% if request.endpoint == 'health.health_profile' %}active{% endif %}">
+                <i data-lucide="user"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+        {% endif %}
+
     </div>
     {% else %}
     
