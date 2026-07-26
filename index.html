@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalFit-AI Pro — Next-Gen AI Fitness & Health Platform</title>
+    <meta name="description" content="GoalFit-AI Pro is an advanced AI-powered health and fitness platform providing personalized workout routines, smart diet planning, macro tracking, and trainer dashboards.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(18, 25, 41, 0.75);
+            --bg-card-hover: rgba(28, 38, 61, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(16, 185, 129, 0.4);
+            
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --secondary: #06b6d4;
+            --accent: #8b5cf6;
+            --warning: #f59e0b;
+            
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-dim: #6b7280;
+
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation Bar */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            background: rgba(9, 13, 22, 0.85);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 80px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .logo-text span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #059669);
+            color: #000;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 100px 0 60px;
+            text-align: center;
+            position: relative;
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            margin-bottom: 24px;
+            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto 40px;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Metrics Bar */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-card i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .metric-label {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        /* Interactive App Demo Section */
+        .section {
+            padding: 90px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .interactive-app-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+        }
+
+        .app-tabs {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 32px;
+            overflow-x: auto;
+        }
+
+        .app-tab {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .app-tab.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Controls */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .result-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-active);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .result-box.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .result-item .val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .result-item .lbl {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(16, 185, 129, 0.3);
+            background: var(--bg-card-hover);
+        }
+
+        .feature-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.75rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Technical Docs & Setup */
+        .tech-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+        }
+
+        .code-snippet {
+            background: #04070d;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #34d399;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .code-snippet .comment { color: #6b7280; }
+        .code-snippet .cmd { color: #60a5fa; }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 60px;
+        }
+
+        footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .interactive-app-box { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container nav-inner">
+            <a href="#" class="logo">
+                <div class="logo-badge"><i class="fa-solid fa-bolt"></i></div>
+                <div class="logo-text">GoalFit-AI <span>Pro</span></div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#interactive-demo">Live Demo</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#tech-specs">Setup Guide</a></li>
+                <li><a href="documentation/GoalFit_AI_Pro_Updated_Documentation.md" target="_blank">Docs</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="https://github.com/harshpdcode/GoalFit-AI-Pro" target="_blank" class="btn btn-outline">
+                    <i class="fa-brands fa-github"></i> GitHub Repo
+                </a>
+                <a href="#interactive-demo" class="btn btn-primary">
+                    <i class="fa-solid fa-play"></i> Try Demo
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero container">
+        <div class="pill-badge">
+            <i class="fa-solid fa-sparkles"></i> AI-Powered Fitness &amp; Nutrition Ecosystem
+        </div>
+        <h1>Elevate Your Health with <span>GoalFit-AI Pro</span></h1>
+        <p>Personalized workout routines, dynamic diet recommendations, hydration tracking, and professional trainer/dietitian dashboards all powered by intelligent algorithms.</p>
+        
+        <div class="hero-cta">
+            <a href="#interactive-demo" class="btn btn-primary btn-lg">
+                <i class="fa-solid fa-calculator"></i> Launch AI Health Suite
+            </a>
+            <a href="https://github.com/harshpdcode/GoalFit-AI-Pro" target="_blank" class="btn btn-outline btn-lg">
+                <i class="fa-solid fa-code-branch"></i> View Source Code
+            </a>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <i class="fa-solid fa-brain"></i>
+                <div class="metric-value">100%</div>
+                <div class="metric-label">AI Personalized Plans</div>
+            </div>
+            <div class="metric-card">
+                <i class="fa-solid fa-utensils"></i>
+                <div class="metric-value">Smart</div>
+                <div class="metric-label">Macro &amp; Calorie Counter</div>
+            </div>
+            <div class="metric-card">
+                <i class="fa-solid fa-user-doctor"></i>
+                <div class="metric-value">Pro Hub</div>
+                <div class="metric-label">Trainer &amp; Dietitian Portal</div>
+            </div>
+            <div class="metric-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div class="metric-value">Flask</div>
+                <div class="metric-label">Modular Architecture</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section id="interactive-demo" class="section container">
+        <div class="section-header">
+            <h2>Interactive AI Fitness Tools</h2>
+            <p>Test the client-side health calculation engine directly in your browser.</p>
+        </div>
+
+        <div class="interactive-app-box">
+            <div class="app-tabs">
+                <button class="app-tab active" onclick="switchTab('bmi-tab')"><i class="fa-solid fa-weight-scale"></i> BMI Calculator</button>
+                <button class="app-tab" onclick="switchTab('calorie-tab')"><i class="fa-solid fa-fire"></i> TDEE &amp; Macro Planner</button>
+                <button class="app-tab" onclick="switchTab('workout-tab')"><i class="fa-solid fa-dumbbell"></i> Workout Generator</button>
+                <button class="app-tab" onclick="switchTab('water-tab')"><i class="fa-solid fa-glass-water"></i> Water Hydration</button>
+            </div>
+
+            <!-- Tab 1: BMI -->
+            <div id="bmi-tab" class="tab-content active">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" id="bmi-weight" value="70" placeholder="e.g. 70">
+                    </div>
+                    <div class="form-group">
+                        <label>Height (cm)</label>
+                        <input type="number" id="bmi-height" value="175" placeholder="e.g. 175">
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="bmi-age" value="24">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="bmi-gender">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="calculateBMI()">Calculate BMI &amp; Health Category</button>
+
+                <div id="bmi-result" class="result-box">
+                    <h4 style="margin-bottom: 12px; color: var(--primary);"><i class="fa-solid fa-circle-check"></i> Analysis Result</h4>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="val" id="res-bmi-val">22.9</div>
+                            <div class="lbl">BMI Score</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-bmi-status">Normal</div>
+                            <div class="lbl">Category</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-bmi-ideal">56.7 - 76.6 kg</div>
+                            <div class="lbl">Ideal Weight Range</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Calorie & TDEE -->
+            <div id="calorie-tab" class="tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" id="cal-weight" value="75">
+                    </div>
+                    <div class="form-group">
+                        <label>Height (cm)</label>
+                        <input type="number" id="cal-height" value="180">
+                    </div>
+                    <div class="form-group">
+                        <label>Activity Level</label>
+                        <select id="cal-activity">
+                            <option value="1.2">Sedentary (Little or no exercise)</option>
+                            <option value="1.375">Lightly Active (1-3 days/week)</option>
+                            <option value="1.55" selected>Moderately Active (3-5 days/week)</option>
+                            <option value="1.725">Very Active (6-7 days/week)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Primary Goal</label>
+                        <select id="cal-goal">
+                            <option value="lose">Weight Loss (-500 kcal)</option>
+                            <option value="maintain" selected>Maintain Weight</option>
+                            <option value="gain">Muscle Gain (+400 kcal)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="calculateCalories()">Generate Macro Breakdown</button>
+
+                <div id="cal-result" class="result-box">
+                    <h4 style="margin-bottom: 12px; color: var(--secondary);"><i class="fa-solid fa-chart-pie"></i> Daily Target Breakdown</h4>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="val" id="res-cal-target">2,450</div>
+                            <div class="lbl">Daily Calories (kcal)</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-cal-protein">150g</div>
+                            <div class="lbl">Protein</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-cal-carbs">275g</div>
+                            <div class="lbl">Carbohydrates</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-cal-fats">68g</div>
+                            <div class="lbl">Fats</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Workout Generator -->
+            <div id="workout-tab" class="tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fitness Level</label>
+                        <select id="wo-level">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate" selected>Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Focus</label>
+                        <select id="wo-focus">
+                            <option value="hypertrophy">Muscle Building (Hypertrophy)</option>
+                            <option value="fatburn">Fat Loss &amp; Conditioning</option>
+                            <option value="strength">Pure Strength</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Days Per Week</label>
+                        <select id="wo-days">
+                            <option value="3">3 Days (Full Body)</option>
+                            <option value="4" selected>4 Days (Upper / Lower)</option>
+                            <option value="5">5 Days (Push / Pull / Legs)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="generateWorkout()">Generate AI Workout Preview</button>
+
+                <div id="wo-result" class="result-box">
+                    <h4 style="margin-bottom: 12px; color: var(--primary);"><i class="fa-solid fa-list-check"></i> Recommended AI Routine Split</h4>
+                    <div id="wo-routine-details" style="font-size: 0.95rem; color: var(--text-muted);">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Water Intake -->
+            <div id="water-tab" class="tab-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Body Weight (kg)</label>
+                        <input type="number" id="water-weight" value="70">
+                    </div>
+                    <div class="form-group">
+                        <label>Workout Duration (Minutes/Day)</label>
+                        <input type="number" id="water-workout" value="45">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="calculateWater()">Calculate Hydration Target</button>
+
+                <div id="water-result" class="result-box">
+                    <h4 style="margin-bottom: 12px; color: var(--secondary);"><i class="fa-solid fa-droplet"></i> Hydration Recommendation</h4>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="val" id="res-water-liters">2.8 L</div>
+                            <div class="lbl">Daily Water Target</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="val" id="res-water-glasses">11 Glasses</div>
+                            <div class="lbl">Approx 250ml Glasses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section container">
+        <div class="section-header">
+            <h2>Key System Modules</h2>
+            <p>Designed for individuals, certified personal trainers, and nutritionists.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-user-shield"></i></div>
+                <h3>Authentication &amp; User Safety</h3>
+                <p>Secure login/registration system with rate-limiting, session protection, and first-time health profile onboarding enforcement.</p>
+                <span class="feature-tag">Flask-Limiter &amp; Session Management</span>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <h3>AI Prediction Engine</h3>
+                <p>Calculates BMI, caloric maintenance, workout volume progression, and body transformation timelines based on input telemetry.</p>
+                <span class="feature-tag">Data-Driven Intelligence</span>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-id-card"></i></div>
+                <h3>Professional Dashboards</h3>
+                <p>Dedicated portals for Trainers and Dietitians to manage clients, publish custom meal plans, track progress, and log earnings.</p>
+                <span class="feature-tag">Role-Based Access Control</span>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-store"></i></div>
+                <h3>Fitness Marketplace &amp; Plans</h3>
+                <p>Explore customized fitness bundles, diet subscriptions, and schedule direct consultations with verified health experts.</p>
+                <span class="feature-tag">Payment &amp; Cart Integration</span>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                <h3>Report &amp; PDF Export</h3>
+                <p>Export comprehensive health summaries, diet charts, and progress logs as printable PDF reports.</p>
+                <span class="feature-tag">PDF Generation Module</span>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fa-solid fa-comments"></i></div>
+                <h3>In-App Messaging &amp; Feedback</h3>
+                <p>Real-time chat system connecting users directly with their assigned trainers, plus community feedback logging.</p>
+                <span class="feature-tag">Client-Trainer Communication</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Setup & Deployment Guide -->
+    <section id="tech-specs" class="section container">
+        <div class="section-header">
+            <h2>Local Setup &amp; Deployment Guide</h2>
+            <p>Run the full Flask backend server on your machine or deploy to cloud hosts.</p>
+        </div>
+
+        <div class="tech-box">
+            <h3><i class="fa-solid fa-terminal"></i> Quickstart Instructions</h3>
+            <div class="code-snippet">
+<span class="comment"># 1. Clone the repository</span>
+<span class="cmd">git clone https://github.com/harshpdcode/GoalFit-AI-Pro.git</span>
+<span class="cmd">cd GoalFit-AI-Pro</span>
+
+<span class="comment"># 2. Set up virtual environment</span>
+<span class="cmd">python -m venv venv</span>
+<span class="cmd">source venv/bin/activate  # On Windows: venv\Scripts\activate</span>
+
+<span class="comment"># 3. Install dependencies</span>
+<span class="cmd">pip install -r requirements.txt</span>
+
+<span class="comment"># 4. Initialize Database &amp; Seed Data</span>
+<span class="cmd">python setup_db.py</span>
+<span class="cmd">python seed_data.py</span>
+
+<span class="comment"># 5. Run local Flask Server</span>
+<span class="cmd">python app.py</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="container">
+        <p>&copy; 2026 <strong>GoalFit-AI Pro</strong>. Hosted on GitHub Pages. Built with Flask, HTML5, CSS3, and JavaScript.</p>
+        <p style="margin-top: 8px;">
+            <a href="https://github.com/harshpdcode/GoalFit-AI-Pro" target="_blank"><i class="fa-brands fa-github"></i> View GitHub Repository</a>
+        </p>
+    </footer>
+
+    <!-- Interactive JS Script -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.app-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function calculateBMI() {
+            const w = parseFloat(document.getElementById('bmi-weight').value);
+            const h = parseFloat(document.getElementById('bmi-height').value) / 100;
+            if (!w || !h) return;
+
+            const bmi = (w / (h * h)).toFixed(1);
+            document.getElementById('res-bmi-val').innerText = bmi;
+
+            let status = 'Normal';
+            if (bmi < 18.5) status = 'Underweight';
+            else if (bmi >= 25 && bmi < 29.9) status = 'Overweight';
+            else if (bmi >= 30) status = 'Obese';
+            document.getElementById('res-bmi-status').innerText = status;
+
+            const minW = (18.5 * h * h).toFixed(1);
+            const maxW = (24.9 * h * h).toFixed(1);
+            document.getElementById('res-bmi-ideal').innerText = `${minW} - ${maxW} kg`;
+
+            document.getElementById('bmi-result').classList.add('visible');
+        }
+
+        function calculateCalories() {
+            const w = parseFloat(document.getElementById('cal-weight').value);
+            const h = parseFloat(document.getElementById('cal-height').value);
+            const act = parseFloat(document.getElementById('cal-activity').value);
+            const goal = document.getElementById('cal-goal').value;
+
+            if (!w || !h) return;
+
+            // BMR using Mifflin-St Jeor (approx male default)
+            let bmr = 10 * w + 6.25 * h - 5 * 25 + 5;
+            let tdee = Math.round(bmr * act);
+
+            if (goal === 'lose') tdee -= 500;
+            if (goal === 'gain') tdee += 400;
+
+            document.getElementById('res-cal-target').innerText = tdee.toLocaleString();
+            
+            // Macros: 25% P, 50% C, 25% F
+            const proteinG = Math.round((tdee * 0.25) / 4);
+            const carbsG = Math.round((tdee * 0.50) / 4);
+            const fatsG = Math.round((tdee * 0.25) / 9);
+
+            document.getElementById('res-cal-protein').innerText = proteinG + 'g';
+            document.getElementById('res-cal-carbs').innerText = carbsG + 'g';
+            document.getElementById('res-cal-fats').innerText = fatsG + 'g';
+
+            document.getElementById('cal-result').classList.add('visible');
+        }
+
+        function generateWorkout() {
+            const level = document.getElementById('wo-level').value;
+            const focus = document.getElementById('wo-focus').value;
+            const days = document.getElementById('wo-days').value;
+
+            const container = document.getElementById('wo-routine-details');
+            container.innerHTML = `
+                <p style="margin-bottom: 8px;"><strong>Selected Configuration:</strong> ${days}-Day ${level.toUpperCase()} Routine focusing on ${focus.toUpperCase()}</p>
+                <ul style="padding-left: 20px; line-height: 1.8;">
+                    <li><strong>Day 1:</strong> Push / Chest &amp; Triceps (${level === 'beginner' ? '3 Sets x 10 Reps' : '4 Sets x 8-12 Reps'})</li>
+                    <li><strong>Day 2:</strong> Pull / Back &amp; Biceps (${level === 'beginner' ? '3 Sets x 10 Reps' : '4 Sets x 8-12 Reps'})</li>
+                    <li><strong>Day 3:</strong> Leg Day &amp; Core Progression</li>
+                    ${days >= 4 ? '<li><strong>Day 4:</strong> Upper Body Hypertrophy &amp; Shoulders</li>' : ''}
+                    ${days >= 5 ? '<li><strong>Day 5:</strong> Posterior Chain &amp; Conditioning HIIT</li>' : ''}
+                </ul>
+            `;
+            document.getElementById('wo-result').classList.add('visible');
+        }
+
+        function calculateWater() {
+            const w = parseFloat(document.getElementById('water-weight').value);
+            const workout = parseFloat(document.getElementById('water-workout').value);
+            if (!w) return;
+
+            let liters = (w * 0.033) + (workout / 30 * 0.35);
+            liters = liters.toFixed(1);
+            const glasses = Math.round(liters * 4);
+
+            document.getElementById('res-water-liters').innerText = `${liters} L`;
+            document.getElementById('res-water-glasses').innerText = `${glasses} Glasses`;
+            document.getElementById('water-result').classList.add('visible');
+        }
+    </script>
+</body>
+</html>
