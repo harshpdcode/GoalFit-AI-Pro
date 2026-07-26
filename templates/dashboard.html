@@ -16,6 +16,12 @@
         </div>
         <div class="big">{{ bmi.bmi_value }}</div>
         <p>{{ bmi.bmi_category }}</p>
+        {% if bmi.ideal_weight_min %}
+        <div style="margin-top: 10px; font-size: 0.85rem; color: #9ca3af; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+            <i data-lucide="target" style="width: 14px; height: 14px; vertical-align: middle; color: var(--primary);"></i>
+            <strong>Ideal Weight:</strong> {{ bmi.ideal_weight_min }} &ndash; {{ bmi.ideal_weight_max }} kg
+        </div>
+        {% endif %}
     </div>
 
     <!-- AI Prediction -->

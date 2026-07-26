@@ -17,6 +17,50 @@
     </div>
 </div>
 
+{% if tdee_data %}
+<!-- TDEE & Macro Planner Card -->
+<div class="gf-card" style="margin-bottom: 30px; padding: 24px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border-radius: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: rgba(16, 185, 129, 0.15); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.3rem;">
+                <i data-lucide="flame"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">TDEE &amp; Macro Planner</h3>
+                <span style="font-size: 0.85rem; color: #9ca3af;">Personalized Energy &amp; Nutrient Target Breakdown</span>
+            </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <span class="tag" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.82rem;">Goal: {{ tdee_data.goal }}</span>
+            <span class="tag" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); color: #06b6d4; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem;">Activity: {{ tdee_data.activity }}</span>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.7rem; font-weight: 800; color: #10b981;">{{ tdee_data.target_calories }}</div>
+            <div style="font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Target Calories (kcal)</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.7rem; font-weight: 800; color: #38bdf8;">{{ tdee_data.tdee }}</div>
+            <div style="font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Daily TDEE (kcal)</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.7rem; font-weight: 800; color: #f59e0b;">{{ tdee_data.protein_g }}g</div>
+            <div style="font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Protein (25%)</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.7rem; font-weight: 800; color: #a855f7;">{{ tdee_data.carbs_g }}g</div>
+            <div style="font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Carbohydrates (50%)</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.7rem; font-weight: 800; color: #ec4899;">{{ tdee_data.fats_g }}g</div>
+            <div style="font-size: 0.78rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">Fats (25%)</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% if coach %}
 <div class="meal-tabs">
     <button class="tab active" data-meal="breakfast">Breakfast</button>

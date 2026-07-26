@@ -38,6 +38,9 @@ def calculate_bmi():
     else:
         category = "Obese"
 
+    ideal_min = round(18.5 * ((height / 100) ** 2), 1)
+    ideal_max = round(24.9 * ((height / 100) ** 2), 1)
+
     cursor.execute("""
         INSERT INTO bmi_records
         (user_id, bmi_value, bmi_category, recorded_date)
@@ -48,4 +51,4 @@ def calculate_bmi():
     cursor.close()
     conn.close()
 
-    return f"Your BMI is {round(bmi,2)} ({category})"
+    return f"Your BMI is {round(bmi,2)} ({category}). Ideal weight range: {ideal_min} - {ideal_max} kg"

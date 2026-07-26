@@ -56,7 +56,7 @@ def diet_plan():
     try:
         # ---------- FETCH USER HEALTH ----------
         cursor.execute("""
-            SELECT goal_type, diet_preference
+            SELECT *
             FROM user_health
             WHERE user_id = %s
         """, (user_id,))
@@ -67,6 +67,47 @@ def diet_plan():
 
         goal = health['goal_type'].strip()
         diet_pref = health['diet_preference'].strip()
+
+        # ---------- CALCULATE TDEE & MACROS ----------
+        w = float(health.get('weight_kg', 70))
+        h = float(health.get('height_cm', 170))
+        age = int(health.get('age', 25))
+        gender = health.get('gender', 'Male')
+        act_str = str(health.get('activity_level', 'Moderately Active')).lower()
+
+        if gender == 'Male':
+            bmr = (10 * w) + (6.25 * h) - (5 * age) + 5
+        else:
+            bmr = (10 * w) + (6.25 * h) - (5 * age) - 161
+
+        act_mult = 1.55
+        if 'sedentary' in act_str: act_mult = 1.2
+        elif 'light' in act_str: act_mult = 1.375
+        elif 'very' in act_str: act_mult = 1.725
+        elif 'extra' in act_str or 'extreme' in act_str: act_mult = 1.9
+
+        tdee = round(bmr * act_mult)
+        target_calories = tdee
+        goal_lower = goal.lower()
+        if 'loss' in goal_lower:
+            target_calories = tdee - 500
+        elif 'gain' in goal_lower:
+            target_calories = tdee + 400
+
+        protein_g = round((target_calories * 0.25) / 4)
+        carbs_g = round((target_calories * 0.50) / 4)
+        fats_g = round((target_calories * 0.25) / 9)
+
+        tdee_data = {
+            'bmr': round(bmr),
+            'tdee': tdee,
+            'target_calories': target_calories,
+            'protein_g': protein_g,
+            'carbs_g': carbs_g,
+            'fats_g': fats_g,
+            'activity': health.get('activity_level', 'Moderately Active'),
+            'goal': goal
+        }
 
         # ---------- FETCH MEALS ----------
         cursor.execute("""
@@ -117,6 +158,7 @@ def diet_plan():
             goal=goal,
             bmi="Based on your profile",
             diet_pref=diet_pref,
+            tdee_data=tdee_data,
             user_name=session.get('user_name'),
             email=session.get('email')
         )

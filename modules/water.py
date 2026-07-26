@@ -62,6 +62,17 @@ def water_tracker():
     """, (user_id,))
     week_history = cursor.fetchall()
 
+    # Calculate weight-based hydration recommendation
+    cursor.execute("SELECT weight_kg FROM user_health WHERE user_id=%s", (user_id,))
+    user_health_data = cursor.fetchone()
+    if user_health_data and user_health_data['weight_kg']:
+        rec_liters = round(float(user_health_data['weight_kg']) * 0.033, 1)
+    else:
+        rec_liters = 2.5
+
+    glass_ml = 250
+    target_liters = round(water_log['goal_glasses'] * (glass_ml / 1000.0), 1)
+
     cursor.close()
     conn.close()
 
@@ -69,6 +80,9 @@ def water_tracker():
         water_log=water_log,
         streak=streak,
         week_history=week_history,
+        rec_liters=rec_liters,
+        target_liters=target_liters,
+        glass_ml=glass_ml,
         user_name=session.get('user_name'),
         email=session.get('email')
     )

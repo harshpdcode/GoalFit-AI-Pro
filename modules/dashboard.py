@@ -35,6 +35,10 @@ def dashboard():
     else:
         health['bmr'] = round((10 * health['weight_kg']) + (6.25 * health['height_cm']) - (5 * health['age']) - 161)
 
+    # Calculate Ideal Weight Range (BMI 18.5 to 24.9)
+    h_m = float(health['height_cm']) / 100.0
+    health['ideal_weight_min'] = round(18.5 * (h_m ** 2), 1)
+    health['ideal_weight_max'] = round(24.9 * (h_m ** 2), 1)
 
     # ---------- BMI ----------
     cursor.execute("""
@@ -45,6 +49,12 @@ def dashboard():
         LIMIT 1
     """, (user_id,))
     bmi = cursor.fetchone()
+
+    if not bmi:
+        bmi = {"bmi_value": "--", "bmi_category": "No Record"}
+        
+    bmi['ideal_weight_min'] = health['ideal_weight_min']
+    bmi['ideal_weight_max'] = health['ideal_weight_max']
 
     # ---------- GOAL PREDICTION ----------
     cursor.execute("""
