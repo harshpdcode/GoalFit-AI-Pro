@@ -8,49 +8,49 @@
 </div>
 
 <div class="mt-4">
-    <h4 class="mb-4 text-white">Active Coaches</h4>
+    <h4 class="mb-4 fw-bold" style="color: var(--text-primary);">Active Coaches</h4>
     
     {% if active_professionals %}
     <div class="row g-4">
         {% for prof in active_professionals %}
         <div class="col-md-6 col-xl-4">
-            <div class="pro-card" style="position:relative; overflow:hidden;">
+            <div class="pro-card" style="position:relative; overflow:hidden; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 20px;">
                 <!-- Status Badge -->
                 <div style="position:absolute; top:15px; right:15px;">
-                    <span class="badge" style="background:var(--success-main); color:#000;">Active</span>
+                    <span class="badge" style="background:var(--success, #10b981); color:#fff; font-weight:700;">Active</span>
                 </div>
                 
                 <div class="d-flex align-items-center gap-3 mb-3">
                     {% if prof.prof_photo and prof.prof_photo != 'static/images/profile_img/default_prof.jpg' %}
                     <img src="/{{ prof.prof_photo }}" style="width:60px;height:60px;border-radius:12px;object-fit:cover;">
                     {% else %}
-                    <div style="width:60px;height:60px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;color:var(--text-primary);">
+                    <div style="width:60px;height:60px;border-radius:12px;background:var(--bg-input);border:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;color:var(--text-primary);">
                         {{ prof.prof_name[0]|upper }}
                     </div>
                     {% endif %}
                     
                     <div>
-                        <h5 class="mb-0 text-white fw-bold">{{ prof.prof_name }}</h5>
-                        <p class="mb-0 text-secondary small">{{ prof.prof_role|title }}</p>
+                        <h5 class="mb-0 fw-bold" style="color: var(--text-primary);">{{ prof.prof_name }}</h5>
+                        <p class="mb-0 small" style="color: var(--text-muted);">{{ prof.prof_role|title }}</p>
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between mb-3 text-secondary" style="font-size: 0.85rem;">
+                <div class="d-flex justify-content-between mb-3" style="font-size: 0.85rem; color: var(--text-muted);">
                     <div>
-                        <strong>Plan:</strong> <span class="text-white">{{ prof.plan_type }}</span>
+                        <strong>Plan:</strong> <span style="color: var(--text-primary); font-weight:600;">{{ prof.plan_type }}</span>
                     </div>
                     <div>
-                        <strong>Since:</strong> <span class="text-white">{{ prof.start_date.strftime('%b %d, %Y') if prof.start_date else 'N/A' }}</span>
+                        <strong>Since:</strong> <span style="color: var(--text-primary); font-weight:600;">{{ prof.start_date.strftime('%b %d, %Y') if prof.start_date else 'N/A' }}</span>
                     </div>
                 </div>
                 
                 <div class="d-flex gap-2">
-                    <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn btn-outline-secondary flex-grow-1" style="border-radius:8px;">View Profile</a>
+                    <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn flex-grow-1" style="border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); font-weight:600; font-size:0.85rem;">View Profile</a>
                     {% if prof.prof_role in ['trainer', 'both'] %}
-                        <a href="/workout-plan" class="btn btn-primary flex-grow-1" style="border-radius:8px;">Workouts</a>
+                        <a href="/workout-plan" class="btn flex-grow-1" style="border-radius:8px; background:var(--accent-gradient); color:var(--text-on-accent); border:none; font-weight:600; font-size:0.85rem;">Workouts</a>
                     {% endif %}
                     {% if prof.prof_role in ['dietician', 'both'] %}
-                        <a href="/diet-plan" class="btn btn-primary flex-grow-1" style="border-radius:8px; background:var(--gradient-primary); border:none;">Diet</a>
+                        <a href="/diet-plan" class="btn flex-grow-1" style="border-radius:8px; background:var(--accent-gradient); color:var(--text-on-accent); border:none; font-weight:600; font-size:0.85rem;">Diet</a>
                     {% endif %}
                 </div>
             </div>
@@ -58,13 +58,13 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="p-5 text-center bg-dark rounded-4" style="border:1px dashed var(--border-color);">
-        <i data-lucide="users" style="width:48px;height:48px;color:var(--text-secondary);margin-bottom:15px;"></i>
-        <h5 class="text-white">No active coaches</h5>
-        <p class="text-secondary">You haven't hired any professionals yet. Visit the marketplace to get started.</p>
+    <div class="p-5 text-center rounded-4" style="background:var(--bg-card); border:1px dashed var(--border-subtle);">
+        <i data-lucide="users" style="width:48px;height:48px;color:var(--text-muted);margin-bottom:15px;"></i>
+        <h5 style="color:var(--text-primary); font-weight:700;">No active coaches</h5>
+        <p style="color:var(--text-muted);">You haven't hired any professionals yet. Visit the marketplace to get started.</p>
         <div class="d-flex justify-content-center gap-3 mt-4">
-            <a href="/marketplace/trainers" class="btn btn-primary px-4 py-2" style="border-radius:10px;">Hire Trainer</a>
-            <a href="/marketplace/dieticians" class="btn btn-outline-secondary px-4 py-2" style="border-radius:10px;">Hire Dietician</a>
+            <a href="/marketplace/trainers" class="btn px-4 py-2" style="border-radius:10px; background:var(--accent-gradient); color:var(--text-on-accent); font-weight:700;">Hire Trainer</a>
+            <a href="/marketplace/dieticians" class="btn px-4 py-2" style="border-radius:10px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); font-weight:600;">Hire Dietician</a>
         </div>
     </div>
     {% endif %}
@@ -72,32 +72,32 @@
 
 {% if past_professionals %}
 <div class="mt-5">
-    <h4 class="mb-4 text-white">Past Coaches</h4>
+    <h4 class="mb-4 fw-bold" style="color:var(--text-primary);">Past Coaches</h4>
     
     <div class="row g-4">
         {% for prof in past_professionals %}
         <div class="col-md-6 col-xl-4">
-            <div class="pro-card" style="opacity: 0.8;">
+            <div class="pro-card" style="opacity: 0.8; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:16px; padding:20px;">
                 <div style="position:absolute; top:15px; right:15px;">
-                    <span class="badge" style="background:var(--border-color); color:var(--text-secondary);">Completed</span>
+                    <span class="badge" style="background:var(--bg-input); color:var(--text-muted); border:1px solid var(--border-subtle);">Completed</span>
                 </div>
                 
                 <div class="d-flex align-items-center gap-3 mb-3">
-                    <div style="width:50px;height:50px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;color:var(--text-secondary);">
+                    <div style="width:50px;height:50px;border-radius:10px;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:bold;color:var(--text-primary);">
                         {{ prof.prof_name[0]|upper }}
                     </div>
                     <div>
-                        <h6 class="mb-0 text-white fw-bold">{{ prof.prof_name }}</h6>
-                        <p class="mb-0 text-secondary small">{{ prof.prof_role|title }}</p>
+                        <h6 class="mb-0 fw-bold" style="color:var(--text-primary);">{{ prof.prof_name }}</h6>
+                        <p class="mb-0 small" style="color:var(--text-muted);">{{ prof.prof_role|title }}</p>
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between text-secondary" style="font-size: 0.8rem;">
-                    <div>Plan: <span>{{ prof.plan_type }}</span></div>
-                    <div>Ended: <span>{{ prof.end_date.strftime('%b %d, %Y') if prof.end_date else 'N/A' }}</span></div>
+                <div class="d-flex justify-content-between" style="font-size: 0.8rem; color:var(--text-muted);">
+                    <div>Plan: <span style="color:var(--text-primary); font-weight:600;">{{ prof.plan_type }}</span></div>
+                    <div>Ended: <span style="color:var(--text-primary); font-weight:600;">{{ prof.end_date.strftime('%b %d, %Y') if prof.end_date else 'N/A' }}</span></div>
                 </div>
                 
-                <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn btn-sm btn-outline-secondary w-100 mt-3" style="border-radius:8px;">View Profile</a>
+                <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn btn-sm w-100 mt-3" style="border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); font-weight:600;">View Profile</a>
             </div>
         </div>
         {% endfor %}

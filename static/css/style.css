@@ -744,10 +744,21 @@ body {
 .weight-form { display:flex; gap:10px; margin-top:12px; }
 .weight-form input {
     flex:1; padding:12px 14px; border-radius:8px;
-    border:1.5px solid rgba(18,214,197,0.2); background:rgba(2,6,23,0.6);
-    color: var(--text-secondary); font-size:14px; transition:0.3s;
+    border:1px solid var(--border-subtle); background:var(--bg-input);
+    color: var(--text-primary); font-size:14px; transition:0.3s;
 }
-.weight-form input:focus { outline:none; border-color:rgba(18,214,197,0.5); }
+.weight-form input:focus { outline:none; border-color:var(--accent-primary); box-shadow:0 0 10px var(--accent-glow); }
+
+/* Global Form Inputs Theme Compliance */
+input, select, textarea, .form-control {
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-subtle) !important;
+}
+input::placeholder, textarea::placeholder, .form-control::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.7;
+}
 .submit-btn {
     display:flex; align-items:center; gap:6px;
     background: var(--accent-gradient); border:none; padding:12px 20px;
