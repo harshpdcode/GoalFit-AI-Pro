@@ -607,8 +607,37 @@ def create_schema():
             ("Boiled Eggs", "snacks", 140, 12, 1, 10, "Non-Vegetarian", "Weight Loss", 1, "static/images/diet/sandwich_ai.png"),
             ("Protein Bar", "snacks", 250, 20, 30, 8, "Vegetarian", "Weight Gain", 2, "static/images/diet/salad.jpeg")
         ]
+
+        # Check if full seed JSON dataset exists
+        json_seed_path = os.path.join(os.path.dirname(__file__), "database", "diet_meals_seed.json")
         q2 = "INSERT INTO diet_meals (meal_name, meal_time, calories, proteins, carbs, fats, diet_type, goal_type, option_group, img_src) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        cursor.executemany(q2, meal_data)
+        
+        if os.path.exists(json_seed_path):
+            import json
+            print("Loading 6,605 diet meals from database/diet_meals_seed.json...")
+            with open(json_seed_path, "r", encoding="utf-8") as jf:
+                json_data = json.load(jf)
+            batch = [
+                (
+                    m["meal_name"][:100],
+                    m["meal_time"][:50],
+                    int(m["calories"]),
+                    float(m["proteins"]),
+                    float(m["carbs"]),
+                    float(m["fats"]),
+                    m["diet_type"][:50],
+                    m["goal_type"][:50],
+                    int(m["option_group"]),
+                    m["img_src"][:255]
+                )
+                for m in json_data
+            ]
+            batch_size = 500
+            for i in range(0, len(batch), batch_size):
+                cursor.executemany(q2, batch[i:i+batch_size])
+            print(f"Successfully seeded {len(batch)} meals into diet_meals!")
+        else:
+            cursor.executemany(q2, meal_data)
 
         # ===========================
         # SEED ADMIN USER
