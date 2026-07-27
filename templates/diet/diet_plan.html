@@ -107,91 +107,163 @@
 
 {% else %}
 
-<div class="meal-tabs">
-    <button class="tab active" data-meal="breakfast">Breakfast</button>
-    <button class="tab" data-meal="lunch">Lunch</button>
-    <button class="tab" data-meal="dinner">Dinner</button>
-    <button class="tab" data-meal="snacks">Snacks</button>
+<div class="meal-tabs mb-4">
+    <button class="tab active" data-cat="breakfast">🌅 Breakfast</button>
+    <button class="tab" data-cat="lunch">☀️ Lunch</button>
+    <button class="tab" data-cat="dinner">🌙 Dinner</button>
+    <button class="tab" data-cat="snacks">🍎 Snacks</button>
 </div>
 
-<div class="meal-grid">
-
-    {% for meal_time in ["breakfast","lunch","dinner","snacks"] %}
-
-    {% for meal in meals[meal_time] %}
-
-    <div class="meal-card" data-meal="{{ meal_time }}">
-
-        <div class="meal-img">
-
-            <img src="/{{ meal.img_src }}" alt="{{ meal.meal_name }}" style="width:100%; height:200px; object-fit:cover;">
-
-            <span class="kcal-badge">
-                🔥 {{ meal.calories }} kcal
+{% for cat in ["breakfast", "lunch", "dinner", "snacks"] %}
+<div class="category-meal-section" id="cat-section-{{ cat }}" style="display: {% if loop.first %}block{% else %}none{% endif %};">
+    
+    <!-- Active Meal Header -->
+    {% set active_m = active_meals.get(cat) %}
+    {% if active_m %}
+    <div class="card mb-4" style="background: rgba(18, 214, 197, 0.05); border: 2px solid var(--accent-primary); border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px);">
+        <div class="card-header border-0 bg-transparent d-flex justify-content-between align-items-center pt-3 px-4 pb-0">
+            <span class="badge bg-success px-3 py-2 rounded-pill fw-bold text-uppercase" style="letter-spacing:0.5px;">
+                ⭐ Active Default {{ cat|capitalize }} Meal
             </span>
-
+            <div class="form-check">
+                <input class="form-check-input diet-checkbox" type="checkbox" id="meal-chk-{{ active_m.id }}" data-id="{{ active_m.id }}" {% if diet_logs.get(active_m.id) %}checked{% endif %} style="transform: scale(1.2); cursor: pointer;">
+                <label class="form-check-label ms-2 fw-semibold text-light" for="meal-chk-{{ active_m.id }}" style="cursor: pointer;">Logged / Eaten</label>
+            </div>
         </div>
 
-        <div class="meal-info">
+        <div class="card-body p-4">
+            <div class="row align-items-center g-4">
+                <div class="col-md-4">
+                    <div style="position: relative; border-radius: 12px; overflow: hidden; height: 180px;">
+                        <img src="/{{ active_m.img_src }}" alt="{{ active_m.meal_name }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='/static/images/diet/salad.jpeg';">
+                        <span class="kcal-badge" style="position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.85); color: #f59e0b; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.88rem;">
+                            🔥 {{ active_m.calories }} kcal
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h2 class="h3 fw-bold text-light mb-2">{{ active_m.meal_name }}</h2>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="tag vegan" style="background: rgba(255,255,255,0.08); color: #12d6c5; padding: 4px 12px; border-radius: 12px; font-size: 0.82rem;">{{ active_m.diet_type }}</span>
+                        <span class="tag goal" style="background: rgba(255,255,255,0.08); color: #8b5cf6; padding: 4px 12px; border-radius: 12px; font-size: 0.82rem;">{{ active_m.goal_type }}</span>
+                    </div>
 
-            <h3>{{ meal.meal_name }}</h3>
-
-            <div class="meal-meta">
-                <span>{{ meal.diet_type }}</span>
+                    <div class="row text-center g-2 p-3 rounded-3" style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <div class="col-4 border-end border-secondary border-opacity-25">
+                            <span class="d-block h4 fw-bold text-warning mb-0">{{ active_m.proteins or 0 }}g</span>
+                            <span class="small text-muted text-uppercase">Protein</span>
+                        </div>
+                        <div class="col-4 border-end border-secondary border-opacity-25">
+                            <span class="d-block h4 fw-bold text-info mb-0">{{ active_m.carbs or 0 }}g</span>
+                            <span class="small text-muted text-uppercase">Carbs</span>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block h4 fw-bold text-danger mb-0">{{ active_m.fats or 0 }}g</span>
+                            <span class="small text-muted text-uppercase">Fats</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="macros">
-                <div>
-                    <strong>{{ meal.proteins or 0 }}g</strong>
-                    <p>Protein</p>
-                </div>
-
-                <div>
-                    <strong>{{ meal.carbs or 0 }}g</strong>
-                    <p>Carbs</p>
-                </div>
-
-                <div>
-                    <strong>{{ meal.fats or 0 }}g</strong>
-                    <p>Fat</p>
-                </div>
-            </div>
-
         </div>
+    </div>
+    {% endif %}
 
+    <!-- Options & Meal Swapper Header -->
+    <div class="d-flex align-items-center justify-content-between my-4">
+        <h4 class="mb-0 text-light fw-bold">🔄 Choose / Swap {{ cat|capitalize }} Meal</h4>
+        <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ grouped_options[cat]|length }} Options Available</span>
     </div>
 
-    {% endfor %}
+    <!-- Options Grid -->
+    <div class="meal-grid">
+        {% for meal in grouped_options[cat] %}
+        <div class="meal-card" style="border: {% if active_m and active_m.id == meal.id %}2px solid var(--accent-primary){% else %}1px solid rgba(255,255,255,0.08){% endif %};">
+            <div class="meal-img" style="position: relative;">
+                <img src="/{{ meal.img_src }}" alt="{{ meal.meal_name }}" 
+                     style="width: 100%; height: 160px; object-fit: cover;"
+                     onerror="this.onerror=null; this.src='/static/images/diet/salad.jpeg';">
+                <span class="kcal-badge" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); color: #f59e0b; padding: 2px 10px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">
+                    🔥 {{ meal.calories }} kcal
+                </span>
+            </div>
 
-    {% endfor %}
+            <div class="meal-info p-3">
+                <h4 class="h5 fw-bold text-light mb-1">{{ meal.meal_name }}</h4>
+                <div class="meal-meta mb-2">
+                    <span class="badge bg-dark text-info">{{ meal.diet_type }}</span>
+                </div>
+
+                <div class="macros d-flex justify-content-around text-center p-2 mb-3 rounded" style="background: rgba(255,255,255,0.03);">
+                    <div>
+                        <strong class="text-warning small d-block">{{ meal.proteins or 0 }}g</strong>
+                        <span class="small text-muted" style="font-size:0.7rem;">Protein</span>
+                    </div>
+                    <div>
+                        <strong class="text-info small d-block">{{ meal.carbs or 0 }}g</strong>
+                        <span class="small text-muted" style="font-size:0.7rem;">Carbs</span>
+                    </div>
+                    <div>
+                        <strong class="text-danger small d-block">{{ meal.fats or 0 }}g</strong>
+                        <span class="small text-muted" style="font-size:0.7rem;">Fat</span>
+                    </div>
+                </div>
+
+                {% if active_m and active_m.id == meal.id %}
+                <button class="btn btn-sm btn-success w-100 rounded-pill fw-bold" disabled>
+                    ✓ Active Daily Meal
+                </button>
+                {% else %}
+                <button onclick="selectActiveMeal('{{ cat }}', {{ meal.id }})" class="btn btn-sm btn-outline-info w-100 rounded-pill fw-bold">
+                    Set as Active Meal
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 
 </div>
+{% endfor %}
 
 {% endif %}
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        const tabs = document.querySelectorAll(".tab");
-        const cards = document.querySelectorAll(".meal-card");
-
-        function filterMeals(type) {
-            cards.forEach(card => {
-                card.style.display = (card.dataset.meal === type) ? "block" : "none";
+    async function selectActiveMeal(category, mealId) {
+        try {
+            const res = await fetch('/diet/select-meal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category: category, meal_id: mealId })
             });
+            const data = await res.json();
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || 'Error updating active meal');
+            }
+        } catch (err) {
+            alert('Network error while updating active meal');
         }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabs = document.querySelectorAll(".meal-tabs .tab");
+        const sections = document.querySelectorAll(".category-meal-section");
 
         tabs.forEach(tab => {
             tab.addEventListener("click", () => {
+                const targetCat = tab.dataset.cat;
                 tabs.forEach(t => t.classList.remove("active"));
                 tab.classList.add("active");
-                filterMeals(tab.dataset.meal);
+
+                sections.forEach(sec => {
+                    sec.style.display = (sec.id === `cat-section-${targetCat}`) ? "block" : "none";
+                });
             });
         });
 
-        filterMeals("breakfast");
-        filterMeals("breakfast");
-        
         // Diet Checklist Logic
         document.querySelectorAll('.diet-checkbox').forEach(cb => {
             cb.addEventListener('change', async (e) => {
@@ -211,14 +283,14 @@
                     });
                     const data = await res.json();
                     if(data.success) {
-                        showToast(`Meal marked as ${isCompleted ? 'completed' : 'incomplete'}!`, 'success');
+                        if (typeof showToast === 'function') {
+                            showToast(`Meal marked as ${isCompleted ? 'completed' : 'incomplete'}!`, 'success');
+                        }
                     } else {
-                        cb.checked = !isCompleted; // revert
-                        showToast("Failed to update meal status.", 'danger');
+                        cb.checked = !isCompleted;
                     }
                 } catch(err) {
-                    cb.checked = !isCompleted; // revert
-                    showToast("Error connecting to server.", 'danger');
+                    cb.checked = !isCompleted;
                 }
             });
         });

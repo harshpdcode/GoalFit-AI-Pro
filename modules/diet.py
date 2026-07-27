@@ -1,7 +1,42 @@
-from flask import Blueprint, session, redirect, url_for, render_template
+from flask import Blueprint, session, redirect, url_for, render_template, request, jsonify
 from database.db_connection import get_db_connection
 
 diet_bp = Blueprint('diet', __name__)
+
+@diet_bp.route('/diet/select-meal', methods=['POST'])
+def select_active_meal():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    data = request.get_json() if request.is_json else request.form
+    meal_id = data.get('meal_id')
+    category = (data.get('category') or '').strip().lower()
+
+    if not meal_id or not category:
+        return jsonify({'success': False, 'message': 'Invalid parameters'}), 400
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': 'Database error'}), 500
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO user_selected_meals (user_id, meal_category, meal_id)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE meal_id = VALUES(meal_id)
+        """, (user_id, category, meal_id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        if request.is_json:
+            return jsonify({'success': True, 'message': f'Active {category} meal updated!'})
+        return redirect(url_for('diet.diet_plan'))
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @diet_bp.route('/diet-plan')
 def diet_plan():
@@ -65,8 +100,21 @@ def diet_plan():
         if not health:
             return redirect(url_for('health.health_profile'))
 
-        goal = health['goal_type'].strip()
-        diet_pref = health['diet_preference'].strip()
+        goal = (health.get('goal_type') or 'Weight Loss').strip()
+        diet_pref = (health.get('diet_preference') or 'Vegetarian').strip()
+
+        # Normalize diet preference for database lookup
+        norm_diet_pref = 'Veg'
+        if 'non' in diet_pref.lower():
+            norm_diet_pref = 'Non-Veg'
+        elif 'vegan' in diet_pref.lower():
+            norm_diet_pref = 'Vegan'
+        elif 'egg' in diet_pref.lower():
+            norm_diet_pref = 'Eggetarian'
+        elif 'keto' in diet_pref.lower():
+            norm_diet_pref = 'Keto'
+        elif 'veg' in diet_pref.lower():
+            norm_diet_pref = 'Veg'
 
         # ---------- CALCULATE TDEE & MACROS ----------
         w = float(health.get('weight_kg', 70))
@@ -109,57 +157,85 @@ def diet_plan():
             'goal': goal
         }
 
-        # ---------- FETCH MEALS ----------
-        cursor.execute("""
-            SELECT *
-            FROM diet_meals
-            WHERE goal_type = %s
-            AND diet_type = %s
-            ORDER BY meal_time, option_group
-        """, (goal, diet_pref))
+        # ---------- FETCH ACTIVE USER SELECTED MEALS ----------
+        cursor.execute("SELECT meal_category, meal_id FROM user_selected_meals WHERE user_id = %s", (user_id,))
+        user_selected_rows = cursor.fetchall()
+        user_selected_map = {row['meal_category'].lower(): row['meal_id'] for row in user_selected_rows}
 
-        all_meals = cursor.fetchall()
+        # ---------- FETCH MEAL OPTIONS PER CATEGORY ----------
+        categories = ['breakfast', 'lunch', 'dinner', 'snacks']
+        grouped_options = {c: [] for c in categories}
+        active_meals = {}
 
-        # ---------- HARD FALLBACK ----------
-        if not all_meals:
+        for cat in categories:
+            db_cat_search = 'Breakfast' if cat == 'breakfast' else ('Lunch' if cat == 'lunch' else ('Dinner' if cat == 'dinner' else 'Snack'))
+            
             cursor.execute("""
-                SELECT *
-                FROM diet_meals
-                ORDER BY meal_time, option_group
-                LIMIT 100
-            """)
-            all_meals = cursor.fetchall()
+                SELECT * FROM diet_meals
+                WHERE (diet_type = %s OR diet_type = %s)
+                  AND (goal_type = %s OR goal_type LIKE %s)
+                  AND (meal_time = %s OR meal_time LIKE %s)
+                ORDER BY calories ASC
+                LIMIT 50
+            """, (norm_diet_pref, diet_pref, goal, f"%{goal}%", db_cat_search, f"%{db_cat_search}%"))
+            
+            options = cursor.fetchall()
 
-        # ---------- STRICT GROUPING ----------
-        grouped_meals = {
-            "breakfast": [],
-            "lunch": [],
-            "dinner": [],
-            "snacks": []
-        }
+            # Fallback if specific category was empty
+            if not options:
+                cursor.execute("""
+                    SELECT * FROM diet_meals
+                    WHERE (meal_time = %s OR meal_time LIKE %s)
+                    ORDER BY calories ASC
+                    LIMIT 20
+                """, (db_cat_search, f"%{db_cat_search}%"))
+                options = cursor.fetchall()
 
-        for meal in all_meals:
-            meal_time = (meal.get("meal_time") or "").strip().lower()
+            grouped_options[cat] = options
 
-            if meal_time == "breakfast":
-                grouped_meals["breakfast"].append(meal)
+            # Determine Active Meal
+            selected_meal_id = user_selected_map.get(cat)
+            active_m = None
 
-            elif meal_time == "lunch":
-                grouped_meals["lunch"].append(meal)
+            if selected_meal_id:
+                for opt in options:
+                    if opt['id'] == selected_meal_id:
+                        active_m = opt
+                        break
+                if not active_m:
+                    cursor.execute("SELECT * FROM diet_meals WHERE id = %s", (selected_meal_id,))
+                    active_m = cursor.fetchone()
 
-            elif meal_time == "dinner":
-                grouped_meals["dinner"].append(meal)
+            if not active_m and options:
+                active_m = options[0]
+                try:
+                    cursor.execute("""
+                        INSERT INTO user_selected_meals (user_id, meal_category, meal_id)
+                        VALUES (%s, %s, %s)
+                        ON DUPLICATE KEY UPDATE meal_id = VALUES(meal_id)
+                    """, (user_id, cat, active_m['id']))
+                except Exception:
+                    pass
 
-            elif "snack" in meal_time:
-                grouped_meals["snacks"].append(meal)
+            active_meals[cat] = active_m
+
+        # Fetch today's logs for checklist
+        from datetime import datetime
+        today = datetime.now().date()
+        cursor.execute("SELECT meal_id, is_completed FROM diet_logs WHERE user_id=%s AND log_date=%s", (user_id, today))
+        logs = cursor.fetchall()
+        diet_logs = {log['meal_id']: log['is_completed'] for log in logs}
 
         return render_template(
             "diet/diet_plan.html",
-            meals=grouped_meals,
+            active_meals=active_meals,
+            grouped_options=grouped_options,
             goal=goal,
             bmi="Based on your profile",
             diet_pref=diet_pref,
             tdee_data=tdee_data,
+            diet_logs=diet_logs,
+            log_date=today,
             user_name=session.get('user_name'),
             email=session.get('email')
         )
