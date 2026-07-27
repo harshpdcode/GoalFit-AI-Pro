@@ -277,10 +277,16 @@
 
                 {% if session.get('user_name') %}
                 <div class="mobile-top-user d-flex align-items-center gap-2">
-                    <button type="button" onclick="openReminderModal()" class="btn btn-sm" style="border-radius:10px; background:rgba(16,185,129,0.12); color:var(--accent-primary,#10b981); border:1px solid rgba(16,185,129,0.3); padding:4px 10px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="Notification Reminders">
-                        <i data-lucide="bell" style="width:14px;height:14px;"></i> <span class="d-none d-sm-inline">Reminders</span>
+                    <a href="/notifications" onclick="event.stopPropagation();" class="btn btn-sm position-relative" style="border-radius:10px; background:rgba(255,255,255,0.08); color:var(--text-primary,#fff); border:1px solid rgba(255,255,255,0.15); padding:5px 10px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px; text-decoration:none;" title="Notifications Hub">
+                        <i data-lucide="bell" style="width:15px;height:15px;"></i>
+                        {% if user_unread_count and user_unread_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                        {% endif %}
+                    </a>
+                    <button type="button" onclick="event.stopPropagation(); openReminderModal();" class="btn btn-sm" style="border-radius:10px; background:rgba(16,185,129,0.12); color:var(--accent-primary,#10b981); border:1px solid rgba(16,185,129,0.3); padding:5px 10px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="Daily Reminders Schedule">
+                        <i data-lucide="clock" style="width:15px;height:15px;"></i> <span class="d-none d-sm-inline">Schedule</span>
                     </button>
-                    <span class="mobile-user-name">{{ session.get('user_name') }}</span>
+                    <a href="/health" class="mobile-user-name" style="text-decoration:none; color:inherit;">{{ session.get('user_name') }}</a>
                     <a href="/logout" class="mobile-top-logout" title="Logout">
                         <i data-lucide="log-out"></i>
                     </a>

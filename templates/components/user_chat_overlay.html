@@ -3,27 +3,34 @@
 {% set pro_id = hired_pro.professional_id if hired_pro.professional_id is defined else (hired_pro.id if hired_pro.id is defined else 0) %}
 {% set pro_role = hired_pro.prof_role if hired_pro.prof_role is defined else (hired_pro.role if hired_pro.role is defined else 'Coach') %}
 {% set pro_photo = hired_pro.prof_photo if hired_pro.prof_photo is defined else (hired_pro.profile_photo if hired_pro.profile_photo is defined else '') %}
+{% set is_my_pros_page = request.endpoint == 'marketplace.my_professionals' %}
 
 {% if pro_id %}
-<div id="user-chat-overlay" class="user-chat-overlay">
-    <div class="user-chat-header" onclick="toggleUserChat()">
+<!-- Floating Circular Chat Trigger Button -->
+<button id="user-chat-circle-btn" class="user-chat-circle-btn {% if not is_my_pros_page %}hide-mobile-chat{% endif %}" onclick="toggleUserChat()" title="Chat with Coach">
+    <i data-lucide="message-square" style="width: 24px; height: 24px; stroke: #fff; stroke-width: 2.2;"></i>
+    <span id="user-chat-badge" class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle" style="display:none; font-size:0.65rem;">New</span>
+</button>
+
+<!-- Floating Expandable Chat Box -->
+<div id="user-chat-overlay" class="user-chat-overlay {% if not is_my_pros_page %}hide-mobile-chat{% endif %}">
+    <div class="user-chat-header">
         <div class="d-flex align-items-center gap-2">
             {% if pro_photo and pro_photo != 'static/images/profile_img/default_prof.jpg' %}
-            <img src="/{{ pro_photo }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 1.5px solid var(--accent-primary, #10b981);">
+            <img src="/{{ pro_photo }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover; border: 1.5px solid var(--accent-primary, #10b981);">
             {% else %}
-            <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 14px; background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
+            <div class="avatar-circle" style="width: 34px; height: 34px; font-size: 14px; background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
                 {{ pro_name[0]|upper }}
             </div>
             {% endif %}
             <div>
-                <h6 class="mb-0 fw-bold" style="color: #ffffff; font-size: 0.9rem; line-height: 1.2;">{{ pro_name }}</h6>
-                <small style="color: var(--text-muted, #9ca3af); font-size: 0.72rem;">{{ pro_role|title }} (Coach)</small>
+                <h6 class="mb-0 fw-bold" style="color: #ffffff; font-size: 0.92rem; line-height: 1.2;">{{ pro_name }}</h6>
+                <small style="color: rgba(255,255,255,0.7); font-size: 0.72rem;">{{ pro_role|title }} (Coach)</small>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <span id="user-chat-badge" class="badge bg-danger rounded-pill" style="display:none; font-size:0.65rem;">New</span>
-            <i data-lucide="chevron-up" id="user-chat-toggle-icon" style="stroke: #ffffff; width:18px; height:18px;"></i>
-        </div>
+        <button type="button" class="btn btn-sm p-1 text-white opacity-75 opacity-100-hover" onclick="toggleUserChat()" style="background:transparent; border:none;" title="Close Chat">
+            <i data-lucide="x" style="width: 20px; height: 20px; stroke: #ffffff;"></i>
+        </button>
     </div>
     
     <div class="user-chat-body" id="user-chat-body">
@@ -33,48 +40,97 @@
         <div class="user-chat-input p-3" style="background: #151d2d; border-top: 1px solid rgba(255, 255, 255, 0.08);">
             <form id="user-chat-form" class="d-flex gap-2">
                 <input type="text" id="user-chat-input-msg" class="form-control" style="background: #0c121e; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size:0.88rem;" placeholder="Message your coach..." required>
-                <button type="submit" class="btn" style="background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-weight: 700;"><i data-lucide="send" style="width: 16px; stroke: #fff;"></i></button>
+                <button type="submit" class="btn btn-user-send">
+                    <i data-lucide="send" style="width: 15px; height: 15px; stroke: #fff; stroke-width: 2.5;"></i> Send
+                </button>
             </form>
         </div>
     </div>
 </div>
 
 <style>
-.user-chat-overlay {
+.user-chat-circle-btn {
     position: fixed;
     bottom: 24px;
     right: 24px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
+    z-index: 9990;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.user-chat-circle-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(16, 185, 129, 0.6);
+}
+.user-chat-overlay {
+    position: fixed;
+    bottom: 88px;
+    right: 24px;
     width: 340px;
     background: #0c121e !important;
-    border-radius: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
-    z-index: 9990;
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+    z-index: 9991;
     overflow: hidden;
-    transition: all 0.3s ease;
+    display: none;
     border: 1px solid rgba(16, 185, 129, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.user-chat-overlay.open {
+    display: block;
+    animation: userChatPop 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes userChatPop {
+    from { opacity: 0; transform: translateY(15px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .user-chat-header {
     background: linear-gradient(135deg, #151d2d, #0c121e);
     color: #ffffff !important;
     padding: 12px 16px;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 @media (max-width: 768px) {
+    .hide-mobile-chat {
+        display: none !important;
+    }
+    .user-chat-circle-btn {
+        bottom: 85px !important;
+        right: 16px !important;
+    }
     .user-chat-overlay {
-        bottom: 115px !important;
+        bottom: 148px !important;
         right: 12px !important;
         width: calc(100vw - 24px) !important;
-        max-width: 380px !important;
+        max-width: 360px !important;
     }
 }
-.user-chat-body {
-    display: none;
+.btn-user-send {
+    background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 8px 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.88rem !important;
+    flex-shrink: 0 !important;
 }
-.user-chat-body.active {
+.user-chat-body {
     display: block;
 }
 .user-chat-msg {
@@ -109,22 +165,19 @@ const userProId = "{{ pro_id }}";
 const userProRole = "{{ pro_role }}";
 
 function toggleUserChat() {
-    const body = document.getElementById('user-chat-body');
-    const icon = document.getElementById('user-chat-toggle-icon');
+    const overlay = document.getElementById('user-chat-overlay');
     const badge = document.getElementById('user-chat-badge');
-    if (!body) return;
+    if (!overlay) return;
     
-    body.classList.toggle('active');
+    overlay.classList.toggle('open');
     if (badge) badge.style.display = 'none';
     
-    if(body.classList.contains('active')) {
-        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+    if(overlay.classList.contains('open')) {
         loadUserMessages();
         if(!window.userChatInterval) {
             window.userChatInterval = setInterval(loadUserMessages, 5000);
         }
     } else {
-        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
         if(window.userChatInterval) {
             clearInterval(window.userChatInterval);
             window.userChatInterval = null;

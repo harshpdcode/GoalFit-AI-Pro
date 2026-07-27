@@ -1,67 +1,109 @@
 {% if client %}
+<!-- Floating Circular Chat Trigger Button -->
+<button id="pro-chat-circle-btn" class="pro-chat-circle-btn" onclick="toggleChat()" title="Chat with Client">
+    <i data-lucide="message-square" style="width: 24px; height: 24px; stroke: #000; stroke-width: 2.2;"></i>
+    <span id="pro-chat-badge" class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle" style="display:none; font-size:0.65rem;">New</span>
+</button>
+
+<!-- Floating Expandable Chat Box -->
 <div id="chat-overlay" class="chat-overlay">
-    <div class="chat-header" onclick="toggleChat()">
+    <div class="chat-header">
         <div class="d-flex align-items-center gap-2">
-            <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 14px; background: rgba(255,255,255,0.22); color: var(--text-on-accent); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
+            <div class="avatar-circle" style="width: 34px; height: 34px; font-size: 14px; background: rgba(0, 242, 254, 0.2); color: #00f2fe; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0; border: 1px solid rgba(0, 242, 254, 0.4);">
                 {{ client.name[0]|upper }}
             </div>
             <div>
-                <h6 class="mb-0 fw-bold" style="color: var(--text-on-accent); font-size: 0.92rem; line-height: 1.2;">{{ client.name }}</h6>
-                <small style="color: var(--text-on-accent); opacity: 0.85; font-size: 0.73rem;">Client</small>
+                <h6 class="mb-0 fw-bold" style="color: #ffffff; font-size: 0.92rem; line-height: 1.2;">{{ client.name }}</h6>
+                <small style="color: rgba(255,255,255,0.7); font-size: 0.73rem;">Client</small>
             </div>
         </div>
-        <i data-lucide="chevron-up" id="chat-toggle-icon" style="stroke: var(--text-on-accent);"></i>
+        <button type="button" class="btn btn-sm p-1 text-white opacity-75 opacity-100-hover" onclick="toggleChat()" style="background:transparent; border:none;" title="Close Chat">
+            <i data-lucide="x" style="width: 20px; height: 20px; stroke: #ffffff;"></i>
+        </button>
     </div>
     
     <div class="chat-body" id="chat-body">
-        <div id="chat-messages" class="p-3 d-flex flex-column gap-2" style="height: 300px; overflow-y: auto; background: var(--bg-card);">
+        <div id="chat-messages" class="p-3 d-flex flex-column gap-2">
             <!-- Messages load here -->
         </div>
-        <div class="chat-input p-3" style="background: var(--bg-secondary); border-top: 1px solid var(--border-subtle);">
+        <div class="chat-input p-3">
             <form id="chat-form" class="d-flex gap-2">
-                <input type="text" id="chat-input-msg" class="form-control" style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px;" placeholder="Type a message..." required>
-                <button type="submit" class="btn" style="background: var(--accent-gradient); color: var(--text-on-accent); border: none; border-radius: 10px; padding: 0 16px;"><i data-lucide="send" style="width: 16px; stroke: var(--text-on-accent);"></i></button>
+                <input type="text" id="chat-input-msg" class="form-control" placeholder="Type a message..." required>
+                <button type="submit" class="btn btn-pro-send">
+                    <i data-lucide="send" style="width: 15px; height: 15px; stroke: #000; stroke-width: 2.5;"></i> Send
+                </button>
             </form>
         </div>
     </div>
 </div>
 
 <style>
+.pro-chat-circle-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 95px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 8px 25px rgba(0, 242, 254, 0.45);
+    z-index: 9990;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pro-chat-circle-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 12px 32px rgba(0, 242, 254, 0.6);
+}
 .chat-overlay {
     position: fixed;
-    bottom: 24px;
+    bottom: 92px;
     right: 95px;
     width: 350px;
     background: #090d16 !important;
-    border-radius: 16px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
-    z-index: 9990;
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+    z-index: 9991;
     overflow: hidden;
-    transition: all 0.3s ease;
+    display: none;
     border: 1px solid rgba(0, 242, 254, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.chat-overlay.open {
+    display: block;
+    animation: chatPopUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes chatPopUp {
+    from { opacity: 0; transform: translateY(15px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .chat-header {
     background: linear-gradient(135deg, #1e293b, #0f172a);
     color: #ffffff !important;
     padding: 12px 16px;
-    cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 @media (max-width: 768px) {
-    .chat-overlay {
+    .pro-chat-circle-btn {
         bottom: 85px !important;
-        right: 16px !important;
-        width: calc(100vw - 32px) !important;
+        right: 20px !important;
+    }
+    .chat-overlay {
+        bottom: 148px !important;
+        right: 12px !important;
+        width: calc(100vw - 24px) !important;
         max-width: 360px !important;
     }
 }
 .chat-body {
-    display: none;
-}
-.chat-body.active {
     display: block;
 }
 #chat-messages {
@@ -91,13 +133,32 @@
     align-self: flex-start;
     border-bottom-left-radius: 4px;
 }
+.chat-input {
+    background: #151d2d !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
 #chat-input-msg {
-    background: #182234 !important;
+    background: #0c121e !important;
     color: #ffffff !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 10px;
+    font-size: 0.88rem;
 }
 #chat-input-msg::placeholder {
     color: rgba(255, 255, 255, 0.5) !important;
+}
+.btn-pro-send {
+    background: linear-gradient(135deg, #00f2fe, #4facfe) !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 8px 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.88rem !important;
+    flex-shrink: 0 !important;
 }
 </style>
 
@@ -106,20 +167,19 @@ const clientId = "{{ client.id }}";
 const clientRole = "user";
 
 function toggleChat() {
-    const body = document.getElementById('chat-body');
-    const icon = document.getElementById('chat-toggle-icon');
-    if (!body) return;
+    const overlay = document.getElementById('chat-overlay');
+    const badge = document.getElementById('pro-chat-badge');
+    if (!overlay) return;
     
-    body.classList.toggle('active');
+    overlay.classList.toggle('open');
+    if (badge) badge.style.display = 'none';
     
-    if(body.classList.contains('active')) {
-        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+    if (overlay.classList.contains('open')) {
         loadMessages();
         if(!window.chatInterval) {
             window.chatInterval = setInterval(loadMessages, 5000);
         }
     } else {
-        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
         if(window.chatInterval) {
             clearInterval(window.chatInterval);
             window.chatInterval = null;
@@ -135,6 +195,8 @@ async function loadMessages() {
         
         const container = document.getElementById('chat-messages');
         if (!container) return;
+        
+        const prevCount = container.children.length;
         container.innerHTML = '';
         
         messages.forEach(msg => {
@@ -144,6 +206,11 @@ async function loadMessages() {
             div.textContent = msg.message;
             container.appendChild(div);
         });
+        
+        if (messages.length > prevCount && !document.getElementById('chat-overlay').classList.contains('open')) {
+            const badge = document.getElementById('pro-chat-badge');
+            if (badge) badge.style.display = 'inline-block';
+        }
         
         container.scrollTop = container.scrollHeight;
     } catch (e) {
@@ -180,8 +247,8 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.search.includes('chat=open')) {
         setTimeout(function() {
-            const body = document.getElementById('chat-body');
-            if (body && !body.classList.contains('active')) {
+            const overlay = document.getElementById('chat-overlay');
+            if (overlay && !overlay.classList.contains('open')) {
                 toggleChat();
             }
         }, 300);
