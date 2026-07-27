@@ -628,9 +628,9 @@ def create_schema():
         
         if os.path.exists(json_seed_path):
             import json
-            print("Loading 6,605 diet meals from database/diet_meals_seed.json...")
             with open(json_seed_path, "r", encoding="utf-8") as jf:
                 json_data = json.load(jf)
+            print(f"Loading {len(json_data)} curated Indian meals from database/diet_meals_seed.json...")
             batch = [
                 (
                     m["meal_name"][:100],

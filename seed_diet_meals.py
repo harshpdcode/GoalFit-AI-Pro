@@ -9,38 +9,37 @@ load_dotenv()
 
 # Excel files location
 DOWNLOADS_DIR = r'C:\Users\harsh\Downloads'
-EXCEL_FILES = [
-    os.path.join(DOWNLOADS_DIR, 'Indian_NonVeg_Meals_Phase1.xlsx'),
-    os.path.join(DOWNLOADS_DIR, 'Indian_Veg_Meals_Phase1.xlsx'),
-    os.path.join(DOWNLOADS_DIR, 'Indian_Vegan_Meals_Phase1.xlsx'),
-    os.path.join(DOWNLOADS_DIR, 'Indian_Eggetarian_Meals_Phase1.xlsx'),
-    os.path.join(DOWNLOADS_DIR, 'Indian_Keto_Meals_Phase1.xlsx'),
-    os.path.join(DOWNLOADS_DIR, 'GoalFit_AI_Pro_Diet_Meals_Dataset.xlsx')
-]
+COMBINED_FILE = os.path.join(DOWNLOADS_DIR, 'Combined_Indian_Meals_Dataset.xlsx')
+JSON_SEED_FILE = os.path.join(os.path.dirname(__file__), 'database', 'diet_meals_seed.json')
 
 def load_and_clean_data():
-    print("[+] Loading Excel files...")
-    dfs = []
-    for filepath in EXCEL_FILES:
-        if os.path.exists(filepath):
-            try:
-                df = pd.read_excel(filepath)
-                df['source_file'] = os.path.basename(filepath)
-                dfs.append(df)
-                print(f"  - Loaded {os.path.basename(filepath)} ({len(df)} rows)")
-            except Exception as e:
-                print(f"  x Error reading {filepath}: {e}")
-        else:
-            print(f"  ! File not found: {filepath}")
-
-    if not dfs:
-        raise ValueError("No Excel files found!")
-
-    combined = pd.concat(dfs, ignore_index=True)
-    print(f"\n[+] Total combined records before cleaning: {len(combined)}")
+    print("[+] Loading Curated Indian Meals Dataset...")
+    
+    if os.path.exists(COMBINED_FILE):
+        df = pd.read_excel(COMBINED_FILE)
+        print(f"  - Loaded {os.path.basename(COMBINED_FILE)} ({len(df)} rows)")
+        
+        column_mapping = {
+            'Meal Name': 'meal_name',
+            'Meal Time': 'meal_time',
+            'Calories': 'calories',
+            'Protein (g)': 'proteins',
+            'Carbs (g)': 'carbs',
+            'Fats (g)': 'fats',
+            'Diet Type': 'diet_type',
+            'Goal Type': 'goal_type',
+            'Option Group': 'option_group',
+            'Image Path': 'img_src'
+        }
+        df = df.rename(columns=column_mapping)
+    elif os.path.exists(JSON_SEED_FILE):
+        df = pd.read_json(JSON_SEED_FILE)
+        print(f"  - Loaded {os.path.basename(JSON_SEED_FILE)} ({len(df)} rows)")
+    else:
+        raise ValueError("Dataset file not found!")
 
     # Data Cleaning & Normalization
-    combined['meal_name'] = combined['meal_name'].astype(str).str.strip()
+    df['meal_name'] = df['meal_name'].astype(str).str.strip()
     
     # Meal time normalization
     def normalize_meal_time(val):
@@ -55,7 +54,7 @@ def load_and_clean_data():
             return 'Snack'
         return 'Breakfast'
 
-    combined['meal_time'] = combined['meal_time'].apply(normalize_meal_time)
+    df['meal_time'] = df['meal_time'].apply(normalize_meal_time)
 
     # Diet type normalization
     def normalize_diet_type(val):
@@ -72,7 +71,7 @@ def load_and_clean_data():
             return 'Veg'
         return 'Veg'
 
-    combined['diet_type'] = combined['diet_type'].apply(normalize_diet_type)
+    df['diet_type'] = df['diet_type'].apply(normalize_diet_type)
 
     # Goal type normalization
     def normalize_goal_type(val):
@@ -85,23 +84,21 @@ def load_and_clean_data():
             return 'Maintenance'
         return 'Weight Loss'
 
-    combined['goal_type'] = combined['goal_type'].apply(normalize_goal_type)
+    df['goal_type'] = df['goal_type'].apply(normalize_goal_type)
 
     # Numeric cleaning
-    combined['calories'] = pd.to_numeric(combined['calories'], errors='coerce').fillna(300).astype(int)
-    combined['proteins'] = pd.to_numeric(combined['proteins'], errors='coerce').fillna(10.0).astype(float)
-    combined['carbs'] = pd.to_numeric(combined['carbs'], errors='coerce').fillna(30.0).astype(float)
-    combined['fats'] = pd.to_numeric(combined['fats'], errors='coerce').fillna(8.0).astype(float)
-    combined['option_group'] = pd.to_numeric(combined['option_group'], errors='coerce').fillna(1).astype(int)
+    df['calories'] = pd.to_numeric(df['calories'], errors='coerce').fillna(300).astype(int)
+    df['proteins'] = pd.to_numeric(df['proteins'], errors='coerce').fillna(10.0).astype(float)
+    df['carbs'] = pd.to_numeric(df['carbs'], errors='coerce').fillna(30.0).astype(float)
+    df['fats'] = pd.to_numeric(df['fats'], errors='coerce').fillna(8.0).astype(float)
+    df['option_group'] = pd.to_numeric(df['option_group'], errors='coerce').fillna(1).astype(int)
 
     # Image src cleaning
-    combined['img_src'] = combined['img_src'].fillna('static/images/diet/default_meal.jpg').astype(str).str.strip()
+    df['img_src'] = df['img_src'].fillna('static/images/diet/salad.jpeg').astype(str).str.strip()
 
-    # Deduplicate by meal_name, meal_time, diet_type, goal_type
-    combined_dedup = combined.drop_duplicates(subset=['meal_name', 'meal_time', 'diet_type', 'goal_type'], keep='first')
-    print(f"[+] Cleaned & Deduplicated unique meals: {len(combined_dedup)} records")
+    print(f"[+] Cleaned dataset: {len(df)} records")
 
-    return combined_dedup
+    return df
 
 def insert_to_db(connection_target="local", custom_db_url=None):
     df_meals = load_and_clean_data()
