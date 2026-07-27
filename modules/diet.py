@@ -126,6 +126,7 @@ def diet_plan():
                 SELECT *
                 FROM diet_meals
                 ORDER BY meal_time, option_group
+                LIMIT 100
             """)
             all_meals = cursor.fetchall()
 

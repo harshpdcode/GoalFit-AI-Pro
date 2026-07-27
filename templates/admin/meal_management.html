@@ -10,47 +10,55 @@
 
 <div class="admin-header-row">
     <div>
-        <h1 class="page-title" data-aos="fade-up">Meal <span>Management</span></h1>
+        <h1 class="page-title">Meal <span>Management</span></h1>
         <div class="accent-line"></div>
     </div>
-    <a href="/admin/meals/add" class="admin-btn primary" data-aos="fade-left">
+    <a href="/admin/meals/add" class="admin-btn primary">
         <i data-lucide="plus"></i> Add Meal
     </a>
 </div>
 
-<!-- Filters -->
-<div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
-    <form class="filter-form" method="GET" action="/admin/meals">
+<!-- Filters & Search -->
+<div class="admin-toolbar">
+    <form class="filter-form d-flex align-items-center gap-2 flex-wrap" method="GET" action="/admin/meals">
+        <input type="text" name="search" value="{{ search }}" placeholder="Search meal name..." class="admin-input" style="max-width: 220px;">
+        
         <select name="diet_type" class="admin-select" onchange="this.form.submit()">
             <option value="">All Diet Types</option>
-            <option value="Vegetarian" {{ 'selected' if filter_type == 'Vegetarian' }}>Vegetarian</option>
-            <option value="Non-Vegetarian" {{ 'selected' if filter_type == 'Non-Vegetarian' }}>Non-Vegetarian</option>
+            <option value="Veg" {{ 'selected' if filter_type == 'Veg' }}>Veg</option>
+            <option value="Non-Veg" {{ 'selected' if filter_type == 'Non-Veg' }}>Non-Veg</option>
             <option value="Vegan" {{ 'selected' if filter_type == 'Vegan' }}>Vegan</option>
             <option value="Eggetarian" {{ 'selected' if filter_type == 'Eggetarian' }}>Eggetarian</option>
+            <option value="Keto" {{ 'selected' if filter_type == 'Keto' }}>Keto</option>
         </select>
+        
         <select name="goal_type" class="admin-select" onchange="this.form.submit()">
             <option value="">All Goals</option>
             <option value="Weight Loss" {{ 'selected' if filter_goal == 'Weight Loss' }}>Weight Loss</option>
-            <option value="Weight Gain" {{ 'selected' if filter_goal == 'Weight Gain' }}>Weight Gain</option>
+            <option value="Muscle Gain" {{ 'selected' if filter_goal == 'Muscle Gain' }}>Muscle Gain</option>
             <option value="Maintenance" {{ 'selected' if filter_goal == 'Maintenance' }}>Maintenance</option>
         </select>
-        {% if filter_type or filter_goal %}
+
+        <button type="submit" class="admin-btn secondary">Search</button>
+
+        {% if search or filter_type or filter_goal %}
         <a href="/admin/meals" class="admin-btn secondary">Clear</a>
         {% endif %}
     </form>
+
     <div class="toolbar-stats">
-        <span class="stat-pill"><i data-lucide="utensils-crossed"></i> {{ meals|length }} meals</span>
+        <span class="stat-pill"><i data-lucide="utensils-crossed"></i> {{ total_records }} total meals</span>
     </div>
 </div>
 
 <!-- Meals Table -->
-<div class="admin-chart-card full-width" data-aos="fade-up" data-aos-delay="200">
+<div class="admin-chart-card full-width">
     <div class="admin-table-wrap">
         <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Meal</th>
+                    <th>Meal Name</th>
                     <th>Time</th>
                     <th>Calories</th>
                     <th>P / C / F</th>
@@ -64,9 +72,11 @@
                 <tr>
                     <td class="id-cell">#{{ meal.id }}</td>
                     <td>
-                        <div class="meal-cell">
-                            <img src="/{{ meal.img_src }}" alt="" class="table-thumb">
-                            <span>{{ meal.meal_name }}</span>
+                        <div class="meal-cell d-flex align-items-center gap-2">
+                            <img src="/{{ meal.img_src }}" alt="{{ meal.meal_name }}" class="table-thumb" 
+                                 style="width: 38px; height: 38px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: rgba(255,255,255,0.05);" 
+                                 onerror="this.onerror=null; this.src='/static/images/diet/salad.jpeg';">
+                            <span class="fw-semibold">{{ meal.meal_name }}</span>
                         </div>
                     </td>
                     <td><span class="tag bmi">{{ meal.meal_time }}</span></td>
@@ -93,15 +103,39 @@
                 {% endfor %}
                 {% if not meals %}
                 <tr><td colspan="8" class="empty-cell">
-                    <div class="empty-state">
-                        <i data-lucide="utensils-crossed" class="empty-icon"></i>
-                        <p>No meals found</p>
+                    <div class="empty-state py-4 text-center">
+                        <i data-lucide="utensils-crossed" class="empty-icon text-muted mb-2"></i>
+                        <p class="text-muted">No meals found matching your filters</p>
                     </div>
                 </td></tr>
                 {% endif %}
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Controls -->
+    {% if total_pages > 1 %}
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-3 border-top border-secondary border-opacity-25 mt-3">
+        <div class="text-muted small">
+            Showing Page <strong>{{ page }}</strong> of <strong>{{ total_pages }}</strong> ({{ total_records }} total meals)
+        </div>
+        <div class="d-flex align-items-center gap-1">
+            {% if page > 1 %}
+            <a href="{{ url_for('admin.meal_management', page=page-1, search=search, diet_type=filter_type, goal_type=filter_goal) }}" class="admin-btn secondary btn-sm px-3">
+                <i data-lucide="chevron-left"></i> Prev
+            </a>
+            {% endif %}
+
+            <span class="px-2 text-light small fw-bold">Page {{ page }} / {{ total_pages }}</span>
+
+            {% if page < total_pages %}
+            <a href="{{ url_for('admin.meal_management', page=page+1, search=search, diet_type=filter_type, goal_type=filter_goal) }}" class="admin-btn secondary btn-sm px-3">
+                Next <i data-lucide="chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

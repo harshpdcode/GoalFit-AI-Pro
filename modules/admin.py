@@ -306,28 +306,58 @@ def meal_management():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
-    filter_type = request.args.get('diet_type', '')
-    filter_goal = request.args.get('goal_type', '')
+    page = request.args.get('page', 1, type=int)
+    if page < 1:
+        page = 1
+    per_page = 25
 
-    query = "SELECT * FROM diet_meals WHERE 1=1"
+    search = request.args.get('search', '').strip()
+    filter_type = request.args.get('diet_type', '').strip()
+    filter_goal = request.args.get('goal_type', '').strip()
+
+    where_clause = " WHERE 1=1"
     params = []
 
+    if search:
+        where_clause += " AND meal_name LIKE %s"
+        params.append(f"%{search}%")
     if filter_type:
-        query += " AND diet_type=%s"
+        where_clause += " AND diet_type=%s"
         params.append(filter_type)
     if filter_goal:
-        query += " AND goal_type=%s"
+        where_clause += " AND goal_type=%s"
         params.append(filter_goal)
 
-    query += " ORDER BY meal_time, diet_type, goal_type"
-    cursor.execute(query, tuple(params))
+    # Count total records
+    count_query = "SELECT COUNT(*) as total FROM diet_meals" + where_clause
+    cursor.execute(count_query, tuple(params))
+    total_records = cursor.fetchone()['total']
+
+    import math
+    total_pages = math.ceil(total_records / per_page) if total_records > 0 else 1
+    if page > total_pages:
+        page = total_pages
+
+    offset = (page - 1) * per_page
+
+    # Fetch paginated meals
+    data_query = "SELECT * FROM diet_meals" + where_clause + " ORDER BY id DESC LIMIT %s OFFSET %s"
+    fetch_params = list(params) + [per_page, offset]
+    cursor.execute(data_query, tuple(fetch_params))
     meals = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    return render_template('admin/meal_management.html', meals=meals,
-        filter_type=filter_type, filter_goal=filter_goal)
+    return render_template('admin/meal_management.html',
+        meals=meals,
+        page=page,
+        total_pages=total_pages,
+        total_records=total_records,
+        search=search,
+        filter_type=filter_type,
+        filter_goal=filter_goal
+    )
 
 
 # ================= ADD/EDIT MEAL =================
