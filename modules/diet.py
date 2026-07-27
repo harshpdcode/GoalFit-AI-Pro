@@ -233,6 +233,12 @@ def diet_plan():
                 if not active_m:
                     cursor.execute("SELECT * FROM diet_meals WHERE id = %s", (selected_meal_id,))
                     active_m = cursor.fetchone()
+                
+                # Verify active_m matches current diet preference
+                if active_m:
+                    m_diet = (active_m.get('diet_type') or '').lower()
+                    if norm_diet_pref.lower() not in m_diet and m_diet not in diet_pref.lower():
+                        active_m = None
 
             if not active_m and options:
                 active_m = options[0]

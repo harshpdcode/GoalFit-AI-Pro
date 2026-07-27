@@ -166,6 +166,12 @@ def health_profile():
 
         conn.commit()
 
+        # Reset saved user meal selections so diet plan regenerates dynamically for new preferences
+        try:
+            cursor.execute("DELETE FROM user_selected_meals WHERE user_id=%s", (user_id,))
+        except Exception:
+            pass
+
         # Calculate predictions after saving health data
         calculate_and_save_prediction(user_id, conn)
 
