@@ -1,24 +1,32 @@
 /* ===== ADMIN RESPONSIVE MOBILE SIDEBAR DRAWER ===== */
-.admin-sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(4px);
-    z-index: 1040;
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.admin-sidebar-overlay.open {
-    display: block;
-    opacity: 1;
+@media (min-width: 992px) {
+    .admin-sidebar-overlay {
+        display: none !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
 }
 
 @media (max-width: 991px) {
+    .admin-sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1040;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-sidebar-overlay.open {
+        display: block !important;
+        opacity: 1 !important;
+    }
+
     .sidebar.admin-sidebar {
         position: fixed;
         top: 0;
@@ -32,7 +40,7 @@
     }
     
     .sidebar.admin-sidebar.open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
     }
 }
 

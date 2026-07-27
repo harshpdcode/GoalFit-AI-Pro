@@ -6,9 +6,15 @@
         <h1 class="welcome-title">Welcome back, <span>{{ session.get('user_name', 'Harsh') }}</span>! 👋</h1>
         <p class="welcome-subtext">Here’s your health overview</p>
     </div>
-    <div class="header-actions">
-        <a href="{{ url_for('health.health_profile') }}" class="btn-icon-circle" title="Edit Profile">
+    <div class="header-actions flex-center gap-2">
+        <a href="/notifications" class="btn-icon-circle position-relative" title="Notifications Hub">
             <i data-lucide="bell"></i>
+            {% if user_unread_count and user_unread_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('health.health_profile') }}" class="btn-icon-circle" title="Edit Profile">
+            <i data-lucide="user-cog"></i>
         </a>
     </div>
 </div>
