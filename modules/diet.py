@@ -23,6 +23,18 @@ def select_active_meal():
     try:
         cursor = conn.cursor()
         cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_selected_meals (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT,
+                meal_category VARCHAR(50),
+                meal_id INT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (meal_id) REFERENCES diet_meals(id) ON DELETE CASCADE,
+                UNIQUE KEY user_category_uniq (user_id, meal_category)
+            );
+        """)
+        cursor.execute("""
             INSERT INTO user_selected_meals (user_id, meal_category, meal_id)
             VALUES (%s, %s, %s)
             ON DUPLICATE KEY UPDATE meal_id = VALUES(meal_id)
@@ -158,9 +170,25 @@ def diet_plan():
         }
 
         # ---------- FETCH ACTIVE USER SELECTED MEALS ----------
-        cursor.execute("SELECT meal_category, meal_id FROM user_selected_meals WHERE user_id = %s", (user_id,))
-        user_selected_rows = cursor.fetchall()
-        user_selected_map = {row['meal_category'].lower(): row['meal_id'] for row in user_selected_rows}
+        user_selected_map = {}
+        try:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_selected_meals (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT,
+                    meal_category VARCHAR(50),
+                    meal_id INT,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (meal_id) REFERENCES diet_meals(id) ON DELETE CASCADE,
+                    UNIQUE KEY user_category_uniq (user_id, meal_category)
+                );
+            """)
+            cursor.execute("SELECT meal_category, meal_id FROM user_selected_meals WHERE user_id = %s", (user_id,))
+            user_selected_rows = cursor.fetchall()
+            user_selected_map = {row['meal_category'].lower(): row['meal_id'] for row in user_selected_rows}
+        except Exception as e:
+            print(f"User selected meals query fallback: {e}")
 
         # ---------- FETCH MEAL OPTIONS PER CATEGORY ----------
         categories = ['breakfast', 'lunch', 'dinner', 'snacks']

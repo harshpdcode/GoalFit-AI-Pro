@@ -181,6 +181,20 @@ def create_schema():
         );
         """)
 
+        # ===== USER SELECTED MEALS =====
+        cursor.execute("""
+        CREATE TABLE user_selected_meals (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            meal_category VARCHAR(50),
+            meal_id INT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (meal_id) REFERENCES diet_meals(id) ON DELETE CASCADE,
+            UNIQUE KEY user_category_uniq (user_id, meal_category)
+        );
+        """)
+
         # ===== ACTIVITY LOGS =====
         cursor.execute("""
         CREATE TABLE activity_logs (
