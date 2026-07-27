@@ -149,7 +149,7 @@ def diet_plan():
             elif meal_time == "dinner":
                 grouped_meals["dinner"].append(meal)
 
-            elif meal_time == "snacks":
+            elif "snack" in meal_time:
                 grouped_meals["snacks"].append(meal)
 
         return render_template(
