@@ -170,6 +170,14 @@ def accept_hire_request(req_id):
             VALUES (%s, %s, %s, %s, 'active')
             ON DUPLICATE KEY UPDATE status='active', start_date=%s
         """, (req['user_id'], prof_id, req.get('plan_type','both'), datetime.date.today(), datetime.date.today()))
+        cursor.execute("SELECT full_name FROM professionals WHERE id=%s", (prof_id,))
+        p_row = cursor.fetchone()
+        p_name = p_row['full_name'] if p_row else 'Your coach'
+        cursor.execute("""
+            INSERT INTO notifications (user_id, notification_type, message)
+            VALUES (%s, 'hire_accepted', %s)
+        """, (req['user_id'], f"🎉 {p_name} accepted your hire request! You can now chat directly and receive custom plans."))
+        
         conn.commit()
         flash("Client request accepted!", "success")
     cursor.close()
@@ -182,9 +190,16 @@ def accept_hire_request(req_id):
 def reject_hire_request(req_id):
     prof_id = session.get('user_id')
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE hire_requests SET status='rejected' WHERE id=%s AND professional_id=%s", (req_id, prof_id))
-    conn.commit()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT user_id FROM hire_requests WHERE id=%s AND professional_id=%s", (req_id, prof_id))
+    req = cursor.fetchone()
+    if req:
+        cursor.execute("UPDATE hire_requests SET status='rejected' WHERE id=%s", (req_id,))
+        cursor.execute("""
+            INSERT INTO notifications (user_id, notification_type, message)
+            VALUES (%s, 'hire_rejected', 'Your coaching hire request was declined by the professional.')
+        """, (req['user_id'],))
+        conn.commit()
     cursor.close()
     conn.close()
     flash("Request rejected.", "info")

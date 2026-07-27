@@ -25,7 +25,8 @@ def gallery():
     
     # Check if user has an active professional
     cursor.execute("""
-        SELECT p.full_name, p.id FROM client_assignments ca
+        SELECT p.id as professional_id, p.full_name as prof_name, p.role as prof_role, p.profile_photo as prof_photo 
+        FROM client_assignments ca
         JOIN professionals p ON ca.professional_id = p.id
         WHERE ca.user_id = %s AND ca.status = 'active' LIMIT 1
     """, (session['user_id'],))
@@ -94,8 +95,9 @@ def toggle_share():
 
 @progress_gallery_bp.route('/client/<int:client_id>')
 def client_gallery(client_id):
-    if 'user_id' not in session or session.get('role') not in ['prof_trainer', 'prof_dietician', 'prof_both']:
-        return redirect(url_for('auth.login'))
+    allowed_pro_roles = ['trainer', 'dietician', 'both', 'prof_trainer', 'prof_dietician', 'prof_both']
+    if 'user_id' not in session or session.get('role') not in allowed_pro_roles:
+        return redirect('/pro/login')
         
     prof_id = session['user_id']
     conn = get_db_connection()
@@ -108,10 +110,14 @@ def client_gallery(client_id):
         flash("You do not have access to this client's gallery.", "danger")
         cursor.close()
         conn.close()
-        return redirect(url_for('trainer_dashboard.dashboard'))
+        return redirect('/pro/clients')
         
     cursor.execute("SELECT * FROM users WHERE id=%s", (client_id,))
     client_user = cursor.fetchone()
+    
+    cursor.execute("SELECT COUNT(*) as total FROM progress_photos WHERE user_id = %s", (client_id,))
+    res_count = cursor.fetchone()
+    total_photos = res_count['total'] if res_count else 0
     
     cursor.execute("""
         SELECT * FROM progress_photos 
@@ -123,4 +129,32 @@ def client_gallery(client_id):
     cursor.close()
     conn.close()
     
-    return render_template('professional/client_gallery.html', photos=photos, client=client_user)
+    return render_template('professional/client_gallery.html', photos=photos, client=client_user, total_photos=total_photos)
+
+@progress_gallery_bp.route('/client/<int:client_id>/request_access', methods=['POST'])
+def request_photo_access(client_id):
+    allowed_pro_roles = ['trainer', 'dietician', 'both', 'prof_trainer', 'prof_dietician', 'prof_both']
+    if 'user_id' not in session or session.get('role') not in allowed_pro_roles:
+        return redirect('/pro/login')
+        
+    prof_id = session['user_id']
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT full_name FROM professionals WHERE id=%s", (prof_id,))
+    prof = cursor.fetchone()
+    prof_name = prof['full_name'] if prof else 'Your Coach'
+    
+    msg = f"📸 {prof_name} has requested access to view your progress photos. Please toggle photo sharing in your Progress Gallery!"
+    
+    cursor.execute("""
+        INSERT INTO chat_messages (sender_id, sender_role, receiver_id, receiver_role, message)
+        VALUES (%s, 'trainer', %s, 'user', %s)
+    """, (prof_id, client_id, msg))
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    flash("Photo access request sent to client via chat!", "success")
+    return redirect(f"/gallery/client/{client_id}")

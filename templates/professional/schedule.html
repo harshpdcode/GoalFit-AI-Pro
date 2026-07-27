@@ -1,13 +1,88 @@
 {% extends 'professional/pro_base.html' %}
 {% block title %}Schedule{% endblock %}
 {% block page_title %}Appointments{% endblock %}
-{% block page_subtitle %}Manage your upcoming client calls{% endblock %}
+{% block page_subtitle %}Manage your upcoming client consultations & calls{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1" style="color:var(--pro-text-main);">Scheduled Consultations</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">View and update client appointments</p>
+    </div>
+    <a href="/pro/schedule/availability" class="btn-pro-outline">
+        <i data-lucide="clock" style="width:15px;height:15px;"></i> Manage Availability
+    </a>
+</div>
+
+{% if appointments %}
+<div class="row g-3">
+    {% for app in appointments %}
+    <div class="col-md-6 col-lg-4" data-aos="fade-up">
+        <div class="pro-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:40px;height:40px;border-radius:12px;background:rgba(0,242,254,0.1);color:var(--pro-primary);display:flex;align-items:center;justify-content:center;font-weight:700;">
+                            {{ app.user_name[0]|upper }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0" style="color:var(--pro-text-main);">{{ app.user_name }}</h6>
+                            <small class="text-muted" style="font-size:0.75rem;">{{ app.user_email }}</small>
+                        </div>
+                    </div>
+                    {% if app.status == 'scheduled' %}
+                        <span class="badge bg-warning text-dark">Scheduled</span>
+                    {% elif app.status == 'confirmed' %}
+                        <span class="badge bg-success">Confirmed</span>
+                    {% elif app.status == 'completed' %}
+                        <span class="badge bg-info text-dark">Completed</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ app.status|title }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex flex-column gap-2 mb-3 p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);">
+                    <div class="d-flex align-items-center gap-2" style="font-size:0.82rem;">
+                        <i data-lucide="calendar" style="width:14px;height:14px;color:var(--pro-primary);"></i>
+                        <span>{{ app.formatted_date }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2" style="font-size:0.82rem;">
+                        <i data-lucide="clock" style="width:14px;height:14px;color:var(--pro-accent);"></i>
+                        <span>{{ app.formatted_time }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2" style="font-size:0.82rem;">
+                        <i data-lucide="video" style="width:14px;height:14px;color:var(--pro-warning);"></i>
+                        <span>{{ app.mode or 'Online Consultation' }}</span>
+                    </div>
+                    {% if app.notes %}
+                    <div class="mt-1 pt-2" style="border-top:1px dashed var(--pro-border);font-size:0.78rem;color:var(--pro-text-muted);">
+                        <strong>Notes:</strong> {{ app.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <form action="/pro/schedule/appointment/{{ app.id }}/status" method="POST" class="d-flex gap-2 mt-2">
+                {% if app.status == 'scheduled' %}
+                <button type="submit" name="status" value="confirmed" class="btn-pro-primary flex-grow-1" style="font-size:0.78rem;padding:6px 12px;border-radius:8px;">Confirm</button>
+                <button type="submit" name="status" value="cancelled" class="btn-pro-ghost flex-grow-1" style="font-size:0.78rem;padding:6px 12px;border-radius:8px;color:var(--pro-danger);">Cancel</button>
+                {% elif app.status == 'confirmed' %}
+                <button type="submit" name="status" value="completed" class="btn-pro-primary flex-grow-1" style="font-size:0.78rem;padding:6px 12px;border-radius:8px;">Mark Completed</button>
+                {% else %}
+                <button type="submit" name="status" value="confirmed" class="btn-pro-ghost flex-grow-1" style="font-size:0.78rem;padding:6px 12px;border-radius:8px;">Reopen</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
 <div class="pro-empty" style="padding:60px 20px;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="opacity:0.5;margin-bottom:15px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     <h5>No Upcoming Appointments</h5>
-    <p>Set your availability to start receiving bookings.</p>
+    <p>When clients book consultations with you, their appointments will appear here.</p>
     <a href="/pro/schedule/availability" class="btn-pro-primary mt-3">Set Availability</a>
 </div>
+{% endif %}
 {% endblock %}

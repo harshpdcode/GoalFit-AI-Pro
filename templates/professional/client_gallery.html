@@ -1,36 +1,48 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <div>
-                <a href="/trainer/dashboard" class="btn btn-sm btn-outline-secondary mb-2 rounded-pill px-3"><i data-lucide="arrow-left" class="me-1" style="width: 14px;"></i> Back to Dashboard</a>
-                <h2 class="fw-bold mb-0 text-gradient">{{ client.name }}'s Progress Gallery</h2>
-            </div>
-        </div>
-    </div>
+{% extends 'professional/pro_base.html' %}
+{% block title %}{{ client.name }}'s Gallery{% endblock %}
+{% block page_title %}{{ client.name }}'s Progress Gallery{% endblock %}
+{% block page_subtitle %}Review shared body composition and transformation photos{% endblock %}
 
-    <div class="row g-4" id="gallery-grid">
-        {% for photo in photos %}
-        <div class="col-sm-6 col-md-4 col-lg-3">
-            <div class="gf-card h-100 overflow-hidden position-relative group" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
-                <img src="/{{ photo.photo_path }}" class="img-fluid w-100 object-fit-cover" style="height: 250px;" alt="Progress Photo">
-                
-                <div class="position-absolute bottom-0 start-0 w-100 p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
-                    <span class="text-white small fw-bold"><i data-lucide="calendar" class="me-1" style="width: 14px;"></i> {{ photo.log_date }}</span>
-                </div>
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <a href="/pro/client/{{ client.id }}" class="btn-pro-ghost">
+        <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> Back to Client Profile
+    </a>
+</div>
+
+<div class="row g-4" id="gallery-grid">
+    {% for photo in photos %}
+    <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="pro-card h-100 overflow-hidden position-relative p-0" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 50 }}">
+            <img src="/{{ photo.photo_path }}" class="img-fluid w-100 object-fit-cover" style="height: 250px;" alt="Progress Photo">
+            
+            <div class="position-absolute bottom-0 start-0 w-100 p-3 d-flex justify-content-between align-items-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.85));">
+                <span class="text-white small fw-bold"><i data-lucide="calendar" class="me-1" style="width: 14px;"></i> {{ photo.log_date }}</span>
+                <span class="badge bg-success" style="font-size:0.68rem;">Shared</span>
             </div>
         </div>
-        {% else %}
-        <div class="col-12 text-center py-5">
-            <div class="gf-card d-inline-block p-5">
-                <i data-lucide="image" class="text-muted mb-3 mx-auto" style="width: 64px; height: 64px;"></i>
-                <h4 class="fw-bold text-muted">No Shared Photos Yet</h4>
-                <p class="text-muted mb-0">The client hasn't shared any progress photos with you yet.</p>
-            </div>
-        </div>
-        {% endfor %}
     </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="pro-card d-inline-block p-5 text-center mx-auto" style="max-width:500px;">
+            <i data-lucide="image-off" class="text-muted mb-3 mx-auto" style="width: 56px; height: 56px; opacity:0.6;"></i>
+            
+            {% if total_photos > 0 %}
+                <h4 class="fw-bold mb-2" style="color:var(--pro-text-main);">Sharing Not Enabled</h4>
+                <p class="text-muted mb-4" style="font-size:0.88rem;">{{ client.name }} has logged {{ total_photos }} progress photo(s), but hasn't enabled sharing with you yet.</p>
+                
+                <form action="/gallery/client/{{ client.id }}/request_access" method="POST">
+                    <button type="submit" class="btn-pro-primary mx-auto" style="border-radius:10px; padding:10px 20px;">
+                        <i data-lucide="send" style="width:16px;height:16px;margin-right:6px;"></i> Request Photo Sharing Access
+                    </button>
+                </form>
+            {% else %}
+                <h4 class="fw-bold mb-2" style="color:var(--pro-text-main);">No Photos Uploaded</h4>
+                <p class="text-muted mb-0" style="font-size:0.88rem;">{{ client.name }} hasn't uploaded any progress photos yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
 {% include 'components/pro_chat_overlay.html' %}

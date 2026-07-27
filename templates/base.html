@@ -115,6 +115,14 @@
                         <span>Photo Gallery</span>
                     </a>
 
+                    <a href="/notifications" class="nav-item {% if request.endpoint in ['notifications_redirect', 'user_reminders_bp.user_notifications'] %}active{% endif %}" id="nav-notifications">
+                        <i data-lucide="bell"></i>
+                        <span>Notifications</span>
+                        {% if user_unread_count and user_unread_count > 0 %}
+                        <span class="badge bg-danger rounded-pill ms-auto" style="font-size:0.68rem; padding:3px 7px;">{{ user_unread_count }}</span>
+                        {% endif %}
+                    </a>
+
                     <a href="/health" class="nav-item" id="nav-profile">
                         <i data-lucide="user-circle"></i>
                         <span>Profile</span>
@@ -268,7 +276,10 @@
                 </div>
 
                 {% if session.get('user_name') %}
-                <div class="mobile-top-user">
+                <div class="mobile-top-user d-flex align-items-center gap-2">
+                    <button type="button" onclick="openReminderModal()" class="btn btn-sm" style="border-radius:10px; background:rgba(16,185,129,0.12); color:var(--accent-primary,#10b981); border:1px solid rgba(16,185,129,0.3); padding:4px 10px; font-size:0.78rem; font-weight:600; display:inline-flex; align-items:center; gap:4px;" title="Notification Reminders">
+                        <i data-lucide="bell" style="width:14px;height:14px;"></i> <span class="d-none d-sm-inline">Reminders</span>
+                    </button>
                     <span class="mobile-user-name">{{ session.get('user_name') }}</span>
                     <a href="/logout" class="mobile-top-logout" title="Logout">
                         <i data-lucide="log-out"></i>
@@ -1039,6 +1050,10 @@
     }
 }
 </style>
+
+{% include 'components/user_chat_overlay.html' %}
+{% include 'components/reminder_modal.html' %}
+<script src="/static/js/push_notifications.js"></script>
 
 </body>
 

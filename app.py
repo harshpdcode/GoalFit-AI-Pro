@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request
+from flask import Flask, session, redirect, url_for, request, render_template
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from modules.auth import auth_bp
@@ -27,7 +27,8 @@ from modules.diet_management import pro_diet_bp
 from modules.workout_management import pro_workout_bp
 from modules.transformation_management import pro_transformations_bp
 from modules.earnings_management import pro_earnings_bp
-from modules.schedule_management import pro_schedule_bp
+from modules.schedule_management import pro_schedule_bp, user_schedule_bp
+from modules.user_reminders import user_reminders_bp
 import os
 
 
@@ -78,11 +79,11 @@ def init_db_on_startup():
 # Execute database check on app load
 init_db_on_startup()
 
-# Initialize Limiter
+# Initialize Limiter with generous limits for background polling
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["5000 per day", "2000 per hour"],
     storage_uri="memory://"
 )
 
@@ -114,6 +115,39 @@ app.register_blueprint(pro_workout_bp)
 app.register_blueprint(pro_transformations_bp)
 app.register_blueprint(pro_earnings_bp)
 app.register_blueprint(pro_schedule_bp)
+app.register_blueprint(user_schedule_bp)
+app.register_blueprint(user_reminders_bp)
+
+# Exempt real-time polling blueprints from rate limits
+limiter.exempt(chat_bp)
+limiter.exempt(user_reminders_bp)
+
+@app.context_processor
+def inject_user_hired_pro():
+    if 'user_id' in session and session.get('role') == 'user':
+        try:
+            from database.db_connection import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("""
+                SELECT p.id as professional_id, p.full_name as prof_name, p.role as prof_role, p.profile_photo as prof_photo
+                FROM client_assignments ca
+                JOIN professionals p ON ca.professional_id = p.id
+                WHERE ca.user_id = %s AND ca.status = 'active'
+                LIMIT 1
+            """, (session['user_id'],))
+            pro = cursor.fetchone()
+            
+            cursor.execute("SELECT COUNT(*) as cnt FROM notifications WHERE user_id = %s AND is_read = FALSE", (session['user_id'],))
+            n_row = cursor.fetchone()
+            user_unread_count = n_row['cnt'] if n_row else 0
+            
+            cursor.close()
+            conn.close()
+            return dict(hired_pro=pro, user_unread_count=user_unread_count)
+        except Exception:
+            pass
+    return dict(hired_pro=None, user_unread_count=0)
 
 
 # First-time login protection
@@ -125,6 +159,34 @@ def check_first_login():
         allowed_routes = ['health.health_profile', 'auth.logout', 'static', 'professional_auth.login', 'professional_auth.register']
         if request.endpoint and request.endpoint not in allowed_routes and not request.endpoint.startswith('professional_auth.'):
             return redirect(url_for('health.health_profile'))
+
+
+@app.route('/user/notifications')
+@app.route('/notifications')
+def notifications_redirect():
+    if 'user_id' not in session:
+        return redirect(url_for('auth.login'))
+    if session.get('role') in ['trainer', 'dietician', 'both', 'prof_trainer', 'prof_both', 'prof_dietician', 'admin']:
+        return redirect('/pro/notifications')
+        
+    user_id = session['user_id']
+    from database.db_connection import get_db_connection
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT * FROM notifications 
+        WHERE user_id = %s 
+        ORDER BY created_at DESC 
+        LIMIT 50
+    """, (user_id,))
+    notifs = cursor.fetchall()
+    
+    cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    return render_template('user/notifications.html', notifications=notifs)
 
 
 @app.route('/')

@@ -900,3 +900,43 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Mobile Sidebar Drawer Rules for Admin */
+@media (max-width: 992px) {
+    .layout {
+        display: block !important;
+    }
+    .admin-sidebar {
+        position: fixed !important;
+        top: 0;
+        left: -280px;
+        width: 260px !important;
+        height: 100vh !important;
+        z-index: 10000 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        overflow-y: auto;
+    }
+    .admin-sidebar.open {
+        left: 0 !important;
+    }
+    .content {
+        margin-left: 0 !important;
+        padding: 16px !important;
+        width: 100% !important;
+    }
+    .admin-sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: none;
+    }
+    .admin-sidebar-overlay.open {
+        display: block;
+    }
+}

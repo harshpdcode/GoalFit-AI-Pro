@@ -434,6 +434,22 @@ def create_schema():
         );
         """)
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS user_reminders (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT UNIQUE,
+            breakfast_time TIME DEFAULT '08:00:00',
+            lunch_time TIME DEFAULT '13:00:00',
+            snack_time TIME DEFAULT '17:00:00',
+            dinner_time TIME DEFAULT '20:00:00',
+            workout_time TIME DEFAULT '18:00:00',
+            water_interval_hours INT DEFAULT 2,
+            enable_push BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+        """)
+
         # ===========================
         # PRO PORTAL SaaS TABLES
         # ===========================

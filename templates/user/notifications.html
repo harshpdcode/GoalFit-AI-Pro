@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}My Notifications - GoalFit AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--text-primary, #fff); font-size:1.6rem;">
+                <i data-lucide="bell" class="me-2 text-success" style="width:28px; height:28px;"></i>Notifications
+            </h2>
+            <p class="text-muted small mb-0">{{ notifications|length }} notification{{ 's' if notifications|length != 1 else '' }} in your inbox</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            {% if notifications %}
+            <form action="/notifications/mark-read" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-2">
+                    <i data-lucide="check-check" class="me-1" style="width:14px;height:14px;"></i> Mark All Read
+                </button>
+            </form>
+            {% endif %}
+            <button onclick="openReminderModal()" class="btn btn-sm btn-success rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2 fw-bold" style="background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); border:none;">
+                <i data-lucide="clock" style="width:16px;height:16px;"></i> Reminder Schedule
+            </button>
+        </div>
+    </div>
+
+    <div class="gf-card p-3 p-md-4" style="background: var(--bg-card, #121929); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 18px; box-shadow: var(--shadow-dark, 0 10px 30px rgba(0,0,0,0.5));">
+        {% if notifications %}
+        <div class="d-flex flex-column gap-3">
+            {% for notif in notifications %}
+            <div class="p-3 rounded-3 d-flex align-items-start gap-3 transition-all {% if not notif.is_read %}border-start border-4 border-success{% endif %}" 
+                 style="background: {% if not notif.is_read %}rgba(16,185,129,0.06){% else %}var(--bg-secondary, #1a2336){% endif %}; border: 1px solid var(--border-subtle, rgba(255,255,255,0.08));">
+                
+                <!-- Category Icon -->
+                <div class="p-2 rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center" style="width:42px; height:42px; 
+                    {% if notif.notification_type == 'chat' %}background:rgba(16,185,129,0.15); color:#10b981;
+                    {% elif notif.notification_type == 'hire_accepted' %}background:rgba(6,182,212,0.15); color:#06b6d4;
+                    {% elif notif.notification_type == 'hire_rejected' %}background:rgba(239,68,68,0.15); color:#ef4444;
+                    {% elif notif.notification_type == 'meal' %}background:rgba(245,158,11,0.15); color:#f59e0b;
+                    {% elif notif.notification_type == 'workout' %}background:rgba(168,85,247,0.15); color:#a855f7;
+                    {% else %}background:rgba(255,255,255,0.08); color:var(--text-muted, #9ca3af);{% endif %}">
+                    
+                    {% if notif.notification_type == 'chat' %}
+                        <i data-lucide="message-square" style="width:20px;height:20px;"></i>
+                    {% elif notif.notification_type == 'hire_accepted' %}
+                        <i data-lucide="user-check" style="width:20px;height:20px;"></i>
+                    {% elif notif.notification_type == 'hire_rejected' %}
+                        <i data-lucide="user-x" style="width:20px;height:20px;"></i>
+                    {% elif notif.notification_type == 'meal' %}
+                        <i data-lucide="utensils" style="width:20px;height:20px;"></i>
+                    {% elif notif.notification_type == 'workout' %}
+                        <i data-lucide="dumbbell" style="width:20px;height:20px;"></i>
+                    {% else %}
+                        <i data-lucide="bell" style="width:20px;height:20px;"></i>
+                    {% endif %}
+                </div>
+                
+                <!-- Content -->
+                <div class="flex-grow-1 min-w-0">
+                    <p class="mb-1 fw-medium" style="color: var(--text-primary, #fff); font-size:0.92rem; line-height:1.4;">
+                        {{ notif.message }}
+                    </p>
+                    <small class="text-muted" style="font-size:0.75rem;">
+                        <i data-lucide="clock" class="me-1" style="width:12px;height:12px;"></i>
+                        {% if notif.created_at %}
+                            {{ notif.created_at.strftime('%d %b %Y · %I:%M %p') if hasattr(notif.created_at, 'strftime') else notif.created_at }}
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="flex-shrink-0 ms-2">
+                    {% if notif.notification_type == 'chat' %}
+                    <a href="/marketplace/my-professionals?chat=open" class="btn btn-sm btn-outline-success rounded-pill px-3 py-1" style="font-size:0.78rem;">
+                        Open Chat
+                    </a>
+                    {% elif notif.notification_type in ['hire_accepted', 'hire_rejected'] %}
+                    <a href="/marketplace/my-professionals" class="btn btn-sm btn-outline-info rounded-pill px-3 py-1" style="font-size:0.78rem;">
+                        My Pros
+                    </a>
+                    {% elif notif.notification_type == 'meal' %}
+                    <a href="/diet-plan" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1" style="font-size:0.78rem;">
+                        Diet Plan
+                    </a>
+                    {% elif notif.notification_type == 'workout' %}
+                    <a href="/workout-plan" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" style="font-size:0.78rem;">
+                        Workouts
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i data-lucide="bell-off" class="text-muted mb-3 mx-auto" style="width:56px; height:56px; opacity:0.5;"></i>
+            <h5 class="fw-bold text-muted mb-1">No Notifications Yet</h5>
+            <p class="text-muted small mb-0">You're all caught up! New messages, hire updates, and reminders will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

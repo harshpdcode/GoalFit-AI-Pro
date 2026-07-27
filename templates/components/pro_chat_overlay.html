@@ -30,30 +30,31 @@
 .chat-overlay {
     position: fixed;
     bottom: 24px;
-    right: 24px;
-    width: 340px;
-    background: var(--bg-card);
+    right: 95px;
+    width: 350px;
+    background: #090d16 !important;
     border-radius: 16px;
-    box-shadow: var(--shadow-dark);
-    z-index: 9995;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+    z-index: 9990;
     overflow: hidden;
     transition: all 0.3s ease;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid rgba(0, 242, 254, 0.35);
 }
 .chat-header {
-    background: var(--accent-gradient);
-    color: var(--text-on-accent);
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #ffffff !important;
     padding: 12px 16px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 @media (max-width: 768px) {
     .chat-overlay {
         bottom: 85px !important;
-        right: 12px !important;
-        width: calc(100vw - 24px) !important;
+        right: 16px !important;
+        width: calc(100vw - 32px) !important;
         max-width: 360px !important;
     }
 }
@@ -62,6 +63,11 @@
 }
 .chat-body.active {
     display: block;
+}
+#chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    background: #090d16 !important;
 }
 .chat-message {
     max-width: 85%;
@@ -72,18 +78,26 @@
     line-height: 1.4;
 }
 .chat-message.sent {
-    background: var(--accent-gradient);
-    color: var(--text-on-accent);
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    color: #000000 !important;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
-    font-weight: 500;
+    font-weight: 600;
 }
 .chat-message.received {
-    background: var(--bg-input);
-    color: var(--text-primary);
-    border: 1px solid var(--border-subtle);
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     align-self: flex-start;
     border-bottom-left-radius: 4px;
+}
+#chat-input-msg {
+    background: #182234 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+#chat-input-msg::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
 }
 </style>
 
@@ -94,23 +108,24 @@ const clientRole = "user";
 function toggleChat() {
     const body = document.getElementById('chat-body');
     const icon = document.getElementById('chat-toggle-icon');
+    if (!body) return;
+    
     body.classList.toggle('active');
     
     if(body.classList.contains('active')) {
-        icon.setAttribute('data-lucide', 'chevron-down');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
         loadMessages();
-        // Set an interval to poll messages while chat is open
         if(!window.chatInterval) {
             window.chatInterval = setInterval(loadMessages, 5000);
         }
     } else {
-        icon.setAttribute('data-lucide', 'chevron-up');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
         if(window.chatInterval) {
             clearInterval(window.chatInterval);
             window.chatInterval = null;
         }
     }
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 }
 
 async function loadMessages() {
@@ -119,18 +134,17 @@ async function loadMessages() {
         const messages = await res.json();
         
         const container = document.getElementById('chat-messages');
+        if (!container) return;
         container.innerHTML = '';
         
         messages.forEach(msg => {
             const div = document.createElement('div');
-            // If sender is the professional
             const isSent = msg.sender_id == '{{ session.user_id }}' && msg.sender_role != 'user';
             div.className = `chat-message ${isSent ? 'sent' : 'received'}`;
             div.textContent = msg.message;
             container.appendChild(div);
         });
         
-        // Scroll to bottom
         container.scrollTop = container.scrollHeight;
     } catch (e) {
         console.error("Failed to load chat history", e);
@@ -160,6 +174,17 @@ document.getElementById('chat-form').addEventListener('submit', async (e) => {
         }
     } catch(e) {
         console.error("Failed to send message", e);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.search.includes('chat=open')) {
+        setTimeout(function() {
+            const body = document.getElementById('chat-body');
+            if (body && !body.classList.contains('active')) {
+                toggleChat();
+            }
+        }, 300);
     }
 });
 </script>

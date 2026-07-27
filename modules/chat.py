@@ -61,6 +61,22 @@ def send_message():
         VALUES (%s, %s, %s, %s, %s)
     """, (current_user_id, current_role, receiver_id, receiver_role, message))
     
+    # Send notification record
+    try:
+        preview = message[:50] + ('...' if len(message) > 50 else '')
+        if receiver_role == 'user':
+            cursor.execute("""
+                INSERT INTO notifications (user_id, notification_type, message)
+                VALUES (%s, 'chat', %s)
+            """, (receiver_id, f"💬 New message from your coach: {preview}"))
+        else:
+            cursor.execute("""
+                INSERT INTO notifications (professional_id, notification_type, message)
+                VALUES (%s, 'chat', %s)
+            """, (receiver_id, f"💬 New message from client: {preview}"))
+    except Exception:
+        pass
+        
     conn.commit()
     msg_id = cursor.lastrowid
     cursor.close()

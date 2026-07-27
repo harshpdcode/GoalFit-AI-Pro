@@ -1,0 +1,201 @@
+{% if hired_pro %}
+{% set pro_name = hired_pro.prof_name if hired_pro.prof_name is defined else (hired_pro.full_name if hired_pro.full_name is defined else 'Coach') %}
+{% set pro_id = hired_pro.professional_id if hired_pro.professional_id is defined else (hired_pro.id if hired_pro.id is defined else 0) %}
+{% set pro_role = hired_pro.prof_role if hired_pro.prof_role is defined else (hired_pro.role if hired_pro.role is defined else 'Coach') %}
+{% set pro_photo = hired_pro.prof_photo if hired_pro.prof_photo is defined else (hired_pro.profile_photo if hired_pro.profile_photo is defined else '') %}
+
+{% if pro_id %}
+<div id="user-chat-overlay" class="user-chat-overlay">
+    <div class="user-chat-header" onclick="toggleUserChat()">
+        <div class="d-flex align-items-center gap-2">
+            {% if pro_photo and pro_photo != 'static/images/profile_img/default_prof.jpg' %}
+            <img src="/{{ pro_photo }}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 1.5px solid var(--accent-primary, #10b981);">
+            {% else %}
+            <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 14px; background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
+                {{ pro_name[0]|upper }}
+            </div>
+            {% endif %}
+            <div>
+                <h6 class="mb-0 fw-bold" style="color: #ffffff; font-size: 0.9rem; line-height: 1.2;">{{ pro_name }}</h6>
+                <small style="color: var(--text-muted, #9ca3af); font-size: 0.72rem;">{{ pro_role|title }} (Coach)</small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span id="user-chat-badge" class="badge bg-danger rounded-pill" style="display:none; font-size:0.65rem;">New</span>
+            <i data-lucide="chevron-up" id="user-chat-toggle-icon" style="stroke: #ffffff; width:18px; height:18px;"></i>
+        </div>
+    </div>
+    
+    <div class="user-chat-body" id="user-chat-body">
+        <div id="user-chat-messages" class="p-3 d-flex flex-column gap-2" style="height: 300px; overflow-y: auto; background: #0c121e;">
+            <!-- Messages load here -->
+        </div>
+        <div class="user-chat-input p-3" style="background: #151d2d; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+            <form id="user-chat-form" class="d-flex gap-2">
+                <input type="text" id="user-chat-input-msg" class="form-control" style="background: #0c121e; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size:0.88rem;" placeholder="Message your coach..." required>
+                <button type="submit" class="btn" style="background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-weight: 700;"><i data-lucide="send" style="width: 16px; stroke: #fff;"></i></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-chat-overlay {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 340px;
+    background: #0c121e !important;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+    z-index: 9990;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.user-chat-header {
+    background: linear-gradient(135deg, #151d2d, #0c121e);
+    color: #ffffff !important;
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+@media (max-width: 768px) {
+    .user-chat-overlay {
+        bottom: 115px !important;
+        right: 12px !important;
+        width: calc(100vw - 24px) !important;
+        max-width: 380px !important;
+    }
+}
+.user-chat-body {
+    display: none;
+}
+.user-chat-body.active {
+    display: block;
+}
+.user-chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+.user-chat-msg.sent {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    font-weight: 500;
+}
+.user-chat-msg.received {
+    background: #1e293b;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+#user-chat-input-msg::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+</style>
+
+<script>
+const userProId = "{{ pro_id }}";
+const userProRole = "{{ pro_role }}";
+
+function toggleUserChat() {
+    const body = document.getElementById('user-chat-body');
+    const icon = document.getElementById('user-chat-toggle-icon');
+    const badge = document.getElementById('user-chat-badge');
+    if (!body) return;
+    
+    body.classList.toggle('active');
+    if (badge) badge.style.display = 'none';
+    
+    if(body.classList.contains('active')) {
+        if (icon) icon.setAttribute('data-lucide', 'chevron-down');
+        loadUserMessages();
+        if(!window.userChatInterval) {
+            window.userChatInterval = setInterval(loadUserMessages, 5000);
+        }
+    } else {
+        if (icon) icon.setAttribute('data-lucide', 'chevron-up');
+        if(window.userChatInterval) {
+            clearInterval(window.userChatInterval);
+            window.userChatInterval = null;
+        }
+    }
+    if (window.lucide) lucide.createIcons();
+}
+
+async function loadUserMessages() {
+    try {
+        const res = await fetch(`/chat/history?other_id=${userProId}&other_role=${userProRole}`);
+        const messages = await res.json();
+        
+        const container = document.getElementById('user-chat-messages');
+        if (!container) return;
+        
+        const prevCount = container.children.length;
+        container.innerHTML = '';
+        
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            const isSent = msg.sender_role === 'user';
+            div.className = `user-chat-msg ${isSent ? 'sent' : 'received'}`;
+            div.textContent = msg.message;
+            container.appendChild(div);
+        });
+        
+        if (messages.length > prevCount && !document.getElementById('user-chat-body').classList.contains('active')) {
+            const badge = document.getElementById('user-chat-badge');
+            if (badge) badge.style.display = 'inline-block';
+        }
+        
+        container.scrollTop = container.scrollHeight;
+    } catch (e) {
+        console.error("Failed to load coach messages", e);
+    }
+}
+
+document.getElementById('user-chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('user-chat-input-msg');
+    const message = input.value.trim();
+    if(!message) return;
+    
+    try {
+        const res = await fetch('/chat/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                receiver_id: userProId,
+                receiver_role: userProRole,
+                message: message
+            })
+        });
+        const data = await res.json();
+        if(data.success) {
+            input.value = '';
+            loadUserMessages();
+        }
+    } catch(e) {
+        console.error("Failed to send message to coach", e);
+    }
+});
+
+// Auto-check background messages every 10 seconds for user
+setInterval(function() {
+    const body = document.getElementById('user-chat-body');
+    if (body && !body.classList.contains('active')) {
+        loadUserMessages();
+    }
+}, 10000);
+</script>
+{% endif %}
+{% endif %}

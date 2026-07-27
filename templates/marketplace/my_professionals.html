@@ -44,8 +44,14 @@
                     </div>
                 </div>
                 
-                <div class="d-flex gap-2">
-                    <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn flex-grow-1" style="border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); font-weight:600; font-size:0.85rem;">View Profile</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn" onclick="toggleUserChat()" style="border-radius:8px; border:1px solid #06b6d4; background:rgba(6,182,212,0.12); color:#06b6d4; font-weight:600; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px;">
+                        <i data-lucide="message-square" style="width:14px;height:14px;"></i> Chat with Coach
+                    </button>
+                    <button type="button" class="btn" onclick="openBookModal({{ prof.professional_id }}, '{{ prof.prof_name }}')" style="border-radius:8px; border:1px solid var(--accent-primary, #10b981); background:rgba(16,185,129,0.1); color:var(--accent-primary, #10b981); font-weight:600; font-size:0.85rem; display:inline-flex; align-items:center; gap:4px;">
+                        <i data-lucide="calendar" style="width:14px;height:14px;"></i> Schedule Call
+                    </button>
+                    <a href="/marketplace/profile/{{ prof.professional_id }}" class="btn flex-grow-1" style="border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-input); color:var(--text-primary); font-weight:600; font-size:0.85rem;">Profile</a>
                     {% if prof.prof_role in ['trainer', 'both'] %}
                         <a href="/workout-plan" class="btn flex-grow-1" style="border-radius:8px; background:var(--accent-gradient); color:var(--text-on-accent); border:none; font-weight:600; font-size:0.85rem;">Workouts</a>
                     {% endif %}
@@ -104,5 +110,64 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Book Appointment Modal -->
+<div class="modal fade" id="bookAppointmentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: var(--bg-card, #121929); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 16px; color: var(--text-primary, #fff);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+        <h5 class="modal-title fw-bold" id="bookModalTitle">Schedule Appointment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/user/schedule/book" method="POST">
+        <input type="hidden" name="professional_id" id="modalProfId">
+        <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label small text-muted">Coach Name</label>
+                <input type="text" id="modalProfName" class="form-control" readonly style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small text-muted">Date</label>
+                    <input type="date" name="appointment_date" class="form-control" required style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Time Slot</label>
+                    <input type="time" name="appointment_time" class="form-control" required style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted">Consultation Mode</label>
+                <select name="mode" class="form-select" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                    <option value="Online Video Call">Online Video Call</option>
+                    <option value="Audio Call">Audio Call</option>
+                    <option value="Chat Consultation">Chat Consultation</option>
+                    <option value="In-Person Meeting">In-Person Meeting</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small text-muted">Notes / Questions for Coach</label>
+                <textarea name="notes" class="form-control" rows="3" placeholder="Specify your goals, topic for discussion..." style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+          <button type="submit" class="btn" style="background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; font-weight: 700; border-radius: 8px;">Confirm Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openBookModal(profId, profName) {
+    document.getElementById('modalProfId').value = profId;
+    document.getElementById('modalProfName').value = profName;
+    document.getElementById('bookModalTitle').innerText = 'Schedule Call with ' + profName;
+    var modalElement = document.getElementById('bookAppointmentModal');
+    var modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+</script>
 
 {% endblock %}

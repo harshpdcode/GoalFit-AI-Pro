@@ -1,0 +1,91 @@
+<!-- Reminder & Notification Settings Modal -->
+<div class="modal fade" id="reminderSettingsModal" tabindex="-1" aria-labelledby="reminderModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: var(--bg-card, #121929); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 18px; color: var(--text-primary, #fff); box-shadow: var(--shadow-dark);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+        <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="reminderModalTitle">
+          <i data-lucide="bell-ring" style="color: var(--accent-primary, #10b981); width:20px; height:20px;"></i> Daily Reminder Schedule
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/user/reminders/update" method="POST" id="reminderSettingsForm">
+        <div class="modal-body p-4">
+            <p class="text-muted small mb-4">Set your preferred meal, workout, and hydration reminder times to receive push notifications on your device.</p>
+            
+            <h6 class="fw-bold text-uppercase mb-3" style="color: var(--accent-primary, #10b981); font-size: 0.78rem; letter-spacing: 0.8px;">Meal Schedule</h6>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label class="form-label small text-muted">Breakfast Time</label>
+                    <input type="time" name="breakfast_time" id="rem_breakfast" class="form-control" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Lunch Time</label>
+                    <input type="time" name="lunch_time" id="rem_lunch" class="form-control" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Snack Time</label>
+                    <input type="time" name="snack_time" id="rem_snack" class="form-control" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Dinner Time</label>
+                    <input type="time" name="dinner_time" id="rem_dinner" class="form-control" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-uppercase mb-3" style="color: var(--secondary, #06b6d4); font-size: 0.78rem; letter-spacing: 0.8px;">Workout & Hydration</h6>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <label class="form-label small text-muted">Workout Time</label>
+                    <input type="time" name="workout_time" id="rem_workout" class="form-control" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small text-muted">Water Reminder Interval</label>
+                    <select name="water_interval_hours" id="rem_water" class="form-select" style="background: var(--bg-input, #1e293b); color: var(--text-primary, #fff); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1)); border-radius: 10px;">
+                        <option value="1">Every 1 Hour</option>
+                        <option value="2" selected>Every 2 Hours</option>
+                        <option value="3">Every 3 Hours</option>
+                        <option value="4">Every 4 Hours</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-check form-switch p-3 rounded-3" style="background: var(--bg-input, #1e293b); border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+                <input class="form-check-input ms-0 me-3" type="checkbox" name="enable_push" id="rem_push" checked style="cursor:pointer;">
+                <label class="form-check-input-label small fw-bold" for="rem_push" style="color: var(--text-primary, #fff); cursor:pointer;">
+                    Enable Device Push Notifications (Mobile & Desktop)
+                </label>
+            </div>
+        </div>
+        
+        <div class="modal-footer p-3" style="border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
+          <button type="submit" class="btn" style="background: var(--accent-gradient, linear-gradient(135deg, #10b981, #06b6d4)); color: #fff; font-weight: 700; border-radius: 8px;">Save Preferences</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function openReminderModal() {
+    fetch('/user/reminders/')
+        .then(res => res.json())
+        .then(data => {
+            if (data) {
+                if (data.breakfast_time) document.getElementById('rem_breakfast').value = data.breakfast_time;
+                if (data.lunch_time) document.getElementById('rem_lunch').value = data.lunch_time;
+                if (data.snack_time) document.getElementById('rem_snack').value = data.snack_time;
+                if (data.dinner_time) document.getElementById('rem_dinner').value = data.dinner_time;
+                if (data.workout_time) document.getElementById('rem_workout').value = data.workout_time;
+                if (data.water_interval_hours) document.getElementById('rem_water').value = data.water_interval_hours;
+                if (data.enable_push !== undefined) document.getElementById('rem_push').checked = Boolean(data.enable_push);
+            }
+            if (window.requestPushPermission) window.requestPushPermission();
+            var modal = new bootstrap.Modal(document.getElementById('reminderSettingsModal'));
+            modal.show();
+        })
+        .catch(err => console.error("Error fetching reminder settings", err));
+}
+</script>

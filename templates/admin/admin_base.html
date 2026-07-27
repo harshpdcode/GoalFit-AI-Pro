@@ -19,6 +19,9 @@
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Mobile Overlay -->
+<div class="admin-sidebar-overlay" id="adminSidebarOverlay" onclick="toggleAdminSidebar()"></div>
+
 <div class="layout">
 
     <!-- ===== ADMIN SIDEBAR ===== -->
@@ -102,6 +105,17 @@
     <!-- ===== MAIN CONTENT ===== -->
     <main class="content">
         
+        <!-- Mobile Topbar -->
+        <div class="d-lg-none d-flex align-items-center justify-content-between p-3 mb-3 rounded-3" style="background:var(--bg-card, #0f172a); border:1px solid var(--border-subtle, rgba(255,255,255,0.1));">
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn p-0 text-light" onclick="toggleAdminSidebar()" style="background:transparent;border:none;">
+                    <i data-lucide="menu" style="width:24px;height:24px;"></i>
+                </button>
+                <span class="fw-bold">Admin Panel</span>
+            </div>
+            <span class="badge bg-danger">Admin</span>
+        </div>
+
         <!-- Breadcrumb -->
         <nav class="breadcrumb-nav" aria-label="breadcrumb">
             <a href="/admin/dashboard">Admin</a>
@@ -124,6 +138,13 @@
 <script>
     AOS.init({ duration: 600, once: true });
     lucide.createIcons();
+
+    function toggleAdminSidebar() {
+        const sidebar = document.querySelector('.admin-sidebar');
+        const overlay = document.getElementById('adminSidebarOverlay');
+        if (sidebar) sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('open');
+    }
 
     // Toast notification function
     function showToast(message, type = 'success') {

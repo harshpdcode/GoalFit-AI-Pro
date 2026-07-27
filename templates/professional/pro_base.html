@@ -91,8 +91,8 @@
             </ul>
         </li>
 
-        <!-- Diet Plans (dietician / both) -->
-        {% if current_pro and current_pro.role in ['dietician', 'both'] %}
+        <!-- Diet Plans -->
+        {% if not current_pro or current_pro.role in ['dietician', 'both', 'prof_dietician', 'prof_both', 'Dietician'] or current_pro.role not in ['trainer', 'prof_trainer', 'Personal Trainer'] %}
         <li class="sidebar-section-label">Diet & Nutrition</li>
         <li class="nav-item">
             <a href="#" class="nav-link has-submenu {% if '/pro/diet' in request.path %}active submenu-open{% endif %}"
@@ -110,8 +110,8 @@
         </li>
         {% endif %}
 
-        <!-- Workout Plans (trainer / both) -->
-        {% if current_pro and current_pro.role in ['trainer', 'both'] %}
+        <!-- Workout Plans -->
+        {% if not current_pro or current_pro.role in ['trainer', 'both', 'prof_trainer', 'prof_both', 'Personal Trainer'] or current_pro.role not in ['dietician', 'prof_dietician'] %}
         <li class="sidebar-section-label">Training</li>
         <li class="nav-item">
             <a href="#" class="nav-link has-submenu {% if '/pro/workout' in request.path %}active submenu-open{% endif %}"
@@ -314,32 +314,32 @@
 {% block fab %}
 <div class="fab-container" id="fabContainer">
     <div class="fab-actions" id="fabActions">
-        {% if current_pro and current_pro.role in ['dietician', 'both'] %}
-        <a href="/pro/diet/meal/create" class="fab-action-item">
-            <span class="fab-action-label">Create Meal</span>
-            <div class="fab-action-btn"><i data-lucide="utensils" ></i></div>
-        </a>
-        <a href="/pro/diet/plan/create" class="fab-action-item">
-            <span class="fab-action-label">Diet Plan</span>
-            <div class="fab-action-btn"><i data-lucide="clipboard-list"></i></div>
-        </a>
-        {% endif %}
-        {% if current_pro and current_pro.role in ['trainer', 'both'] %}
         <a href="/pro/workout/exercise/create" class="fab-action-item">
             <span class="fab-action-label">Add Exercise</span>
             <div class="fab-action-btn"><i data-lucide="dumbbell"></i></div>
         </a>
         <a href="/pro/workout/plan/create" class="fab-action-item">
-            <span class="fab-action-label">Workout Plan</span>
+            <span class="fab-action-label">New Workout Plan</span>
             <div class="fab-action-btn"><i data-lucide="zap"></i></div>
         </a>
-        {% endif %}
+        <a href="/pro/diet/meal/create" class="fab-action-item">
+            <span class="fab-action-label">Create Meal</span>
+            <div class="fab-action-btn"><i data-lucide="utensils"></i></div>
+        </a>
+        <a href="/pro/diet/plan/create" class="fab-action-item">
+            <span class="fab-action-label">New Diet Plan</span>
+            <div class="fab-action-btn"><i data-lucide="clipboard-list"></i></div>
+        </a>
         <a href="/pro/transformations/add" class="fab-action-item">
             <span class="fab-action-label">Add Transformation</span>
             <div class="fab-action-btn"><i data-lucide="sparkles"></i></div>
         </a>
+        <a href="/pro/clients/pending" class="fab-action-item">
+            <span class="fab-action-label">Pending Requests</span>
+            <div class="fab-action-btn"><i data-lucide="user-plus"></i></div>
+        </a>
     </div>
-    <button class="fab-main" id="fabMain" onclick="toggleFab()">
+    <button class="fab-main" id="fabMain" onclick="toggleFab(event)" title="Quick Actions">
         <i data-lucide="plus"></i>
     </button>
 </div>
@@ -387,20 +387,25 @@ function toggleSubmenu(linkEl, e) {
 }
 
 // ---- FAB ----
-function toggleFab() {
+function toggleFab(e) {
+    if (e) e.stopPropagation();
     const actions = document.getElementById('fabActions');
     const btn = document.getElementById('fabMain');
-    actions.classList.toggle('open');
-    btn.classList.toggle('active');
-    lucide.createIcons();
+    if (actions && btn) {
+        actions.classList.toggle('open');
+        btn.classList.toggle('active');
+        if (window.lucide) lucide.createIcons();
+    }
 }
 
 // Close FAB on outside click
 document.addEventListener('click', function(e) {
     const fab = document.getElementById('fabContainer');
     if (fab && !fab.contains(e.target)) {
-        document.getElementById('fabActions').classList.remove('open');
-        document.getElementById('fabMain').classList.remove('active');
+        const actions = document.getElementById('fabActions');
+        const btn = document.getElementById('fabMain');
+        if (actions) actions.classList.remove('open');
+        if (btn) btn.classList.remove('active');
     }
 });
 
