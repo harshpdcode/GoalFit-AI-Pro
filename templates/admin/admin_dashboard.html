@@ -277,20 +277,18 @@
         new Chart(document.getElementById('revenueChart'), {
             type: 'line',
             data: {
-                labels: paymentData.map(p => {
-                    let d = new Date(p.pay_date);
-                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                }),
+                labels: paymentData.map(p => p.formatted_date || p.pay_date),
                 datasets: [{
                     label: 'Daily Revenue (₹)',
                     data: paymentData.map(p => p.daily_revenue),
                     borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
                     borderWidth: 3,
-                    tension: 0.4,
+                    tension: 0.3,
                     fill: true,
                     pointBackgroundColor: '#10b981',
-                    pointRadius: 4
+                    pointHoverRadius: 6,
+                    pointRadius: 3
                 }]
             },
             options: {
@@ -301,14 +299,14 @@
                 },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#9aa4b2', font: { family: 'Inter' } }
+                        grid: { color: 'rgba(255,255,255,0.03)' },
+                        ticks: { color: '#9aa4b2', font: { family: 'Inter', size: 11 }, maxRotation: 45 }
                     },
                     y: {
                         grid: { color: 'rgba(255,255,255,0.05)' },
                         ticks: {
                             color: '#9aa4b2',
-                            font: { family: 'Inter' },
+                            font: { family: 'Inter', size: 11 },
                             callback: function(value) { return '₹' + value; }
                         },
                         beginAtZero: true

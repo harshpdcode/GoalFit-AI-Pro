@@ -202,21 +202,36 @@ def admin_dashboard():
     except Exception:
         pass
 
-    # User growth (last 30 days)
-    user_growth = []
+    import datetime
+    today = datetime.date.today()
+
+    # User growth (last 30 days continuous series)
+    raw_user_growth = []
     try:
         cursor.execute("""
             SELECT DATE(created_at) as reg_date, COUNT(*) as count 
-            FROM users WHERE role='user'
+            FROM users WHERE role='user' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
             GROUP BY DATE(created_at) 
-            ORDER BY reg_date DESC LIMIT 30
+            ORDER BY reg_date ASC
         """)
-        user_growth = cursor.fetchall() or []
+        raw_user_growth = cursor.fetchall() or []
     except Exception:
         pass
 
-    # Payment growth (last 30 days)
-    payment_growth = []
+    user_map = { (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d'): 0 for i in range(29, -1, -1) }
+    for r in raw_user_growth:
+        if r.get('reg_date'):
+            d_str = str(r['reg_date'])
+            if d_str in user_map:
+                user_map[d_str] = int(r['count'] or 0)
+
+    user_growth = [
+        {'reg_date': d_str, 'count': cnt, 'formatted_date': datetime.datetime.strptime(d_str, '%Y-%m-%d').strftime('%b %d')}
+        for d_str, cnt in user_map.items()
+    ]
+
+    # Payment growth (last 30 days continuous series)
+    raw_payment_growth = []
     try:
         cursor.execute("""
             SELECT DATE(created_at) as pay_date, SUM(commission_amount) as daily_revenue 
@@ -224,9 +239,21 @@ def admin_dashboard():
             GROUP BY DATE(created_at) 
             ORDER BY pay_date ASC
         """)
-        payment_growth = cursor.fetchall() or []
+        raw_payment_growth = cursor.fetchall() or []
     except Exception:
         pass
+
+    pay_map = { (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d'): 0.0 for i in range(29, -1, -1) }
+    for r in raw_payment_growth:
+        if r.get('pay_date'):
+            d_str = str(r['pay_date'])
+            if d_str in pay_map:
+                pay_map[d_str] = round(float(r['daily_revenue'] or 0), 2)
+
+    payment_growth = [
+        {'pay_date': d_str, 'daily_revenue': rev, 'formatted_date': datetime.datetime.strptime(d_str, '%Y-%m-%d').strftime('%b %d')}
+        for d_str, rev in pay_map.items()
+    ]
 
     cursor.close()
     conn.close()
