@@ -68,50 +68,71 @@ def admin_dashboard():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # Total users
-    cursor.execute("SELECT COUNT(*) as total FROM users WHERE role='user'")
-    total_users = cursor.fetchone()['total']
+    total_users = 0
+    new_this_week = 0
+    total_professionals = 0
+    total_revenue = 0
+    total_hire_requests = 0
+    avg_bmi = 0
+    total_meals = 0
+    total_exercises = 0
+    unread_feedback = 0
 
-    # New users this week
-    cursor.execute("""
-        SELECT COUNT(*) as new_week FROM users 
-        WHERE role='user' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    """)
-    new_this_week = cursor.fetchone()['new_week']
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM users WHERE role='user'")
+        r = cursor.fetchone()
+        total_users = r['total'] if r else 0
+    except Exception:
+        pass
 
-    # Total professionals
-    cursor.execute("SELECT COUNT(*) as total FROM professionals")
-    total_professionals = cursor.fetchone()['total']
+    try:
+        cursor.execute("SELECT COUNT(*) as new_week FROM users WHERE role='user' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")
+        r = cursor.fetchone()
+        new_this_week = r['new_week'] if r else 0
+    except Exception:
+        pass
 
-    # Total revenue
-    cursor.execute("SELECT SUM(commission_amount) as rev FROM payments WHERE payment_status='paid'")
-    total_revenue = cursor.fetchone()['rev'] or 0
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM professionals")
+        r = cursor.fetchone()
+        total_professionals = r['total'] if r else 0
+    except Exception:
+        pass
 
-    # Total hire requests
-    cursor.execute("SELECT COUNT(*) as total FROM hire_requests")
-    total_hire_requests = cursor.fetchone()['total']
+    try:
+        cursor.execute("SELECT SUM(commission_amount) as rev FROM payments WHERE payment_status='paid'")
+        r = cursor.fetchone()
+        total_revenue = r['rev'] if r and r['rev'] else 0
+    except Exception:
+        pass
 
-    # Average BMI
-    cursor.execute("""
-        SELECT ROUND(AVG(bmi_value), 1) as avg_bmi 
-        FROM bmi_records br
-        INNER JOIN (
-            SELECT user_id, MAX(recorded_date) as latest 
-            FROM bmi_records GROUP BY user_id
-        ) latest_bmi ON br.user_id = latest_bmi.user_id AND br.recorded_date = latest_bmi.latest
-    """)
-    avg_bmi_row = cursor.fetchone()
-    avg_bmi = avg_bmi_row['avg_bmi'] if avg_bmi_row['avg_bmi'] else 0
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM hire_requests")
+        r = cursor.fetchone()
+        total_hire_requests = r['total'] if r else 0
+    except Exception:
+        pass
 
-    # Total meals & exercises
-    cursor.execute("SELECT COUNT(*) as total FROM diet_meals")
-    total_meals = cursor.fetchone()['total']
-    cursor.execute("SELECT COUNT(*) as total FROM workout_exercises")
-    total_exercises = cursor.fetchone()['total']
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM diet_meals")
+        r = cursor.fetchone()
+        total_meals = r['total'] if r else 0
+    except Exception:
+        pass
 
-    # Unread feedback
-    cursor.execute("SELECT COUNT(*) as unread FROM user_feedback WHERE status='unread'")
-    unread_feedback = cursor.fetchone()['unread']
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM workout_exercises")
+        r = cursor.fetchone()
+        total_exercises = r['total'] if r else 0
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("SELECT COUNT(*) as unread FROM user_feedback WHERE status='unread'")
+        r = cursor.fetchone()
+        unread_feedback = r['unread'] if r else 0
+    except Exception:
+        pass
 
     # Goal type distribution
     cursor.execute("""

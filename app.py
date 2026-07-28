@@ -59,21 +59,36 @@ def init_db_on_startup():
         from database.db_connection import get_db_connection
         conn = get_db_connection()
         if conn:
-            cursor = conn.cursor()
-            cursor.execute("SHOW TABLES LIKE 'users';")
-            has_users = cursor.fetchone()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SHOW TABLES;")
+            raw_tables = cursor.fetchall()
+            tables = [list(r.values())[0].lower() for r in raw_tables] if raw_tables else []
+            
+            required_tables = ['users', 'professionals', 'chat_messages', 'notifications', 'professional_coaching_packages', 'user_reminders']
+            missing_tables = [t for t in required_tables if t not in tables]
+            
+            needs_init = False
+            if missing_tables:
+                print(f"[Auto-Init DB] Missing required tables: {missing_tables}. Creating schema and seeding data...")
+                needs_init = True
+            else:
+                cursor.execute("SELECT COUNT(*) as cnt FROM users;")
+                row = cursor.fetchone()
+                if not row or row['cnt'] == 0:
+                    print("[Auto-Init DB] Database users table empty. Seeding demo data...")
+                    needs_init = True
+
             cursor.close()
             conn.close()
 
-            if not has_users:
-                print("[Auto-Init DB] Table 'users' missing. Creating schema and seeding demo data...")
+            if needs_init:
                 from setup_db import create_schema
                 from seed_data import seed
                 create_schema()
                 seed()
-                print("[Auto-Init DB] Schema and seed data initialized successfully!")
+                print("[Auto-Init DB] Schema & seed data initialized successfully!")
             else:
-                print("[Auto-Init DB] Database tables verified.")
+                print("[Auto-Init DB] All required database tables verified.")
     except Exception as err:
         print(f"[Auto-Init DB Error] {err}")
 
