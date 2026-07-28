@@ -36,10 +36,10 @@ def create_schema():
             "professional_meals", "transformations", "client_assignments",
             "hire_requests", "professional_pricing", "professional_coaching_packages", "professionals",
             "water_logs", "user_feedback", "activity_logs",
-            "user_workouts", "user_meals", "workout_exercises",
+            "user_workouts", "user_meals", "user_selected_meals", "workout_exercises",
             "diet_meals", "progress_logs", "step_recommendations", 
             "goal_predictions", "bmi_records", "user_health", "users",
-            "chat_messages", "diet_logs", "progress_photos",
+            "chat_messages", "diet_logs", "progress_photos", "user_reminders",
             "appointments", "professional_availability", "professional_reviews",
             "notifications", "professional_settings"
         ]
@@ -49,7 +49,7 @@ def create_schema():
 
         # ===== USERS (with role) =====
         cursor.execute("""
-        CREATE TABLE users (
+        CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(100),
             email VARCHAR(100) UNIQUE,
@@ -61,7 +61,7 @@ def create_schema():
 
         # ===== USER HEALTH =====
         cursor.execute("""
-        CREATE TABLE user_health (
+        CREATE TABLE IF NOT EXISTS user_health (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             age INT,
@@ -78,7 +78,7 @@ def create_schema():
 
         # ===== BMI RECORDS =====
         cursor.execute("""
-        CREATE TABLE bmi_records (
+        CREATE TABLE IF NOT EXISTS bmi_records (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             bmi_value FLOAT,
@@ -90,7 +90,7 @@ def create_schema():
 
         # ===== GOAL PREDICTIONS =====
         cursor.execute("""
-        CREATE TABLE goal_predictions (
+        CREATE TABLE IF NOT EXISTS goal_predictions (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             current_weight FLOAT,
@@ -104,7 +104,7 @@ def create_schema():
 
         # ===== STEP RECOMMENDATIONS =====
         cursor.execute("""
-        CREATE TABLE step_recommendations (
+        CREATE TABLE IF NOT EXISTS step_recommendations (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             daily_steps INT,
@@ -116,7 +116,7 @@ def create_schema():
 
         # ===== PROGRESS LOGS =====
         cursor.execute("""
-        CREATE TABLE progress_logs (
+        CREATE TABLE IF NOT EXISTS progress_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             weight_kg FLOAT,
@@ -127,7 +127,7 @@ def create_schema():
 
         # ===== WORKOUT EXERCISES =====
         cursor.execute("""
-        CREATE TABLE workout_exercises (
+        CREATE TABLE IF NOT EXISTS workout_exercises (
             id INT AUTO_INCREMENT PRIMARY KEY,
             exercise_name VARCHAR(100),
             target_muscle VARCHAR(50),
@@ -142,7 +142,7 @@ def create_schema():
 
         # ===== DIET MEALS =====
         cursor.execute("""
-        CREATE TABLE diet_meals (
+        CREATE TABLE IF NOT EXISTS diet_meals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             meal_name VARCHAR(100),
             meal_time VARCHAR(50),
@@ -159,7 +159,7 @@ def create_schema():
 
         # ===== USER WORKOUTS =====
         cursor.execute("""
-        CREATE TABLE user_workouts (
+        CREATE TABLE IF NOT EXISTS user_workouts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             workout_id INT,
@@ -171,7 +171,7 @@ def create_schema():
 
         # ===== USER MEALS =====
         cursor.execute("""
-        CREATE TABLE user_meals (
+        CREATE TABLE IF NOT EXISTS user_meals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             meal_id INT,
@@ -183,7 +183,7 @@ def create_schema():
 
         # ===== USER SELECTED MEALS =====
         cursor.execute("""
-        CREATE TABLE user_selected_meals (
+        CREATE TABLE IF NOT EXISTS user_selected_meals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             meal_category VARCHAR(50),
@@ -197,7 +197,7 @@ def create_schema():
 
         # ===== ACTIVITY LOGS =====
         cursor.execute("""
-        CREATE TABLE activity_logs (
+        CREATE TABLE IF NOT EXISTS activity_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             action VARCHAR(100),
@@ -211,7 +211,7 @@ def create_schema():
 
         # ===== WATER LOGS =====
         cursor.execute("""
-        CREATE TABLE water_logs (
+        CREATE TABLE IF NOT EXISTS water_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             glasses INT DEFAULT 0,
@@ -225,7 +225,7 @@ def create_schema():
         # MARKETPLACE TABLES
         # ===========================
         cursor.execute("""
-        CREATE TABLE professionals (
+        CREATE TABLE IF NOT EXISTS professionals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             full_name VARCHAR(100),
             email VARCHAR(100) UNIQUE,
@@ -244,7 +244,7 @@ def create_schema():
 
         # ===== USER FEEDBACK =====
         cursor.execute("""
-        CREATE TABLE user_feedback (
+        CREATE TABLE IF NOT EXISTS user_feedback (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT DEFAULT NULL,
@@ -259,7 +259,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE professional_pricing (
+        CREATE TABLE IF NOT EXISTS professional_pricing (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             plan_type VARCHAR(50),
@@ -291,7 +291,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE hire_requests (
+        CREATE TABLE IF NOT EXISTS hire_requests (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT,
@@ -306,7 +306,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE client_assignments (
+        CREATE TABLE IF NOT EXISTS client_assignments (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT,
@@ -320,7 +320,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE transformations (
+        CREATE TABLE IF NOT EXISTS transformations (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             client_name VARCHAR(100),
@@ -330,12 +330,13 @@ def create_schema():
             description TEXT,
             image VARCHAR(255),
             rating FLOAT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
         );
         """)
 
         cursor.execute("""
-        CREATE TABLE professional_meals (
+        CREATE TABLE IF NOT EXISTS professional_meals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             meal_name VARCHAR(100),
@@ -351,7 +352,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE custom_diet_plans (
+        CREATE TABLE IF NOT EXISTS custom_diet_plans (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT,
@@ -364,7 +365,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE custom_diet_plan_meals (
+        CREATE TABLE IF NOT EXISTS custom_diet_plan_meals (
             id INT AUTO_INCREMENT PRIMARY KEY,
             plan_id INT,
             meal_type VARCHAR(50),
@@ -375,7 +376,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE professional_workouts (
+        CREATE TABLE IF NOT EXISTS professional_workouts (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             workout_name VARCHAR(100),
@@ -389,7 +390,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE custom_workout_plans (
+        CREATE TABLE IF NOT EXISTS custom_workout_plans (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT,
@@ -402,7 +403,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE custom_workout_plan_exercises (
+        CREATE TABLE IF NOT EXISTS custom_workout_plan_exercises (
             id INT AUTO_INCREMENT PRIMARY KEY,
             plan_id INT,
             workout_id INT,
@@ -413,7 +414,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE payments (
+        CREATE TABLE IF NOT EXISTS payments (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             professional_id INT,
@@ -434,7 +435,7 @@ def create_schema():
         # NEW FEATURE TABLES
         # ===========================
         cursor.execute("""
-        CREATE TABLE chat_messages (
+        CREATE TABLE IF NOT EXISTS chat_messages (
             id INT AUTO_INCREMENT PRIMARY KEY,
             sender_id INT,
             sender_role VARCHAR(20),
@@ -446,7 +447,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE diet_logs (
+        CREATE TABLE IF NOT EXISTS diet_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             meal_id INT,
@@ -458,7 +459,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE progress_photos (
+        CREATE TABLE IF NOT EXISTS progress_photos (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
             photo_path VARCHAR(255),
@@ -489,9 +490,8 @@ def create_schema():
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT DEFAULT NULL,
             professional_id INT DEFAULT NULL,
-            title VARCHAR(200),
+            notification_type VARCHAR(50) DEFAULT 'info',
             message TEXT,
-            type VARCHAR(50) DEFAULT 'info',
             is_read BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -503,7 +503,7 @@ def create_schema():
         # PRO PORTAL SaaS TABLES
         # ===========================
         cursor.execute("""
-        CREATE TABLE appointments (
+        CREATE TABLE IF NOT EXISTS appointments (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             user_id INT,
@@ -519,7 +519,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE professional_availability (
+        CREATE TABLE IF NOT EXISTS professional_availability (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             day_of_week VARCHAR(20),
@@ -531,7 +531,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE professional_reviews (
+        CREATE TABLE IF NOT EXISTS professional_reviews (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             user_id INT,
@@ -544,21 +544,7 @@ def create_schema():
         """)
 
         cursor.execute("""
-        CREATE TABLE notifications (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NULL,
-            professional_id INT NULL,
-            notification_type VARCHAR(50),
-            message TEXT,
-            is_read BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
-        );
-        """)
-
-        cursor.execute("""
-        CREATE TABLE professional_settings (
+        CREATE TABLE IF NOT EXISTS professional_settings (
             id INT AUTO_INCREMENT PRIMARY KEY,
             professional_id INT,
             notification_prefs TEXT,
