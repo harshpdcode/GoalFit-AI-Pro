@@ -63,7 +63,7 @@
                     <small class="text-muted" style="font-size:0.75rem;">
                         <i data-lucide="clock" class="me-1" style="width:12px;height:12px;"></i>
                         {% if notif.created_at %}
-                            {{ notif.created_at.strftime('%d %b %Y · %I:%M %p') if hasattr(notif.created_at, 'strftime') else notif.created_at }}
+                            {{ notif.created_at.strftime('%d %b %Y · %I:%M %p') if notif.created_at and notif.created_at.strftime is defined else notif.created_at }}
                         {% endif %}
                     </small>
                 </div>
