@@ -32,6 +32,33 @@ def ensure_packages_table(cursor):
             FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
         );
         """)
+        
+        # Migration patch for missing columns
+        cols = [
+            ("short_description", "TEXT"),
+            ("thumbnail", "VARCHAR(255) DEFAULT 'static/images/packages/default_pkg.jpg'"),
+            ("original_price", "FLOAT DEFAULT 2999"),
+            ("discount_percent", "FLOAT DEFAULT 0"),
+            ("final_price", "FLOAT DEFAULT 2999"),
+            ("duration_weeks", "VARCHAR(50) DEFAULT '12 Weeks'"),
+            ("goals_covered", "TEXT"),
+            ("suitable_for", "TEXT"),
+            ("include_diet", "BOOLEAN DEFAULT TRUE"),
+            ("meals_per_day", "INT DEFAULT 4"),
+            ("meal_preferences", "TEXT"),
+            ("custom_calories", "BOOLEAN DEFAULT TRUE"),
+            ("workout_type", "VARCHAR(50) DEFAULT 'Both'"),
+            ("workout_days", "INT DEFAULT 5"),
+            ("workout_level", "VARCHAR(50) DEFAULT 'Intermediate'"),
+            ("weekly_schedule", "TEXT")
+        ]
+        for col_name, col_def in cols:
+            try:
+                cursor.execute(f"SHOW COLUMNS FROM professional_coaching_packages LIKE '{col_name}'")
+                if not cursor.fetchone():
+                    cursor.execute(f"ALTER TABLE professional_coaching_packages ADD COLUMN {col_name} {col_def}")
+            except Exception:
+                pass
     except Exception as e:
         print(f"ensure_packages_table note: {e}")
 
@@ -164,6 +191,8 @@ def edit_package(package_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
+    ensure_packages_table(cursor)
+    
     cursor.execute("SELECT * FROM professional_coaching_packages WHERE id=%s AND professional_id=%s", (package_id, prof_id))
     pkg = cursor.fetchone()
     
@@ -174,10 +203,10 @@ def edit_package(package_id):
         return redirect(url_for('coaching_packages_bp.list_packages'))
         
     if request.method == 'POST':
-        package_name = request.form.get('package_name')
-        short_description = request.form.get('short_description')
+        package_name = request.form.get('package_name', pkg.get('package_name', ''))
+        short_description = request.form.get('short_description', pkg.get('short_description') or pkg.get('description') or '')
         
-        thumbnail = pkg['thumbnail']
+        thumbnail = pkg.get('thumbnail') or pkg.get('cover_image') or 'static/images/packages/default_pkg.jpg'
         if 'thumbnail' in request.files:
             file = request.files['thumbnail']
             if file and file.filename != '':
@@ -189,10 +218,13 @@ def edit_package(package_id):
                 file.save(file_path)
                 thumbnail = file_path.replace('\\', '/')
 
-        original_price = float(request.form.get('price', pkg['original_price']))
-        discount_percent = float(request.form.get('discount', pkg['discount_percent']))
+        orig_price_val = pkg.get('original_price') or pkg.get('price') or 2999
+        original_price = float(request.form.get('price') or orig_price_val)
+        disc_val = pkg.get('discount_percent') if pkg.get('discount_percent') is not None else 0
+        discount_percent = float(request.form.get('discount') or disc_val)
         final_price = round(original_price * (1.0 - (discount_percent / 100.0)), 2)
-        duration_weeks = request.form.get('duration_weeks', pkg['duration_weeks'])
+        dur_val = pkg.get('duration_weeks') or f"{pkg.get('duration_days', 30)} Days"
+        duration_weeks = request.form.get('duration_weeks') or dur_val
         
         goals_covered = json.dumps(request.form.getlist('goals_covered'))
         suitable_for = json.dumps(request.form.getlist('suitable_for'))
