@@ -98,22 +98,27 @@ def user_notifications():
         return redirect('/login')
         
     user_id = session['user_id']
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    cursor.execute("""
-        SELECT * FROM notifications 
-        WHERE user_id = %s 
-        ORDER BY created_at DESC 
-        LIMIT 50
-    """, (user_id,))
-    notifs = cursor.fetchall()
-    
-    cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
-    conn.commit()
-    
-    cursor.close()
-    conn.close()
-    
+    notifs = []
+    try:
+        from setup_db import ensure_notifications_table
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            ensure_notifications_table(cursor)
+            cursor.execute("""
+                SELECT * FROM notifications 
+                WHERE user_id = %s 
+                ORDER BY created_at DESC 
+                LIMIT 50
+            """, (user_id,))
+            notifs = cursor.fetchall() or []
+            
+            cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+    except Exception as e:
+        print("User notifications error:", e)
+        
     return render_template('user/notifications.html', notifications=notifs)
 

@@ -140,9 +140,15 @@ def inject_user_hired_pro():
             """, (session['user_id'],))
             pro = cursor.fetchone()
             
-            cursor.execute("SELECT COUNT(*) as cnt FROM notifications WHERE user_id = %s AND is_read = FALSE", (session['user_id'],))
-            n_row = cursor.fetchone()
-            user_unread_count = n_row['cnt'] if n_row else 0
+            user_unread_count = 0
+            try:
+                from setup_db import ensure_notifications_table
+                ensure_notifications_table(cursor)
+                cursor.execute("SELECT COUNT(*) as cnt FROM notifications WHERE user_id = %s AND is_read = FALSE", (session['user_id'],))
+                n_row = cursor.fetchone()
+                user_unread_count = n_row['cnt'] if n_row else 0
+            except Exception:
+                pass
             
             cursor.close()
             conn.close()
@@ -172,21 +178,28 @@ def notifications_redirect():
         return redirect('/pro/notifications')
         
     user_id = session['user_id']
-    from database.db_connection import get_db_connection
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT * FROM notifications 
-        WHERE user_id = %s 
-        ORDER BY created_at DESC 
-        LIMIT 50
-    """, (user_id,))
-    notifs = cursor.fetchall()
-    
-    cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    notifs = []
+    try:
+        from database.db_connection import get_db_connection
+        from setup_db import ensure_notifications_table
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            ensure_notifications_table(cursor)
+            cursor.execute("""
+                SELECT * FROM notifications 
+                WHERE user_id = %s 
+                ORDER BY created_at DESC 
+                LIMIT 50
+            """, (user_id,))
+            notifs = cursor.fetchall() or []
+            
+            cursor.execute("UPDATE notifications SET is_read = TRUE WHERE user_id = %s AND is_read = FALSE", (user_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+    except Exception as e:
+        print("Notifications fetch warning:", e)
     
     return render_template('user/notifications.html', notifications=notifs)
 

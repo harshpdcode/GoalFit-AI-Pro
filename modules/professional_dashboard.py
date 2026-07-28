@@ -388,20 +388,28 @@ def reviews():
 @pro_required
 def notifications():
     prof_id = session.get('user_id')
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT * FROM notifications
-        WHERE professional_id = %s
-        ORDER BY created_at DESC
-        LIMIT 50
-    """, (prof_id,))
-    notifs = cursor.fetchall()
-    # Mark all as read
-    cursor.execute("UPDATE notifications SET is_read=TRUE WHERE professional_id=%s AND is_read=FALSE", (prof_id,))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    notifs = []
+    try:
+        from setup_db import ensure_notifications_table
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            ensure_notifications_table(cursor)
+            cursor.execute("""
+                SELECT * FROM notifications
+                WHERE professional_id = %s
+                ORDER BY created_at DESC
+                LIMIT 50
+            """, (prof_id,))
+            notifs = cursor.fetchall() or []
+            # Mark all as read
+            cursor.execute("UPDATE notifications SET is_read=TRUE WHERE professional_id=%s AND is_read=FALSE", (prof_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+    except Exception as e:
+        print("Pro notifications error:", e)
+
     return render_template('professional/notifications.html', notifications=notifs)
 
 

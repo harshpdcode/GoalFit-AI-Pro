@@ -490,6 +490,21 @@ def create_schema():
         );
         """)
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT DEFAULT NULL,
+            professional_id INT DEFAULT NULL,
+            title VARCHAR(200),
+            message TEXT,
+            type VARCHAR(50) DEFAULT 'info',
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
         # ===========================
         # PRO PORTAL SaaS TABLES
         # ===========================
@@ -747,7 +762,6 @@ def create_schema():
         cursor.execute("INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status) VALUES (2, 1, 1, 'pay_mock1', 2000, 300, 1700, 'paid')")
         cursor.execute("INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status) VALUES (3, 3, 2, 'pay_mock2', 8000, 1200, 6800, 'paid')")
 
-
         conn.commit()
         print("Success: Database setup completed successfully!")
         print("Admin Login: admin@goalfit.ai / admin123")
@@ -759,6 +773,22 @@ def create_schema():
     finally:
         if 'cursor' in locals(): cursor.close()
         if 'conn' in locals() and conn.is_connected(): conn.close()
+
+def ensure_notifications_table(cursor):
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT DEFAULT NULL,
+            professional_id INT DEFAULT NULL,
+            title VARCHAR(200),
+            message TEXT,
+            type VARCHAR(50) DEFAULT 'info',
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+    """)
 
 if __name__ == "__main__":
     create_schema()
