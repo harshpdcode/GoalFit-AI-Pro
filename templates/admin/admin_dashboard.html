@@ -41,7 +41,7 @@
         <div class="kpi-icon"><i data-lucide="award"></i></div>
         <div class="kpi-data">
             <span class="kpi-value">{{ total_professionals }}</span>
-            <span class="kpi-label">Professionals</span>
+            <span class="kpi-label">Trainers & Dieticians</span>
         </div>
         <div class="kpi-glow"></div>
     </div>
@@ -50,7 +50,25 @@
         <div class="kpi-icon"><i data-lucide="indian-rupee"></i></div>
         <div class="kpi-data">
             <span class="kpi-value">₹{{ total_revenue }}</span>
-            <span class="kpi-label">Revenue</span>
+            <span class="kpi-label">Platform Revenue</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-meals">
+        <div class="kpi-icon"><i data-lucide="trending-up"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">₹{{ total_gross_volume }}</span>
+            <span class="kpi-label">Gross Volume (GMV)</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-users">
+        <div class="kpi-icon"><i data-lucide="user-check"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_active_assignments }}</span>
+            <span class="kpi-label">Active Hires</span>
         </div>
         <div class="kpi-glow"></div>
     </div>
@@ -64,6 +82,24 @@
         <div class="kpi-glow"></div>
     </div>
 
+    <div class="admin-kpi-card kpi-new">
+        <div class="kpi-icon"><i data-lucide="package"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_packages }}</span>
+            <span class="kpi-label">Coaching Packages</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-meals">
+        <div class="kpi-icon"><i data-lucide="utensils"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_meals }}</span>
+            <span class="kpi-label">Diet Meals</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
     <div class="admin-kpi-card kpi-exercises">
         <div class="kpi-icon"><i data-lucide="dumbbell"></i></div>
         <div class="kpi-data">
@@ -73,11 +109,20 @@
         <div class="kpi-glow"></div>
     </div>
 
+    <div class="admin-kpi-card kpi-bmi">
+        <div class="kpi-icon"><i data-lucide="activity"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ avg_bmi if avg_bmi else '—' }}</span>
+            <span class="kpi-label">Average User BMI</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
     <div class="admin-kpi-card kpi-feedback">
         <div class="kpi-icon"><i data-lucide="mail"></i></div>
         <div class="kpi-data">
             <span class="kpi-value">{{ unread_feedback }}</span>
-            <span class="kpi-label">Unread Feedback</span>
+            <span class="kpi-label">Unread Support</span>
         </div>
         <div class="kpi-glow"></div>
     </div>

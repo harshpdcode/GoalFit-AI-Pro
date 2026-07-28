@@ -10,6 +10,36 @@
 <h1 class="page-title" data-aos="fade-up">Manage <span>Professionals</span></h1>
 <div class="accent-line"></div>
 
+<!-- ===== PROFESSIONALS KPI CARDS ===== -->
+<div class="admin-grid mb-4" data-aos="fade-up">
+    <div class="admin-kpi-card kpi-users">
+        <div class="kpi-icon"><i data-lucide="award"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ professionals|length }}</span>
+            <span class="kpi-label">Total Professionals</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-new">
+        <div class="kpi-icon"><i data-lucide="check-circle"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ verified_count }}</span>
+            <span class="kpi-label">Verified Coaches</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-exercises">
+        <div class="kpi-icon"><i data-lucide="clock"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ pending_count }}</span>
+            <span class="kpi-label">Pending Verification</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+</div>
+
 <div class="admin-section" data-aos="fade-up" data-aos-delay="100">
     <div class="admin-chart-card full-width">
         <div class="gf-card-header">

@@ -10,6 +10,36 @@
 <h1 class="page-title" data-aos="fade-up">Payment <span>Transactions</span></h1>
 <div class="accent-line"></div>
 
+<!-- ===== PAYMENTS KPI CARDS ===== -->
+<div class="admin-grid mb-4" data-aos="fade-up">
+    <div class="admin-kpi-card kpi-meals">
+        <div class="kpi-icon"><i data-lucide="indian-rupee"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">₹{{ total_commission }}</span>
+            <span class="kpi-label">Total Platform Revenue</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-new">
+        <div class="kpi-icon"><i data-lucide="trending-up"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">₹{{ total_volume }}</span>
+            <span class="kpi-label">Gross Transaction Volume</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+
+    <div class="admin-kpi-card kpi-users">
+        <div class="kpi-icon"><i data-lucide="check-circle-2"></i></div>
+        <div class="kpi-data">
+            <span class="kpi-value">{{ total_paid_count }}</span>
+            <span class="kpi-label">Paid Transactions</span>
+        </div>
+        <div class="kpi-glow"></div>
+    </div>
+</div>
+
 <div class="admin-section" data-aos="fade-up" data-aos-delay="100">
     <div class="admin-chart-card full-width">
         <div class="gf-card-header">

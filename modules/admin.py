@@ -72,10 +72,13 @@ def admin_dashboard():
     new_this_week = 0
     total_professionals = 0
     total_revenue = 0
+    total_gross_volume = 0
     total_hire_requests = 0
+    total_active_assignments = 0
     avg_bmi = 0
     total_meals = 0
     total_exercises = 0
+    total_packages = 0
     unread_feedback = 0
 
     try:
@@ -100,9 +103,11 @@ def admin_dashboard():
         pass
 
     try:
-        cursor.execute("SELECT SUM(commission_amount) as rev FROM payments WHERE payment_status='paid'")
+        cursor.execute("SELECT SUM(commission_amount) as rev, SUM(amount) as gross FROM payments WHERE payment_status='paid'")
         r = cursor.fetchone()
-        total_revenue = r['rev'] if r and r['rev'] else 0
+        if r:
+            total_revenue = round(r['rev'] or 0, 2)
+            total_gross_volume = round(r['gross'] or 0, 2)
     except Exception:
         pass
 
@@ -110,6 +115,34 @@ def admin_dashboard():
         cursor.execute("SELECT COUNT(*) as total FROM hire_requests")
         r = cursor.fetchone()
         total_hire_requests = r['total'] if r else 0
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM client_assignments WHERE status='active'")
+        r = cursor.fetchone()
+        total_active_assignments = r['total'] if r else 0
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("SELECT COUNT(*) as total FROM professional_coaching_packages")
+        r = cursor.fetchone()
+        total_packages = r['total'] if r else 0
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("""
+            SELECT ROUND(AVG(bmi_value), 1) as avg_bmi 
+            FROM bmi_records br
+            INNER JOIN (
+                SELECT user_id, MAX(recorded_date) as latest 
+                FROM bmi_records GROUP BY user_id
+            ) lb ON br.user_id = lb.user_id AND br.recorded_date = lb.latest
+        """)
+        r = cursor.fetchone()
+        avg_bmi = r['avg_bmi'] if r and r['avg_bmi'] else 0
     except Exception:
         pass
 
@@ -135,45 +168,65 @@ def admin_dashboard():
         pass
 
     # Goal type distribution
-    cursor.execute("""
-        SELECT goal_type, COUNT(*) as count FROM user_health 
-        GROUP BY goal_type
-    """)
-    goal_dist = cursor.fetchall()
+    goal_dist = []
+    try:
+        cursor.execute("""
+            SELECT goal_type, COUNT(*) as count FROM user_health 
+            GROUP BY goal_type
+        """)
+        goal_dist = cursor.fetchall() or []
+    except Exception:
+        pass
 
     # Diet preference distribution
-    cursor.execute("""
-        SELECT diet_preference, COUNT(*) as count FROM user_health 
-        GROUP BY diet_preference
-    """)
-    diet_dist = cursor.fetchall()
+    diet_dist = []
+    try:
+        cursor.execute("""
+            SELECT diet_preference, COUNT(*) as count FROM user_health 
+            GROUP BY diet_preference
+        """)
+        diet_dist = cursor.fetchall() or []
+    except Exception:
+        pass
 
     # Recent activity logs
-    cursor.execute("""
-        SELECT al.*, u.name as user_name 
-        FROM activity_logs al 
-        LEFT JOIN users u ON al.user_id = u.id 
-        ORDER BY al.created_at DESC LIMIT 10
-    """)
-    recent_logs = cursor.fetchall()
+    recent_logs = []
+    try:
+        cursor.execute("""
+            SELECT al.*, u.name as user_name 
+            FROM activity_logs al 
+            LEFT JOIN users u ON al.user_id = u.id 
+            ORDER BY al.created_at DESC LIMIT 10
+        """)
+        recent_logs = cursor.fetchall() or []
+    except Exception:
+        pass
 
     # User growth (last 30 days)
-    cursor.execute("""
-        SELECT DATE(created_at) as reg_date, COUNT(*) as count 
-        FROM users WHERE role='user'
-        GROUP BY DATE(created_at) 
-        ORDER BY reg_date DESC LIMIT 30
-    """)
-    user_growth = cursor.fetchall()
+    user_growth = []
+    try:
+        cursor.execute("""
+            SELECT DATE(created_at) as reg_date, COUNT(*) as count 
+            FROM users WHERE role='user'
+            GROUP BY DATE(created_at) 
+            ORDER BY reg_date DESC LIMIT 30
+        """)
+        user_growth = cursor.fetchall() or []
+    except Exception:
+        pass
 
     # Payment growth (last 30 days)
-    cursor.execute("""
-        SELECT DATE(created_at) as pay_date, SUM(commission_amount) as daily_revenue 
-        FROM payments WHERE payment_status='paid' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        GROUP BY DATE(created_at) 
-        ORDER BY pay_date ASC
-    """)
-    payment_growth = cursor.fetchall()
+    payment_growth = []
+    try:
+        cursor.execute("""
+            SELECT DATE(created_at) as pay_date, SUM(commission_amount) as daily_revenue 
+            FROM payments WHERE payment_status='paid' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+            GROUP BY DATE(created_at) 
+            ORDER BY pay_date ASC
+        """)
+        payment_growth = cursor.fetchall() or []
+    except Exception:
+        pass
 
     cursor.close()
     conn.close()
@@ -183,7 +236,10 @@ def admin_dashboard():
         new_this_week=new_this_week,
         total_professionals=total_professionals,
         total_revenue=total_revenue,
+        total_gross_volume=total_gross_volume,
         total_hire_requests=total_hire_requests,
+        total_active_assignments=total_active_assignments,
+        total_packages=total_packages,
         avg_bmi=avg_bmi,
         total_meals=total_meals,
         total_exercises=total_exercises,
@@ -621,12 +677,19 @@ def professionals_management():
     cursor = conn.cursor(dictionary=True, buffered=True)
 
     cursor.execute("SELECT * FROM professionals ORDER BY created_at DESC")
-    professionals = cursor.fetchall()
+    professionals = cursor.fetchall() or []
+
+    verified_count = sum(1 for p in professionals if p.get('is_verified'))
+    pending_count = sum(1 for p in professionals if not p.get('is_verified'))
 
     cursor.close()
     conn.close()
 
-    return render_template('admin/professionals.html', professionals=professionals)
+    return render_template('admin/professionals.html',
+        professionals=professionals,
+        verified_count=verified_count,
+        pending_count=pending_count
+    )
 
 @admin_bp.route('/professionals/<int:prof_id>/verify', methods=['POST'])
 @admin_required
@@ -650,14 +713,23 @@ def payments_view():
     cursor.execute("""
         SELECT p.*, u.name as user_name, pr.full_name as prof_name
         FROM payments p
-        JOIN users u ON p.user_id = u.id
-        JOIN professionals pr ON p.professional_id = pr.id
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN professionals pr ON p.professional_id = pr.id
         ORDER BY p.created_at DESC
     """)
-    payments = cursor.fetchall()
+    payments = cursor.fetchall() or []
+
+    total_commission = round(sum(p['commission_amount'] or 0 for p in payments if p.get('payment_status') == 'paid'), 2)
+    total_volume = round(sum(p['amount'] or 0 for p in payments if p.get('payment_status') == 'paid'), 2)
+    total_paid_count = sum(1 for p in payments if p.get('payment_status') == 'paid')
 
     cursor.close()
     conn.close()
 
-    return render_template('admin/payments.html', payments=payments)
+    return render_template('admin/payments.html',
+        payments=payments,
+        total_commission=total_commission,
+        total_volume=total_volume,
+        total_paid_count=total_paid_count
+    )
 
