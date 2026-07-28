@@ -43,82 +43,19 @@ def log_activity(user_id, action, details=""):
 @admin_required
 def sync_database():
     try:
-        import os, json
-        conn = get_db_connection()
-        if not conn:
-            flash("Database connection error!", "danger")
-            return redirect(url_for('admin.admin_dashboard'))
-
-        cursor = conn.cursor()
-
-        # 1. Ensure new feature tables exist
         from setup_db import create_schema
-        try:
-            cursor.execute("""
-            CREATE TABLE IF NOT EXISTS professional_coaching_packages (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                professional_id INT,
-                package_name VARCHAR(150),
-                short_description TEXT,
-                thumbnail VARCHAR(255) DEFAULT 'static/images/packages/default_pkg.jpg',
-                original_price FLOAT,
-                discount_percent FLOAT DEFAULT 0,
-                final_price FLOAT,
-                duration_weeks VARCHAR(50),
-                goals_covered TEXT,
-                suitable_for TEXT,
-                include_diet BOOLEAN DEFAULT TRUE,
-                meals_per_day INT DEFAULT 4,
-                meal_preferences TEXT,
-                custom_calories BOOLEAN DEFAULT TRUE,
-                workout_type VARCHAR(50) DEFAULT 'Both',
-                workout_days INT DEFAULT 5,
-                workout_level VARCHAR(50) DEFAULT 'Intermediate',
-                weekly_schedule TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
-            );
-            """)
-        except Exception as e:
-            print(f"Sync schema update note: {e}")
+        from seed_data import seed
 
-        # 2. Re-seed diet meals if file exists
-        json_seed_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "database", "diet_meals_seed.json")
-        if os.path.exists(json_seed_path):
-            with open(json_seed_path, "r", encoding="utf-8") as jf:
-                json_data = json.load(jf)
+        # 1. Update schema and ensure all tables exist
+        create_schema()
 
-            cursor.execute("SET FOREIGN_KEY_CHECKS = 0;")
-            cursor.execute("TRUNCATE TABLE diet_meals;")
-            cursor.execute("SET FOREIGN_KEY_CHECKS = 1;")
+        # 2. Reinsert full demo and trainer datasets according to new features
+        seed()
 
-            q2 = "INSERT INTO diet_meals (meal_name, meal_time, calories, proteins, carbs, fats, diet_type, goal_type, option_group, img_src) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            batch = [
-                (
-                    m["meal_name"][:100],
-                    m["meal_time"][:50],
-                    int(m["calories"]),
-                    float(m["proteins"]),
-                    float(m["carbs"]),
-                    float(m["fats"]),
-                    m["diet_type"][:50],
-                    m["goal_type"][:50],
-                    int(m["option_group"]),
-                    m["img_src"][:255]
-                )
-                for m in json_data
-            ]
-            batch_size = 500
-            for i in range(0, len(batch), batch_size):
-                cursor.executemany(q2, batch[i:i+batch_size])
-            conn.commit()
-
-        cursor.close()
-        conn.close()
-
-        log_activity(session['user_id'], 'sync_database', 'Triggered full database sync and data update')
-        flash("Database synced & updated successfully! Tables verified and data refreshed.", "success")
+        log_activity(session['user_id'], 'sync_database', 'Triggered full database schema sync & data reinsertion')
+        flash("⚡ Database synced & updated with latest trainer & platform data successfully!", "success")
     except Exception as e:
+        print(f"Database sync error: {e}")
         flash(f"Database sync error: {e}", "danger")
 
     return redirect(url_for('admin.admin_dashboard'))

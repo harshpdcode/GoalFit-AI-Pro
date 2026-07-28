@@ -36,6 +36,16 @@ def seed():
     add_col_if_missing("custom_diet_plans","notes",            "TEXT")
     add_col_if_missing("custom_workout_plans","notes",         "TEXT")
     add_col_if_missing("professionals",    "approval_status",  "VARCHAR(30) DEFAULT 'approved'")
+    add_col_if_missing("professional_coaching_packages", "primary_goal", "VARCHAR(100)")
+    add_col_if_missing("professional_coaching_packages", "duration_days", "INT DEFAULT 30")
+    add_col_if_missing("professional_coaching_packages", "price", "FLOAT")
+    add_col_if_missing("professional_coaching_packages", "description", "TEXT")
+    add_col_if_missing("professional_coaching_packages", "breakfast_meal_id", "INT NULL")
+    add_col_if_missing("professional_coaching_packages", "lunch_meal_id", "INT NULL")
+    add_col_if_missing("professional_coaching_packages", "dinner_meal_id", "INT NULL")
+    add_col_if_missing("professional_coaching_packages", "snack_meal_id", "INT NULL")
+    add_col_if_missing("professional_coaching_packages", "coach_notes", "TEXT")
+    add_col_if_missing("professional_coaching_packages", "cover_image", "VARCHAR(255)")
 
 
     # ─────────────────────────────────────────────
@@ -50,7 +60,7 @@ def seed():
         "custom_diet_plan_meals", "custom_diet_plans",
         "professional_workouts", "professional_meals",
         "transformations", "payments", "hire_requests",
-        "client_assignments", "professional_pricing",
+        "client_assignments", "professional_pricing", "professional_coaching_packages",
         "progress_photos", "progress_logs", "bmi_records",
         "goal_predictions", "step_recommendations", "activity_logs",
         "user_health", "users", "professionals",
@@ -143,6 +153,22 @@ def seed():
         pricing
     )
     conn.commit()
+
+    # Coaching Packages
+    packages = [
+        (1, 1, "4-Week Fat Loss & Retention", "Fat Loss & Retention", 30, 2000, "Comprehensive 30-day fat loss diet & training package.", 1, 2, 3, 4, "Follow daily meal times and keep water intake at 3L minimum.", "static/images/diet/dal_rice_ai.png"),
+        (2, 2, "30-Day Vegan Recomp Plan", "Weight Loss", 30, 1500, "Holistic 30-day vegan nutrition package.", 5, 5, 7, 8, "Ensure all meals are logged daily in the app.", "static/images/diet/chickpeas.jpeg"),
+        (3, 3, "90-Day Full Recomp Transformation", "Muscle Gain", 90, 8000, "Complete 90 days workout and diet coaching package.", 9, 10, 12, 11, "Track all workouts and report weekly PRs to coach.", "static/images/diet/sandwich_ai.png"),
+    ]
+    try:
+        cursor.executemany("""
+            INSERT INTO professional_coaching_packages
+            (id, professional_id, package_name, primary_goal, duration_days, price, description, breakfast_meal_id, lunch_meal_id, dinner_meal_id, snack_meal_id, coach_notes, cover_image)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, packages)
+        conn.commit()
+    except Exception as e:
+        print("Coaching packages seed warning:", e)
 
     # ─────────────────────────────────────────────
     # 5. HIRE REQUESTS & CLIENT ASSIGNMENTS
