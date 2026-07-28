@@ -91,21 +91,37 @@ def payment_success():
     professional_amount = amount_paid - commission_amount
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    # Update hire request
-    cursor.execute("UPDATE hire_requests SET payment_status='paid' WHERE id=%s", (hire_request_id,))
-    
-    # Insert Payment record
-    cursor.execute("""
-        INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status)
-        SELECT user_id, professional_id, id, %s, %s, %s, %s, 'paid'
-        FROM hire_requests WHERE id=%s
-    """, (payment_id, amount_paid, commission_amount, professional_amount, hire_request_id))
+    # Fetch hire request details
+    cursor.execute("SELECT * FROM hire_requests WHERE id=%s", (hire_request_id,))
+    req = cursor.fetchone()
 
-    conn.commit()
+    if req:
+        # Update hire request to paid AND accepted
+        cursor.execute("UPDATE hire_requests SET payment_status='paid', status='accepted' WHERE id=%s", (hire_request_id,))
+        
+        # Insert Payment record
+        cursor.execute("""
+            INSERT INTO payments (user_id, professional_id, hire_request_id, razorpay_payment_id, amount, commission_amount, professional_amount, payment_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 'paid')
+        """, (req['user_id'], req['professional_id'], hire_request_id, payment_id, amount_paid, commission_amount, professional_amount))
+
+        # Calculate duration
+        cursor.execute("SELECT duration_days FROM professional_pricing WHERE plan_type=%s AND professional_id=%s", (req['plan_type'], req['professional_id']))
+        plan_info = cursor.fetchone()
+        duration = plan_info['duration_days'] if plan_info and plan_info.get('duration_days') else 30
+
+        # Auto-create active Client Assignment!
+        cursor.execute("""
+            INSERT INTO client_assignments (user_id, professional_id, plan_type, start_date, end_date, status)
+            VALUES (%s, %s, %s, CURDATE(), DATE_ADD(CURDATE(), INTERVAL %s DAY), 'active')
+        """, (req['user_id'], req['professional_id'], req['plan_type'], duration))
+
+        conn.commit()
+
     cursor.close()
     conn.close()
 
-    flash('Payment successful! Your request has been sent to the professional.', 'success')
-    return redirect(url_for('dashboard.dashboard'))
+    flash('Payment successful! Your coach subscription is now active.', 'success')
+    return redirect(url_for('marketplace.my_professionals'))

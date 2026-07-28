@@ -66,8 +66,9 @@ def dashboard():
     cursor.execute("SELECT COUNT(*) as count FROM client_assignments WHERE professional_id=%s AND status='active'", (prof_id,))
     active_clients = cursor.fetchone()['count']
     
-    cursor.execute("SELECT COUNT(*) as count FROM hire_requests WHERE professional_id=%s AND status='pending'", (prof_id,))
-    pending_reqs = cursor.fetchone()['count']
+    cursor.execute("SELECT (SELECT COUNT(*) FROM custom_diet_plans WHERE professional_id=%s AND user_id IS NOT NULL) + (SELECT COUNT(*) FROM custom_workout_plans WHERE professional_id=%s AND user_id IS NOT NULL) as count", (prof_id, prof_id))
+    row_plans = cursor.fetchone()
+    active_plans = row_plans['count'] if row_plans else 0
     
     cursor.execute("SELECT COALESCE(SUM(professional_amount), 0) as total FROM payments WHERE professional_id=%s AND payment_status='paid'", (prof_id,))
     revenue = cursor.fetchone()['total']
@@ -75,39 +76,55 @@ def dashboard():
     cursor.execute("SELECT COALESCE(AVG(rating), 0) as avg_rating FROM professional_reviews WHERE professional_id=%s", (prof_id,))
     rating = cursor.fetchone()['avg_rating']
     
-    # Recent Activities
+    # Real Recent Payments
     cursor.execute("""
-        SELECT h.*, u.name as client_name 
-        FROM hire_requests h 
-        JOIN users u ON h.user_id = u.id 
-        WHERE h.professional_id=%s AND h.status='pending'
-        ORDER BY h.created_at DESC LIMIT 5
+        SELECT p.*, u.name as client_name 
+        FROM payments p 
+        JOIN users u ON p.user_id = u.id 
+        WHERE p.professional_id=%s
+        ORDER BY p.id DESC LIMIT 5
     """, (prof_id,))
-    recent_requests = cursor.fetchall()
+    recent_payments = cursor.fetchall()
     
     # Client Distribution for Donut Chart
     cursor.execute("""
         SELECT 
-            SUM(CASE WHEN LOWER(plan_type) LIKE '%diet%' THEN 1 ELSE 0 END) as diet_only,
-            SUM(CASE WHEN LOWER(plan_type) LIKE '%workout%' OR LOWER(plan_type) LIKE '%training%' THEN 1 ELSE 0 END) as workout_only,
-            SUM(CASE WHEN LOWER(plan_type) LIKE '%both%' OR LOWER(plan_type) LIKE '%transformation%' OR LOWER(plan_type) LIKE '%complete%' THEN 1 ELSE 0 END) as both_plans
+            COALESCE(SUM(CASE WHEN LOWER(plan_type) LIKE '%diet%' THEN 1 ELSE 0 END), 0) as diet_only,
+            COALESCE(SUM(CASE WHEN LOWER(plan_type) LIKE '%workout%' OR LOWER(plan_type) LIKE '%training%' THEN 1 ELSE 0 END), 0) as workout_only,
+            COALESCE(SUM(CASE WHEN LOWER(plan_type) LIKE '%both%' OR LOWER(plan_type) LIKE '%transformation%' OR LOWER(plan_type) LIKE '%complete%' THEN 1 ELSE 0 END), 0) as both_plans
         FROM client_assignments 
         WHERE professional_id=%s AND status='active'
     """, (prof_id,))
     dist = cursor.fetchone()
-    diet_only = dist['diet_only'] if dist and dist['diet_only'] else 0
-    workout_only = dist['workout_only'] if dist and dist['workout_only'] else 0
-    both_plans = dist['both_plans'] if dist and dist['both_plans'] else 0
+    diet_only = int(dist['diet_only']) if dist and dist['diet_only'] else 0
+    workout_only = int(dist['workout_only']) if dist and dist['workout_only'] else 0
+    both_plans = int(dist['both_plans']) if dist and dist['both_plans'] else 0
+
+    # If no clients yet, provide 1 for fallback visualization so donut renders nicely
+    if diet_only == 0 and workout_only == 0 and both_plans == 0:
+        diet_only, workout_only, both_plans = 1, 1, 1
+
+    # Real monthly revenue data for 12 months
+    cursor.execute("""
+        SELECT MONTH(created_at) as m_num, COALESCE(SUM(professional_amount), 0) as m_total
+        FROM payments
+        WHERE professional_id=%s AND payment_status='paid'
+        GROUP BY MONTH(created_at)
+    """, (prof_id,))
+    month_rows = cursor.fetchall()
+    month_map = {m['m_num']: float(m['m_total']) for m in month_rows} if month_rows else {}
+    monthly_revenue_data = [month_map.get(m, 0.0) for m in range(1, 13)]
     
     cursor.close()
     conn.close()
     
     return render_template('professional/dashboard.html', 
                            active_clients=active_clients, 
-                           pending_reqs=pending_reqs, 
+                           active_plans=active_plans,
                            revenue=revenue,
                            rating=round(rating, 1),
-                           recent_requests=recent_requests,
+                           recent_payments=recent_payments,
+                           monthly_revenue_data=monthly_revenue_data,
                            diet_only=diet_only,
                            workout_only=workout_only,
                            both_plans=both_plans)
@@ -251,9 +268,10 @@ def client_detail(client_id):
     import datetime
     today = datetime.date.today()
     cursor.execute("""
-        SELECT dl.is_completed, dm.meal_time, dm.calories
+        SELECT dl.is_completed, COALESCE(dm.meal_name, pm.meal_name, dm.meal_time, 'Meal') as meal_name, COALESCE(dm.calories, pm.calories, 0) as calories
         FROM diet_logs dl
-        JOIN diet_meals dm ON dl.meal_id = dm.id
+        LEFT JOIN diet_meals dm ON dl.meal_id = dm.id
+        LEFT JOIN professional_meals pm ON dl.meal_id = pm.id
         WHERE dl.user_id = %s AND dl.log_date = %s
     """, (client_id, today))
     today_meals = cursor.fetchall()
@@ -268,13 +286,17 @@ def client_detail(client_id):
     calories_remaining = max(0, target_calories - total_calories_consumed)
     nutrition_progress = min(100, int((total_calories_consumed / target_calories) * 100)) if target_calories > 0 else 0
     
-    # Format meals checklist (Lunch, Snack, Dinner, etc)
+    # Format meals checklist (Breakfast, Lunch, etc)
     meal_checklist = []
     for meal in today_meals:
         meal_checklist.append({
-            'name': meal['meal_time'],
+            'name': meal['meal_name'],
             'completed': meal['is_completed']
         })
+        
+    # Client eating streak
+    from modules.diet import get_user_meal_streak
+    client_streak = get_user_meal_streak(client_id, conn)
         
     # Workout Stats
     cursor.execute("SELECT performed_date FROM user_workouts WHERE user_id = %s ORDER BY performed_date DESC LIMIT 1", (client_id,))
@@ -305,6 +327,7 @@ def client_detail(client_id):
                            health=health, 
                            assignment=assignment,
                            today_meals=meal_checklist,
+                           client_streak=client_streak,
                            total_calories=total_calories_consumed,
                            target_calories=target_calories,
                            calories_remaining=calories_remaining,

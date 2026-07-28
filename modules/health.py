@@ -4,6 +4,45 @@ from datetime import date, timedelta
 
 health_bp = Blueprint('health', __name__)
 
+def save_initial_bmi_and_progress(user_id, weight_kg, height_cm, conn):
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    try:
+        h_m = float(height_cm) / 100.0
+        w_kg = float(weight_kg)
+        bmi_val = round(w_kg / (h_m ** 2), 1) if h_m > 0 else 22.0
+        
+        if bmi_val < 18.5:
+            cat = "Underweight"
+        elif bmi_val < 25.0:
+            cat = "Normal"
+        elif bmi_val < 30.0:
+            cat = "Overweight"
+        else:
+            cat = "Obese"
+            
+        today_date = date.today()
+        
+        # Save BMI record
+        cursor.execute("DELETE FROM bmi_records WHERE user_id=%s AND recorded_date=%s", (user_id, today_date))
+        cursor.execute("""
+            INSERT INTO bmi_records (user_id, bmi_value, bmi_category, recorded_date)
+            VALUES (%s, %s, %s, %s)
+        """, (user_id, bmi_val, cat, today_date))
+        
+        # Save Progress log if no logs yet
+        cursor.execute("SELECT COUNT(*) as count FROM progress_logs WHERE user_id=%s", (user_id,))
+        cnt = cursor.fetchone()['count']
+        if cnt == 0:
+            cursor.execute("""
+                INSERT INTO progress_logs (user_id, weight_kg, log_date)
+                VALUES (%s, %s, %s)
+            """, (user_id, w_kg, today_date))
+        conn.commit()
+    except Exception as e:
+        print(f"Error in save_initial_bmi_and_progress: {e}")
+    finally:
+        cursor.close()
+
 
 def calculate_and_save_prediction(user_id, conn):
     """Calculate and save goal prediction and step recommendations"""
@@ -165,6 +204,9 @@ def health_profile():
                   activity, goal, target, diet))
 
         conn.commit()
+
+        # Save initial BMI record and progress log for new users
+        save_initial_bmi_and_progress(user_id, weight, height, conn)
 
         # Reset saved user meal selections so diet plan regenerates dynamically for new preferences
         try:

@@ -6,7 +6,7 @@
 {% block content %}
 <!-- ===== STAT CARDS ===== -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4 col-xl anim-1">
+    <div class="col-6 col-md-3 anim-1">
         <div class="pro-stat-card">
             <div class="stat-icon-wrap cyan">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -20,7 +20,7 @@
             <div class="stat-bg-blob"></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl anim-2">
+    <div class="col-6 col-md-3 anim-2">
         <div class="pro-stat-card">
             <div class="stat-icon-wrap green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
@@ -34,21 +34,7 @@
             <div class="stat-bg-blob"></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl anim-3">
-        <div class="pro-stat-card">
-            <div class="stat-icon-wrap amber">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-            </div>
-            <p class="stat-label">Pending Requests</p>
-            <h2 class="stat-value">{{ pending_reqs }}</h2>
-            <div class="stat-change {% if pending_reqs > 0 %}up{% else %}neutral{% endif %}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Awaiting review
-            </div>
-            <div class="stat-bg-blob"></div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-xl anim-4">
+    <div class="col-6 col-md-3 anim-4">
         <div class="pro-stat-card">
             <div class="stat-icon-wrap green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -62,7 +48,7 @@
             <div class="stat-bg-blob"></div>
         </div>
     </div>
-    <div class="col-6 col-md-4 col-xl anim-5">
+    <div class="col-6 col-md-3 anim-5">
         <div class="pro-stat-card">
             <div class="stat-icon-wrap amber">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -70,7 +56,7 @@
             <p class="stat-label">Avg Rating</p>
             <h2 class="stat-value">{{ rating }}<small style="font-size:1rem;color:var(--pro-text-muted)">/5</small></h2>
             <div class="stat-change up" style="color:var(--pro-warning)">
-                ★★★★☆ Excellent
+                ★★★★☆ Rating
             </div>
             <div class="stat-bg-blob"></div>
         </div>
@@ -85,14 +71,10 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <div>
                     <h5 class="fw-bold mb-0" style="font-size:1rem;">Revenue Analytics</h5>
-                    <p class="mb-0" style="font-size:0.75rem;color:var(--pro-text-muted);">Monthly earnings breakdown</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="pro-tab active" id="tabMonth" onclick="switchChart('month')">Month</button>
-                    <button class="pro-tab" id="tabWeek" onclick="switchChart('week')">Week</button>
+                    <p class="mb-0" style="font-size:0.75rem;color:var(--pro-text-muted);">Real-time monthly earnings breakdown</p>
                 </div>
             </div>
-            <div class="chart-container">
+            <div class="chart-container" style="position:relative; height:240px;">
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
@@ -103,7 +85,7 @@
         <div class="pro-card h-100">
             <h5 class="fw-bold mb-1" style="font-size:1rem;">Client Distribution</h5>
             <p class="mb-3" style="font-size:0.75rem;color:var(--pro-text-muted);">By plan type</p>
-            <div class="chart-container-sm d-flex align-items-center justify-content-center">
+            <div class="chart-container-sm d-flex align-items-center justify-content-center" style="position:relative; height:180px;">
                 <canvas id="donutChart"></canvas>
             </div>
             <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
@@ -126,75 +108,40 @@
 
 <!-- ===== ACTIVITY + QUICK ACTIONS ===== -->
 <div class="row g-3 mb-4">
-    <!-- Recent Hire Requests -->
-    <div class="col-lg-6" data-aos="fade-up">
-        <div class="pro-card h-100">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0" style="font-size:1rem;">Pending Hire Requests</h5>
-                <a href="/pro/clients/pending" class="btn-pro-ghost" style="padding:5px 12px;font-size:0.75rem;">View All</a>
-            </div>
-            {% if recent_requests %}
-                <div class="d-flex flex-column gap-2">
-                    {% for req in recent_requests %}
-                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);transition:all 0.2s;" onmouseenter="this.style.background='rgba(0,242,254,0.04)'" onmouseleave="this.style.background='rgba(255,255,255,0.03)'">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="client-avatar" style="width:38px;height:38px;border-radius:10px;font-size:0.9rem;">
-                                {{ req.client_name[0]|upper }}
-                            </div>
-                            <div>
-                                <h6 class="mb-0 fw-600" style="font-size:0.875rem;">{{ req.client_name }}</h6>
-                                <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">{{ req.plan_type }} • {{ req.goal_type }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="/pro/requests/{{ req.id }}/accept" class="btn-pro-primary" style="padding:6px 14px;font-size:0.75rem;border-radius:8px;">Accept</a>
-                            <a href="/pro/requests/{{ req.id }}/reject" class="btn-pro-ghost" style="padding:6px 12px;font-size:0.75rem;color:var(--pro-danger);border-color:rgba(255,82,82,0.2);">Reject</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="pro-empty" style="padding:40px 20px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 7H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z"/><path d="M16 3H8"/></svg>
-                    <h5>No Pending Requests</h5>
-                    <p>New hire requests from clients will appear here</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
     <!-- Recent Payments -->
-    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="80">
-        <div class="pro-card h-100">
+    <div class="col-12" data-aos="fade-up">
+        <div class="pro-card">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0" style="font-size:1rem;">Recent Payments</h5>
+                <h5 class="fw-bold mb-0" style="font-size:1rem;">Recent Payments (Real-Time)</h5>
                 <a href="/pro/earnings/transactions" class="btn-pro-ghost" style="padding:5px 12px;font-size:0.75rem;">View All</a>
             </div>
             {% if recent_payments %}
-                <div class="d-flex flex-column gap-2">
+                <div class="row g-2">
                     {% for pay in recent_payments %}
-                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);">
-                        <div class="d-flex align-items-center gap-3">
-                            <div style="width:38px;height:38px;border-radius:10px;background:rgba(0,230,118,0.1);display:flex;align-items:center;justify-content:center;color:var(--pro-success);">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--pro-border);">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width:38px;height:38px;border-radius:10px;background:rgba(0,230,118,0.1);display:flex;align-items:center;justify-content:center;color:var(--pro-success);">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0" style="font-size:0.875rem;font-weight:600;">{{ pay.client_name }}</h6>
+                                    <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">Payment Received</p>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-0" style="font-size:0.875rem;font-weight:600;">{{ pay.client_name }}</h6>
-                                <p class="mb-0" style="font-size:0.72rem;color:var(--pro-text-muted);">{{ pay.created_at.strftime('%b %d') if pay.created_at else 'Recent' }}</p>
+                            <div class="text-end">
+                                <div style="font-size:0.9rem;font-weight:700;color:var(--pro-success);">+₹{{ pay.professional_amount|int }}</div>
+                                <span class="pro-badge active" style="font-size:0.65rem;padding:2px 8px;">Paid</span>
                             </div>
-                        </div>
-                        <div class="text-end">
-                            <div style="font-size:0.9rem;font-weight:700;color:var(--pro-success);">+₹{{ pay.professional_amount|int }}</div>
-                            <span class="pro-badge active" style="font-size:0.65rem;padding:2px 8px;">Paid</span>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="pro-empty" style="padding:40px 20px;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <div class="pro-empty" style="padding:30px 20px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <h5>No Payments Yet</h5>
-                    <p>Your payment history will appear here</p>
+                    <p>When clients purchase your packages, payments will update here instantly!</p>
                 </div>
             {% endif %}
         </div>
@@ -244,8 +191,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // ----- Revenue Chart -----
-    const monthData = [12000, 18500, 15000, 22000, 19500, 28000, 25000, 31000, 27500, 34000, 29000, 38000];
-    const weekData  = [4200, 6800, 5900, 8100];
+    const monthData = {{ monthly_revenue_data|tojson }};
     const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const weekLabels  = ['Week 1','Week 2','Week 3','Week 4'];
 

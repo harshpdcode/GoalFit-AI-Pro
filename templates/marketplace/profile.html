@@ -64,6 +64,74 @@
                 </div>
             </div>
 
+            <!-- COACHING PACKAGES SECTION -->
+            {% if coaching_packages %}
+            <div class="gf-card mb-4" data-aos="fade-up">
+                <div class="gf-card-header pt-4 pb-0" style="margin-bottom: 20px;">
+                    <h4 class="fw-bold m-0" style="color: var(--text-primary);"><i data-lucide="package" style="stroke: var(--accent-primary); margin-right: 8px;"></i> Featured Coaching Packages</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for pkg in coaching_packages %}
+                        <div class="col-md-6">
+                            <div class="gf-card h-100 p-3" style="border: 1px solid var(--accent-border);">
+                                <div style="height: 140px; border-radius: 10px; overflow: hidden; margin-bottom: 12px; position: relative;">
+                                    <img src="/{{ pkg.thumbnail }}" alt="{{ pkg.package_name }}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/packages/default_pkg.jpg';">
+                                    <span class="badge bg-warning text-dark style-badge" style="position:absolute; top:8px; right:8px; font-weight:700;">{{ pkg.duration_weeks }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-1 text-light">{{ pkg.package_name }}</h5>
+                                <p class="small text-muted mb-2">{{ pkg.short_description }}</p>
+                                <div class="d-flex align-items-center justify-content-between my-2">
+                                    <div>
+                                        {% if pkg.discount_percent and pkg.discount_percent > 0 %}
+                                        <span class="text-muted text-decoration-line-through small me-1">₹{{ pkg.original_price }}</span>
+                                        <span class="fw-bold text-success fs-5">Now ₹{{ pkg.final_price }}</span>
+                                        <span class="badge bg-danger ms-1">{{ pkg.discount_percent }}% OFF</span>
+                                        {% else %}
+                                        <span class="fw-bold text-success fs-5">₹{{ pkg.original_price }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if not active_hire %}
+                                <a href="/payment/checkout/{{ professional.id }}/{{ pricing_plans[0].id if pricing_plans else 1 }}" class="save-btn w-100 mt-2 text-center text-decoration-none d-block">Enroll Package</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- REVIEWS AND RATINGS SECTION -->
+            <div class="gf-card mb-4" data-aos="fade-up">
+                <div class="gf-card-header d-flex justify-content-between align-items-center pt-4 pb-0 mb-3">
+                    <h4 class="fw-bold m-0" style="color: var(--text-primary);"><i data-lucide="star" style="stroke: #f59e0b; margin-right: 8px;"></i> Reviews &amp; Ratings</h4>
+                    {% if can_review %}
+                    <button class="btn btn-sm btn-outline-warning rounded-pill" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                        <i data-lucide="edit-2" style="width:14px;"></i> Write a Review
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for r in reviews %}
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); padding: 14px; border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong style="color: var(--text-primary);">{{ r.user_name }}</strong>
+                                <span class="badge bg-warning text-dark">★ {{ r.rating }}</span>
+                            </div>
+                            <p class="small m-0" style="color: var(--text-secondary);">{{ r.review_text }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small m-0">No reviews yet for this coach. Be the first to leave a review!</p>
+                    {% endif %}
+                </div>
+            </div>
+
             {% if transformations %}
             <div class="gf-card" data-aos="fade-up" data-aos-delay="100">
                 <div class="gf-card-header pt-4 pb-0" style="margin-bottom: 20px;">
@@ -74,7 +142,7 @@
                         {% for t in transformations %}
                         <div class="col-md-6">
                             <div class="card bg-dark text-white h-100" style="border-radius:10px; overflow:hidden;">
-                                <img src="/{{ t.image }}" class="card-img opacity-50" alt="..." style="height: 200px; object-fit:cover;">
+                                <img src="/{{ t.image }}" class="card-img opacity-50" alt="..." style="height: 200px; object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/diet/salad.jpeg';">
                                 <div class="card-img-overlay d-flex flex-column justify-content-end p-3">
                                     <h6 class="card-title fw-bold mb-0">{{ t.client_name }}</h6>
                                     <p class="card-text small mb-0">{{ t.before_weight }}kg → {{ t.after_weight }}kg</p>
@@ -91,4 +159,42 @@
         </div>
     </div>
 </div>
+
+<!-- REVIEW MODAL -->
+{% if can_review %}
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-subtle); color: var(--text-primary);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle);">
+                <h5 class="modal-title fw-bold"><i data-lucide="star" style="color: #f59e0b;"></i> Leave a Review for {{ professional.full_name }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('marketplace.rate_professional') }}" method="POST">
+                <input type="hidden" name="professional_id" value="{{ professional.id }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Rating (1 to 5 Stars)</label>
+                        <select name="rating" class="form-select" style="background: var(--bg-input); color: var(--text-primary); border-color: var(--border-subtle);">
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5) - Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ (4/5) - Very Good</option>
+                            <option value="3">⭐⭐⭐ (3/5) - Good</option>
+                            <option value="2">⭐⭐ (2/5) - Fair</option>
+                            <option value="1">⭐ (1/5) - Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Review Comments</label>
+                        <textarea name="review_text" rows="4" class="form-control" style="background: var(--bg-input); color: var(--text-primary); border-color: var(--border-subtle);" placeholder="Share your experience working with this coach..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-subtle);">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning fw-bold rounded-pill">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}

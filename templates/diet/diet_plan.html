@@ -9,11 +9,49 @@
         {% if coach %}
         <span class="tag goal">GoalFit Pro</span>
         <span class="tag activity">Coach: {{ coach.prof_name }}</span>
+        {% if all_coaches and all_coaches|length > 1 %}
+        <div class="d-inline-flex align-items-center ms-2">
+            <select class="form-select form-select-sm bg-dark text-light border-info" onchange="location.href='/diet-plan?coach_id=' + this.value" style="font-size:0.8rem;border-radius:12px;">
+                {% for c in all_coaches %}
+                <option value="{{ c.professional_id or c.prof_id }}" {% if coach and (coach.professional_id == (c.professional_id or c.prof_id)) %}selected{% endif %}>
+                    Coach: {{ c.prof_name }} ({{ c.role|capitalize }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
         {% else %}
         <span class="tag vegan">{{ diet_pref }}</span>
         <span class="tag goal">{{ goal }}</span>
         <span class="tag bmi">{{ bmi }}</span>
         {% endif %}
+    </div>
+</div>
+
+<!-- MEAL EATING STREAK & COACH VISIBILITY BANNER -->
+<div class="gf-card mb-4 p-3 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: 14px;">
+    <div class="d-flex align-items-center gap-3">
+        <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+            🔥
+        </div>
+        <div>
+            <div class="fw-bold fs-5 text-light">Meal Eating Streak: <span style="color: #f59e0b;">{{ meal_streak if meal_streak else 0 }} Days</span></div>
+            <span class="small text-muted">Log your daily meals to build and keep your streak growing!</span>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="openReminderModal()">
+            <i data-lucide="clock" style="width:16px; height:16px; vertical-align:middle;" class="me-1"></i> Meal Reminder Times
+        </button>
+        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill" style="background: var(--bg-input); border: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-secondary);">
+            {% if is_coach_hired %}
+            <i data-lucide="eye" style="width:16px; height:16px; color: var(--success, #10b981);"></i>
+            <span>{{ coach_visibility_msg }}</span>
+            {% else %}
+            <i data-lucide="lock" style="width:16px; height:16px; color: var(--text-muted);"></i>
+            <span>{{ coach_visibility_msg }}</span>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -246,19 +284,36 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const tabs = document.querySelectorAll(".meal-tabs .tab");
+        const mealCards = document.querySelectorAll(".meal-grid .meal-card[data-meal]");
         const sections = document.querySelectorAll(".category-meal-section");
 
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-                const targetCat = tab.dataset.cat;
-                tabs.forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
+        function filterMeals(tab) {
+            const selectedCat = (tab.dataset.meal || tab.dataset.cat || '').toLowerCase();
+            tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
 
-                sections.forEach(sec => {
-                    sec.style.display = (sec.id === `cat-section-${targetCat}`) ? "block" : "none";
+            if (mealCards.length > 0) {
+                mealCards.forEach(card => {
+                    const cardMeal = (card.dataset.meal || '').toLowerCase();
+                    card.style.display = (cardMeal === selectedCat) ? "block" : "none";
                 });
-            });
+            }
+
+            if (sections.length > 0) {
+                sections.forEach(sec => {
+                    sec.style.display = (sec.id === `cat-section-${selectedCat}`) ? "block" : "none";
+                });
+            }
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => filterMeals(tab));
         });
+
+        const activeTab = document.querySelector(".meal-tabs .tab.active") || tabs[0];
+        if (activeTab) {
+            filterMeals(activeTab);
+        }
 
         // Diet Checklist Logic
         document.querySelectorAll('.diet-checkbox').forEach(cb => {
@@ -293,5 +348,6 @@
     });
 </script>
 
+{% include 'components/reminder_modal.html' %}
 {% include 'components/chat_overlay.html' %}
 {% endblock %}

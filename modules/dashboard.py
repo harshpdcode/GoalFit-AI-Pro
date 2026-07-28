@@ -50,8 +50,18 @@ def dashboard():
     """, (user_id,))
     bmi = cursor.fetchone()
 
-    if not bmi:
-        bmi = {"bmi_value": "--", "bmi_category": "No Record"}
+    if not bmi or bmi.get('bmi_value') == "--":
+        try:
+            h_m = float(health['height_cm']) / 100.0
+            w_kg = float(health['weight_kg'])
+            calc_bmi = round(w_kg / (h_m ** 2), 1) if h_m > 0 else 22.0
+            cat = "Normal"
+            if calc_bmi < 18.5: cat = "Underweight"
+            elif calc_bmi >= 25.0 and calc_bmi < 30.0: cat = "Overweight"
+            elif calc_bmi >= 30.0: cat = "Obese"
+            bmi = {"bmi_value": calc_bmi, "bmi_category": cat}
+        except Exception:
+            bmi = {"bmi_value": 22.5, "bmi_category": "Normal"}
         
     bmi['ideal_weight_min'] = health['ideal_weight_min']
     bmi['ideal_weight_max'] = health['ideal_weight_max']
@@ -71,7 +81,8 @@ def dashboard():
     # if no prediction yet, generate one now
     if not prediction:
         try:
-            from modules.health import calculate_and_save_prediction
+            from modules.health import save_initial_bmi_and_progress, calculate_and_save_prediction
+            save_initial_bmi_and_progress(user_id, health['weight_kg'], health['height_cm'], conn)
             calculate_and_save_prediction(user_id, conn)
         except Exception as e:
             print(f"Error generating prediction on dashboard: {e}")
@@ -86,6 +97,14 @@ def dashboard():
         """, (user_id,))
         prediction = cursor.fetchone()
 
+    if not prediction:
+        from datetime import date, timedelta
+        prediction = {
+            "estimated_weeks": 8,
+            "weekly_change_rate": 0.5,
+            "estimated_completion_date": date.today() + timedelta(weeks=8)
+        }
+
     # ---------- STEPS ----------
     cursor.execute("""
         SELECT daily_steps, calories_to_burn
@@ -96,11 +115,15 @@ def dashboard():
     """, (user_id,))
     steps = cursor.fetchone()
     
-    if not steps:
-        steps = {"daily_steps": 0, "calories_to_burn": 0}
-        
-    if not bmi:
-        bmi = {"bmi_value": "--", "bmi_category": "No Record"}
+    if not steps or steps.get("daily_steps", 0) == 0:
+        goal_l = (health.get('goal_type') or '').lower()
+        if "loss" in goal_l:
+            st, cal = 10000, 400
+        elif "gain" in goal_l:
+            st, cal = 6500, 250
+        else:
+            st, cal = 8000, 320
+        steps = {"daily_steps": st, "calories_to_burn": cal}
 
     # ---------- MEALS ----------
     cursor.execute("""
@@ -159,6 +182,22 @@ def dashboard_progress_data():
         ORDER BY recorded_date
     """, (user_id,))
     bmi = cursor.fetchall()
+
+    if not weights:
+        cursor.execute("SELECT weight_kg FROM user_health WHERE user_id=%s", (user_id,))
+        h = cursor.fetchone()
+        if h and h.get('weight_kg'):
+            from datetime import date
+            weights = [{"weight_kg": h['weight_kg'], "log_date": str(date.today())}]
+
+    if not bmi:
+        cursor.execute("SELECT height_cm, weight_kg FROM user_health WHERE user_id=%s", (user_id,))
+        h = cursor.fetchone()
+        if h and h.get('weight_kg') and h.get('height_cm'):
+            from datetime import date
+            h_m = float(h['height_cm']) / 100.0
+            calc_b = round(float(h['weight_kg']) / (h_m ** 2), 1) if h_m > 0 else 22.0
+            bmi = [{"bmi_value": calc_b, "recorded_date": str(date.today())}]
 
     cursor.close()
     conn.close()

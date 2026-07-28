@@ -4,73 +4,44 @@
     <h2 class="fw-bold mb-4 text-gradient">Trainer Dashboard</h2>
 
     <div class="row g-4 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="gf-card text-center py-4" data-aos="fade-up">
                 <i data-lucide="users" class="text-primary mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
                 <h2 class="fw-bold mb-0" style="color: var(--text-primary);">{{ active_clients }}</h2>
                 <p class="mb-0" style="color: var(--text-secondary);">Active Clients</p>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="gf-card text-center py-4" data-aos="fade-up" data-aos-delay="50">
                 <i data-lucide="indian-rupee" class="text-success mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
                 <h2 class="fw-bold mb-0" style="color: var(--text-primary);">₹{{ revenue }}</h2>
                 <p class="mb-0" style="color: var(--text-secondary);">Total Revenue</p>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="gf-card text-center py-4" data-aos="fade-up" data-aos-delay="100">
-                <i data-lucide="bell" class="text-warning mb-2 mx-auto" style="width: 32px; height: 32px;"></i>
-                <h2 class="fw-bold mb-0" style="color: var(--text-primary);">{{ pending_reqs }}</h2>
-                <p class="mb-0" style="color: var(--text-secondary);">Pending Requests</p>
-            </div>
-        </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="gf-card" data-aos="fade-right">
-                <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                    <h5 class="fw-bold" style="color: var(--text-primary);"><i data-lucide="user-plus" class="text-primary me-2"></i> Hire Requests</h5>
-                </div>
-                <div class="card-body">
-                    {% for req in requests %}
-                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: var(--bg-body); border: 1px solid var(--border-color);">
-                        <div>
-                            <h6 class="mb-1 fw-bold" style="color: var(--text-primary);">{{ req.name }}</h6>
-                            <p class="mb-0 small" style="color: var(--text-secondary);">Plan: {{ req.plan_type }}</p>
-                        </div>
-                        <div>
-                            <a href="/trainer/request/{{ req.id }}/accept" class="btn btn-sm btn-success rounded-pill px-3 me-1">Accept</a>
-                            <a href="/trainer/request/{{ req.id }}/reject" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</a>
-                        </div>
-                    </div>
-                    {% else %}
-                    <p class="text-muted">No pending requests.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6">
-            <div class="gf-card" data-aos="fade-left">
-                <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                    <h5 class="fw-bold" style="color: var(--text-primary);"><i data-lucide="users" class="text-success me-2"></i> Active Clients</h5>
+        <div class="col-12">
+            <div class="gf-card" data-aos="fade-up">
+                <div class="card-header bg-transparent border-0 pt-4 pb-0 d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold m-0" style="color: var(--text-primary);"><i data-lucide="users" class="text-success me-2"></i> Active Clients</h5>
+                    <a href="/pro/workout/plan/create" class="btn btn-sm btn-outline-info rounded-pill px-3">+ Assign Workout Plan</a>
                 </div>
                 <div class="card-body">
                     {% for client in clients %}
                     <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded" style="background: var(--bg-body); border: 1px solid var(--border-color);">
                         <div>
                             <h6 class="mb-1 fw-bold" style="color: var(--text-primary);">{{ client.name }}</h6>
-                            <p class="mb-0 small" style="color: var(--text-secondary);">{{ client.plan_type }} | End: {{ client.end_date }}</p>
+                            <p class="mb-0 small" style="color: var(--text-secondary);">Plan: {{ client.plan_type }} | End Date: {{ client.end_date }}</p>
                         </div>
-                        <div>
-                            <a href="/trainer/build-plan/{{ client.user_id }}" class="btn btn-sm btn-primary rounded-pill px-3 me-1">Build Plan</a>
+                        <div class="d-flex gap-2">
+                            <a href="/pro/client/{{ client.user_id }}" class="btn btn-sm btn-info rounded-pill px-3">View Profile</a>
+                            <a href="/pro/workout/plan/create?client={{ client.user_id }}" class="btn btn-sm btn-primary rounded-pill px-3">Build Plan</a>
                             <a href="/gallery/client/{{ client.user_id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Gallery</a>
                         </div>
                     </div>
                     {% else %}
-                    <p class="text-muted">No active clients right now.</p>
+                    <p class="text-muted text-center py-4">No active clients right now. When clients purchase your coaching plans, they will appear here instantly!</p>
                     {% endfor %}
                 </div>
             </div>

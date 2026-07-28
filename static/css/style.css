@@ -771,7 +771,7 @@ body {
 }
 .weight-form input:focus { outline:none; border-color:var(--accent-primary); box-shadow:0 0 10px var(--accent-glow); }
 
-/* Global Form Inputs Theme Compliance */
+/* Global Form Inputs Theme Compliance & Autofill Fix */
 input, select, textarea, .form-control {
     background-color: var(--bg-input) !important;
     color: var(--text-primary) !important;
@@ -780,6 +780,36 @@ input, select, textarea, .form-control {
 input::placeholder, textarea::placeholder, .form-control::placeholder {
     color: var(--text-muted) !important;
     opacity: 0.7;
+}
+
+/* Chrome/Webkit Autofill White-Out Fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-input, #08172b) inset !important;
+    -webkit-text-fill-color: var(--text-primary, #F5F7FA) !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+    caret-color: var(--text-primary, #F5F7FA) !important;
+}
+
+/* Light Mode Distinct Black Card Borders */
+[data-theme="lavender-glass"] .gf-card,
+[data-theme="sunset-orange"] .gf-card,
+[data-theme="aqua-mint"] .gf-card,
+[data-theme="arctic-blue"] .gf-card,
+[data-theme="coffee-beige"] .gf-card,
+[data-theme="light"] .gf-card {
+    border: 1.5px solid rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
 }
 .submit-btn {
     display:flex; align-items:center; gap:6px;

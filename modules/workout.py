@@ -16,14 +16,27 @@ def workout_plan():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # CHECK IF HIRED A TRAINER
+    # CHECK IF HIRED TRAINERS
+    from flask import request
     cursor.execute("""
-        SELECT ca.*, p.full_name as prof_name, p.role
+        SELECT ca.*, p.full_name as prof_name, p.role, p.id as prof_id
         FROM client_assignments ca
         JOIN professionals p ON ca.professional_id = p.id
-        WHERE ca.user_id=%s AND ca.status='active' AND p.role IN ('trainer', 'both')
+        WHERE ca.user_id=%s AND ca.status='active' AND LOWER(p.role) IN ('trainer', 'both', 'prof_trainer', 'prof_both')
     """, (user_id,))
-    active_trainer = cursor.fetchone()
+    all_coaches = cursor.fetchall()
+
+    selected_coach_id = request.args.get('coach_id', type=int)
+    active_trainer = None
+
+    if all_coaches:
+        if selected_coach_id:
+            for c in all_coaches:
+                if c['professional_id'] == selected_coach_id or c['prof_id'] == selected_coach_id:
+                    active_trainer = c
+                    break
+        if not active_trainer:
+            active_trainer = all_coaches[0]
 
     if active_trainer:
         # Load custom plans
@@ -50,6 +63,7 @@ def workout_plan():
 
         return render_template('workout/workout_plan.html', 
                                coach=active_trainer,
+                               all_coaches=all_coaches,
                                custom_plan=custom_plan,
                                custom_exercises=grouped_custom,
                                user_name=session.get('user_name'),

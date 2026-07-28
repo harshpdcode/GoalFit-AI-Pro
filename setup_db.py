@@ -34,7 +34,7 @@ def create_schema():
             "payments", "custom_workout_plan_exercises", "custom_workout_plans",
             "professional_workouts", "custom_diet_plan_meals", "custom_diet_plans",
             "professional_meals", "transformations", "client_assignments",
-            "hire_requests", "professional_pricing", "professionals",
+            "hire_requests", "professional_pricing", "professional_coaching_packages", "professionals",
             "water_logs", "user_feedback", "activity_logs",
             "user_workouts", "user_meals", "workout_exercises",
             "diet_meals", "progress_logs", "step_recommendations", 
@@ -266,6 +266,32 @@ def create_schema():
             duration_days INT,
             price FLOAT,
             description TEXT,
+            FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS professional_coaching_packages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            professional_id INT,
+            package_name VARCHAR(150),
+            short_description TEXT,
+            thumbnail VARCHAR(255) DEFAULT 'static/images/packages/default_pkg.jpg',
+            original_price FLOAT,
+            discount_percent FLOAT DEFAULT 0,
+            final_price FLOAT,
+            duration_weeks VARCHAR(50),
+            goals_covered TEXT,
+            suitable_for TEXT,
+            include_diet BOOLEAN DEFAULT TRUE,
+            meals_per_day INT DEFAULT 4,
+            meal_preferences TEXT,
+            custom_calories BOOLEAN DEFAULT TRUE,
+            workout_type VARCHAR(50) DEFAULT 'Both',
+            workout_days INT DEFAULT 5,
+            workout_level VARCHAR(50) DEFAULT 'Intermediate',
+            weekly_schedule TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (professional_id) REFERENCES professionals(id) ON DELETE CASCADE
         );
         """)

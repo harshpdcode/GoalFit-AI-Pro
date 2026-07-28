@@ -29,6 +29,7 @@ from modules.transformation_management import pro_transformations_bp
 from modules.earnings_management import pro_earnings_bp
 from modules.schedule_management import pro_schedule_bp, user_schedule_bp
 from modules.user_reminders import user_reminders_bp
+from modules.coaching_packages import coaching_packages_bp
 import os
 
 
@@ -117,6 +118,7 @@ app.register_blueprint(pro_earnings_bp)
 app.register_blueprint(pro_schedule_bp)
 app.register_blueprint(user_schedule_bp)
 app.register_blueprint(user_reminders_bp)
+app.register_blueprint(coaching_packages_bp)
 
 # Exempt real-time polling blueprints from rate limits
 limiter.exempt(chat_bp)

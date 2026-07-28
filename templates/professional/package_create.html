@@ -1,0 +1,277 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Create Coaching Package{% endblock %}
+{% block page_title %}Create Coaching Package{% endblock %}
+{% block page_subtitle %}Design and launch custom coaching plans for clients{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+        <div class="pro-card">
+            <form action="/pro/packages/create" method="POST" enctype="multipart/form-data">
+                
+                <!-- 📦 PACKAGE INFORMATION -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: var(--pro-primary);"><i data-lucide="package" class="me-2"></i>📦 Package Information</h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="pro-form-label">Package Name</label>
+                                <input type="text" name="package_name" class="pro-form-control" placeholder="e.g. Summer Shred Challenge" required>
+                            </div>
+                            <div>
+                                <label class="pro-form-label">Short Description</label>
+                                <textarea name="short_description" class="pro-form-control" rows="3" placeholder="Transform your body in 12 weeks with a personalized diet, workout plan and weekly coaching." required></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <label class="pro-form-label d-block text-center mb-2">Package Thumbnail</label>
+                            <input type="file" name="thumbnail" id="pkgThumbInput" class="d-none" accept="image/*" onchange="previewPkgPhoto(this)">
+                            <div id="pkgPhotoBox" onclick="document.getElementById('pkgThumbInput').click()" style="width:100%;height:140px;border-radius:16px;background:rgba(255,255,255,0.04);border:2px dashed var(--pro-border);display:flex;align-items:center;justify-content:center;color:var(--pro-text-muted);cursor:pointer;overflow:hidden;position:relative;">
+                                <div class="text-center" id="pkgPlaceholder">
+                                    <i data-lucide="image-plus" style="width:30px;height:30px;margin-bottom:6px;"></i>
+                                    <div style="font-size:0.75rem;font-weight:600;">Upload Image</div>
+                                </div>
+                                <img id="pkgImagePreview" src="" alt="Preview" style="display:none;width:100%;height:100%;object-fit:cover;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💰 PRICING -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: #f59e0b;"><i data-lucide="dollar-sign" class="me-2"></i>💰 Pricing</h5>
+                    
+                    <div class="mb-3">
+                        <label class="pro-form-label">Select Price Preset or Custom</label>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="setPricePreset(999)">₹999</button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="setPricePreset(1999)">₹1999</button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="setPricePreset(2999)">₹2999</button>
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="setPricePreset(4999)">₹4999</button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-4">
+                            <label class="pro-form-label">Original Price (₹)</label>
+                            <input type="number" id="priceInput" name="price" class="pro-form-control" value="2999" step="1" oninput="calculatePricing()" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="pro-form-label">Discount (%)</label>
+                            <input type="number" id="discountInput" name="discount" class="pro-form-control" value="20" min="0" max="100" oninput="calculatePricing()">
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;">
+                                <div class="small text-muted" style="font-size:0.75rem;">Automatically Calculated:</div>
+                                <div id="priceDisplay" class="fw-bold text-success fs-5">Now ₹2399</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ⏳ DURATION -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: var(--pro-accent);"><i data-lucide="clock" class="me-2"></i>⏳ Duration</h5>
+                    <div class="col-md-6">
+                        <select name="duration_weeks" class="pro-form-control">
+                            <option value="4 Weeks">4 Weeks</option>
+                            <option value="8 Weeks">8 Weeks</option>
+                            <option value="12 Weeks" selected>12 Weeks</option>
+                            <option value="16 Weeks">16 Weeks</option>
+                            <option value="24 Weeks">24 Weeks</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 🎯 GOALS COVERED -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: #ec4899;"><i data-lucide="target" class="me-2"></i>🎯 Goals Covered</h5>
+                    <div class="row g-2">
+                        {% set goals = ['Weight Loss', 'Muscle Gain', 'Weight Gain', 'Maintenance', 'Body Recomposition', 'PCOS', 'Diabetes', 'Thyroid', 'Athletic Performance', 'Senior Fitness', 'Post Pregnancy', 'General Fitness'] %}
+                        {% for g in goals %}
+                        <div class="col-md-4 col-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="goals_covered" value="{{ g }}" id="goal-{{ loop.index }}" {% if loop.index <= 2 %}checked{% endif %}>
+                                <label class="form-check-label small text-light" for="goal-{{ loop.index }}">{{ g }}</label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 👤 SUITABLE FOR -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: #8b5cf6;"><i data-lucide="users" class="me-2"></i>👤 Suitable For</h5>
+                    <div class="d-flex flex-wrap gap-4">
+                        {% set groups = ['Male', 'Female', 'Teens', 'Adults', 'Seniors'] %}
+                        {% for grp in groups %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="suitable_for" value="{{ grp }}" id="grp-{{ loop.index }}" checked>
+                            <label class="form-check-label small text-light" for="grp-{{ loop.index }}">{{ grp }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 🍽 DIET PLAN -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold m-0" style="color: #10b981;"><i data-lucide="utensils" class="me-2"></i>🍽 Diet Plan</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="include_diet" id="toggleDiet" checked onchange="toggleDietSection(this)">
+                            <label class="form-check-label small text-light" for="toggleDiet">Include Diet Plan</label>
+                        </div>
+                    </div>
+
+                    <div id="dietDetailsSection">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="pro-form-label">Meals Per Day</label>
+                                <div class="d-flex gap-3">
+                                    {% for m in [3, 4, 5, 6] %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="meals_per_day" value="{{ m }}" id="mpd-{{ m }}" {% if m == 4 %}checked{% endif %}>
+                                        <label class="form-check-label small text-light" for="mpd-{{ m }}">{{ m }} Meals</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="pro-form-label">Meal Preference</label>
+                                <div class="d-flex flex-wrap gap-3">
+                                    {% set prefs = ['Veg', 'Non-Veg', 'Eggetarian', 'Vegan', 'Keto'] %}
+                                    {% for pr in prefs %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="meal_preference" value="{{ pr }}" id="mpref-{{ loop.index }}" checked>
+                                        <label class="form-check-label small text-light" for="mpref-{{ loop.index }}">{{ pr }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="custom_calories" id="custCal" checked>
+                            <label class="form-check-label small text-light" for="custCal">✔ Personalized Calories &amp; Macro Targets</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🏋 WORKOUT PLAN -->
+                <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--pro-border);">
+                    <h5 class="fw-bold mb-3" style="color: #3b82f6;"><i data-lucide="dumbbell" class="me-2"></i>🏋 Workout Plan</h5>
+                    
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="pro-form-label">Workout Type</label>
+                            <div class="d-flex gap-3">
+                                {% for wt in ['Gym', 'Home', 'Both'] %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="workout_type" value="{{ wt }}" id="wt-{{ wt }}" {% if wt == 'Both' %}checked{% endif %}>
+                                    <label class="form-check-label small text-light" for="wt-{{ wt }}">{{ wt }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="pro-form-label">Workout Days Per Week</label>
+                            <select name="workout_days" class="pro-form-control">
+                                <option value="3">3 Days</option>
+                                <option value="4">4 Days</option>
+                                <option value="5" selected>5 Days</option>
+                                <option value="6">6 Days</option>
+                                <option value="7">7 Days</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="pro-form-label">Workout Level</label>
+                            <select name="workout_level" class="pro-form-control">
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate" selected>Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📅 WEEKLY SCHEDULE -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3" style="color: var(--pro-primary);"><i data-lucide="calendar" class="me-2"></i>📅 Weekly Schedule</h5>
+                    <p class="small text-muted mb-3">Choose the daily muscle/focus split for this package:</p>
+
+                    <div class="row g-2">
+                        {% set days_map = [
+                            ('Monday', 'sched_monday', 'Chest'),
+                            ('Tuesday', 'sched_tuesday', 'Back'),
+                            ('Wednesday', 'sched_wednesday', 'Legs'),
+                            ('Thursday', 'sched_thursday', 'Shoulders'),
+                            ('Friday', 'sched_friday', 'Arms'),
+                            ('Saturday', 'sched_saturday', 'Cardio'),
+                            ('Sunday', 'sched_sunday', 'Rest')
+                        ] %}
+                        {% set focus_options = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Cardio', 'Full Body', 'Abs & Core', 'Rest'] %}
+                        
+                        {% for day_name, field_name, default_val in days_map %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-2 rounded-3" style="background:rgba(255,255,255,0.03); border:1px solid var(--pro-border);">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="fw-semibold small text-light">{{ day_name }}</span>
+                                    <span class="badge bg-dark text-info" style="font-size:0.7rem;">✔ Target</span>
+                                </div>
+                                <select name="{{ field_name }}" class="pro-form-control py-1 px-2 style-select">
+                                    {% for opt in focus_options %}
+                                    <option value="{{ opt }}" {% if opt == default_val %}selected{% endif %}>{{ opt }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- SUBMIT BUTTONS -->
+                <div class="d-flex justify-content-end gap-2 pt-3" style="border-top: 1px solid var(--pro-border);">
+                    <a href="/pro/packages" class="btn-pro-ghost">Cancel</a>
+                    <button type="submit" class="btn-pro-primary px-4"><i data-lucide="check" class="me-1"></i> Save Package</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function setPricePreset(val) {
+    document.getElementById('priceInput').value = val;
+    calculatePricing();
+}
+
+function calculatePricing() {
+    const orig = parseFloat(document.getElementById('priceInput').value) || 0;
+    const disc = parseFloat(document.getElementById('discountInput').value) || 0;
+    const finalP = Math.round(orig * (1 - (disc / 100)));
+    document.getElementById('priceDisplay').innerText = `Now ₹${finalP}`;
+}
+
+function toggleDietSection(chk) {
+    document.getElementById('dietDetailsSection').style.display = chk.checked ? 'block' : 'none';
+}
+
+function previewPkgPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('pkgPlaceholder').style.display = 'none';
+            const img = document.getElementById('pkgImagePreview');
+            img.src = e.target.result;
+            img.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

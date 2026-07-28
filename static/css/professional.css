@@ -701,6 +701,16 @@ body.pro-body {
 
 .pro-form-control::placeholder { color: var(--pro-text-muted); }
 
+/* Chrome Autofill Fix for Pro Portal */
+.pro-form-control:-webkit-autofill,
+.pro-form-control:-webkit-autofill:hover,
+.pro-form-control:-webkit-autofill:focus,
+.pro-form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #0b1528 inset !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
 .pro-form-label {
     font-size: 0.78rem;
     font-weight: 600;

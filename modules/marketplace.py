@@ -78,13 +78,37 @@ def profile(prof_id):
     cursor.execute("SELECT * FROM transformations WHERE professional_id=%s", (prof_id,))
     transformations = cursor.fetchall()
 
+    cursor.execute("""
+        SELECT pr.*, u.name as user_name
+        FROM professional_reviews pr
+        JOIN users u ON pr.user_id = u.id
+        WHERE pr.professional_id=%s
+        ORDER BY pr.id DESC
+    """, (prof_id,))
+    reviews = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT pcp.* FROM professional_coaching_packages pcp
+        WHERE pcp.professional_id=%s
+        ORDER BY pcp.id DESC
+    """, (prof_id,))
+    coaching_packages = cursor.fetchall()
+
     active_hire = None
+    can_review = False
     if 'user_id' in session and session.get('role') == 'user':
         cursor.execute("""
             SELECT * FROM client_assignments
             WHERE user_id=%s AND professional_id=%s AND status='active'
         """, (session['user_id'], prof_id))
         active_hire = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT id FROM client_assignments
+            WHERE user_id=%s AND professional_id=%s
+        """, (session['user_id'], prof_id))
+        if cursor.fetchone():
+            can_review = True
 
     cursor.close()
     conn.close()
@@ -93,9 +117,46 @@ def profile(prof_id):
         'marketplace/profile.html',
         professional=professional,
         pricing_plans=pricing_plans,
+        coaching_packages=coaching_packages,
         transformations=transformations,
-        active_hire=active_hire
+        active_hire=active_hire,
+        reviews=reviews,
+        can_review=can_review
     )
+
+
+@marketplace_bp.route('/rate-professional', methods=['POST'])
+def rate_professional():
+    if 'user_id' not in session or session.get('role') != 'user':
+        flash('Please login to submit a review.', 'danger')
+        return redirect(url_for('auth.login'))
+
+    user_id = session['user_id']
+    prof_id = request.form.get('professional_id')
+    rating = float(request.form.get('rating', 5.0))
+    review_text = request.form.get('review_text', '').strip()
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        INSERT INTO professional_reviews (professional_id, user_id, rating, review_text)
+        VALUES (%s, %s, %s, %s)
+    """, (prof_id, user_id, rating, review_text))
+
+    cursor.execute("SELECT AVG(rating) as avg_rating FROM professional_reviews WHERE professional_id=%s", (prof_id,))
+    res = cursor.fetchone()
+    if res and res['avg_rating']:
+        new_rating = round(float(res['avg_rating']), 1)
+        cursor.execute("UPDATE professionals SET rating=%s WHERE id=%s", (new_rating, prof_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    flash('Thank you for rating your coach!', 'success')
+    return redirect(url_for('marketplace.profile', prof_id=prof_id))
+
 
 @marketplace_bp.route('/my-professionals')
 def my_professionals():

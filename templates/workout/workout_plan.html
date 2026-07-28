@@ -8,14 +8,29 @@
     <p class="workout-sub">Training</p>
     <h1 class="workout-title">Workout Plan</h1>
 
-    <div class="workout-tags">
+    <div class="workout-tags d-flex align-items-center flex-wrap gap-2">
         {% if coach %}
         <span class="tag goal">GoalFit Pro</span>
         <span class="tag activity">Coach: {{ coach.prof_name }}</span>
+        {% if all_coaches and all_coaches|length > 1 %}
+        <div class="d-inline-flex align-items-center ms-1">
+            <select class="form-select form-select-sm bg-dark text-light border-info" onchange="location.href='/workout-plan?coach_id=' + this.value" style="font-size:0.8rem;border-radius:12px;">
+                {% for c in all_coaches %}
+                <option value="{{ c.professional_id or c.prof_id }}" {% if coach and (coach.professional_id == (c.professional_id or c.prof_id)) %}selected{% endif %}>
+                    Trainer: {{ c.prof_name }} ({{ c.role|capitalize }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
         {% else %}
         <span class="tag goal">{{ goal }}</span>
         <span class="tag activity">{{ activity }}</span>
         {% endif %}
+
+        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 ms-auto" onclick="openReminderModal()">
+            <i data-lucide="clock" style="width:16px; height:16px; vertical-align:middle;" class="me-1"></i> Workout Reminder Time
+        </button>
     </div>
 
 </div>
@@ -128,5 +143,6 @@ if(tabs.length){
 
 </script>
 
+{% include 'components/reminder_modal.html' %}
 {% include 'components/chat_overlay.html' %}
 {% endblock %}

@@ -14,6 +14,8 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Professional CSS -->
     <link href="{{ url_for('static', filename='css/professional.css') }}" rel="stylesheet">
     {% block head %}{% endblock %}
@@ -76,6 +78,13 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a href="/pro/packages" class="nav-link {% if '/pro/packages' in request.path %}active{% endif %}">
+                <i data-lucide="package" class="nav-icon"></i>
+                Coaching Packages
+            </a>
+        </li>
+
         <!-- Clients -->
         <li class="nav-item">
             <a href="#" class="nav-link has-submenu {% if '/pro/clients' in request.path %}active submenu-open{% endif %}"
@@ -86,7 +95,6 @@
             </a>
             <ul class="sidebar-submenu {% if '/pro/clients' in request.path %}open{% endif %}">
                 <li><a href="/pro/clients" class="sub-link {% if request.path == '/pro/clients' %}active{% endif %}">Active Clients</a></li>
-                <li><a href="/pro/clients/pending" class="sub-link {% if '/pending' in request.path %}active{% endif %}">Pending Requests</a></li>
                 <li><a href="/pro/clients/completed" class="sub-link {% if '/completed' in request.path %}active{% endif %}">Completed Clients</a></li>
             </ul>
         </li>

@@ -35,12 +35,14 @@
             </p>
             
             <div class="d-flex gap-2 mt-auto">
-                <a href="/pro/workout/plans/{{ plan.id }}" class="btn-pro-ghost flex-grow-1" style="justify-content:center;border-radius:10px;">
-                    <i data-lucide="eye" style="width:16px;height:16px;"></i> View Plan
-                </a>
-                <a href="/pro/client/{{ plan.user_id }}" class="btn-pro-outline" style="padding:10px;border-radius:10px;">
-                    <i data-lucide="user" style="width:16px;height:16px;"></i>
-                </a>
+                <button type="button" class="btn-pro-outline flex-grow-1" onclick="openAssignWorkoutModal('{{ plan.id }}', '{{ plan.plan_name|e }}')" style="justify-content:center;border-radius:10px;">
+                    <i data-lucide="user-plus" style="width:16px;height:16px;"></i> Reassign
+                </button>
+                <form action="/pro/workout/plan/delete/{{ plan.id }}" method="POST" onsubmit="return confirm('Remove this workout plan from client?');">
+                    <button type="submit" class="btn btn-outline-danger" style="border-radius:10px;padding:8px 12px;" title="Remove Plan">
+                        <i data-lucide="trash-2" style="width:16px;height:16px;"></i> Remove
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -48,11 +50,51 @@
     <div class="col-12">
         <div class="pro-empty" style="padding:60px 20px;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="opacity:0.5;margin-bottom:15px;"><path d="M6.5 6.5h11"/><path d="M6.5 17.5h11"/><path d="M3 2v5"/><path d="M21 2v5"/><path d="M3 22v-5"/><path d="M21 22v-5"/></svg>
-            <h5>No Active Workout Plans</h5>
-            <p>You haven't assigned any custom training regimens to your clients yet.</p>
-            <a href="/pro/workout/plan/create" class="btn-pro-primary mt-3">Assign New Plan</a>
+            <h5>No Workout Plans in Library</h5>
+            <p>Create reusable workout plan templates or assign training regimens to your clients.</p>
+            <a href="/pro/workout/plan/create" class="btn-pro-primary mt-3">Create New Plan Template</a>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<!-- ASSIGN WORKOUT PLAN MODAL -->
+<div class="modal fade" id="assignWorkoutPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--pro-card-bg, #0f172a); border: 1px solid var(--pro-border); color:#fff;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold"><i data-lucide="user-check" style="color:var(--pro-accent);"></i> Assign Workout Plan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/pro/workout/plan/assign" method="POST">
+                <input type="hidden" name="plan_id" id="assignWorkoutPlanId">
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Selected Plan: <strong id="assignWorkoutPlanName" class="text-light"></strong></p>
+                    <div class="mb-3">
+                        <label class="pro-form-label">Select Active Client</label>
+                        <select name="client_id" class="pro-form-control" required>
+                            <option value="">-- Choose Client --</option>
+                            {% for c in clients %}
+                            <option value="{{ c.user_id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn-pro-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-pro-primary">Assign Plan Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openAssignWorkoutModal(planId, planName) {
+    document.getElementById('assignWorkoutPlanId').value = planId;
+    document.getElementById('assignWorkoutPlanName').innerText = planName;
+    const modal = new bootstrap.Modal(document.getElementById('assignWorkoutPlanModal'));
+    modal.show();
+}
+</script>
 {% endblock %}

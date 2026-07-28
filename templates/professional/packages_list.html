@@ -1,0 +1,70 @@
+{% extends 'professional/pro_base.html' %}
+{% block title %}Coaching Packages{% endblock %}
+{% block page_title %}Coaching Packages{% endblock %}
+{% block page_subtitle %}Manage your active coaching programs and pricing options{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold m-0 text-white">Your Packages</h4>
+        <span class="small text-muted">Packages are listed directly on your marketplace profile for clients to enroll.</span>
+    </div>
+    <a href="/pro/packages/create" class="btn-pro-primary">
+        <i data-lucide="plus" style="width:16px;height:16px;"></i> Create New Package
+    </a>
+</div>
+
+<div class="row g-3">
+    {% for pkg in packages %}
+    <div class="col-md-6 col-xl-4">
+        <div class="pro-card h-100 p-3 d-flex flex-column" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 40 }}">
+            <div style="height: 160px; border-radius: 12px; overflow: hidden; margin-bottom: 14px; position: relative;">
+                <img src="/{{ pkg.thumbnail }}" alt="{{ pkg.package_name }}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='/static/images/packages/default_pkg.jpg';">
+                <span class="badge bg-warning text-dark style-badge" style="position:absolute; top:8px; right:8px; font-weight:700;">{{ pkg.duration_weeks }}</span>
+            </div>
+            
+            <h5 class="fw-bold mb-1 text-white">{{ pkg.package_name }}</h5>
+            <p class="small text-muted mb-3 flex-grow-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ pkg.short_description }}</p>
+            
+            <div class="p-3 rounded-3 mb-3" style="background:rgba(255,255,255,0.03); border:1px solid var(--pro-border);">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="small text-muted d-block" style="font-size:0.75rem;">Price</span>
+                        {% if pkg.discount_percent and pkg.discount_percent > 0 %}
+                        <span class="text-muted text-decoration-line-through small me-1">₹{{ pkg.original_price }}</span>
+                        <span class="fw-bold text-success fs-5">₹{{ pkg.final_price }}</span>
+                        <span class="badge bg-danger ms-1">{{ pkg.discount_percent }}% OFF</span>
+                        {% else %}
+                        <span class="fw-bold text-success fs-5">₹{{ pkg.original_price }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center pt-2" style="border-top:1px solid var(--pro-border);">
+                <span class="badge bg-dark text-info">{{ pkg.workout_type }} Workout</span>
+                <div class="d-flex gap-2">
+                    <a href="/pro/packages/edit/{{ pkg.id }}" class="btn btn-sm btn-outline-info border-0">
+                        <i data-lucide="edit-3" style="width:16px;height:16px;"></i> Edit
+                    </a>
+                    <form action="/pro/packages/delete/{{ pkg.id }}" method="POST" onsubmit="return confirm('Delete this coaching package?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                            <i data-lucide="trash-2" style="width:16px;height:16px;"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="pro-empty" style="padding:60px 20px;">
+            <i data-lucide="package" style="width:48px;height:48px;opacity:0.5;margin-bottom:15px;"></i>
+            <h5>No Coaching Packages Yet</h5>
+            <p>Create your first coaching package with personalized diet, workout, and pricing details.</p>
+            <a href="/pro/packages/create" class="btn-pro-primary mt-3">Create First Package</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

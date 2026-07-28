@@ -32,12 +32,6 @@
     <a href="/pro/clients" class="pro-tab {% if status == 'active' or not status %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
         Active
     </a>
-    <a href="/pro/clients/pending" class="pro-tab {% if status == 'pending' %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
-        Pending
-        {% if pending_count > 0 %}
-        <span class="ms-1" style="background:var(--pro-warning);color:#000;font-size:0.65rem;padding:1px 6px;border-radius:10px;font-weight:700;">{{ pending_count }}</span>
-        {% endif %}
-    </a>
     <a href="/pro/clients/completed" class="pro-tab {% if status == 'completed' %}active{% endif %}" style="text-decoration:none;border-radius:8px;padding:7px 18px;font-size:0.82rem;">
         Completed
     </a>

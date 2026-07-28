@@ -9,13 +9,14 @@
         <div class="pro-card">
             <form action="/pro/diet/meal/create" method="POST" enctype="multipart/form-data">
                 <div class="mb-4 text-center">
-                    <div style="width:120px;height:120px;border-radius:20px;background:rgba(255,255,255,0.05);border:2px dashed var(--pro-border);margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--pro-text-muted);cursor:pointer;transition:0.3s;" onmouseover="this.style.borderColor='var(--pro-primary)';this.style.color='var(--pro-primary)';" onmouseout="this.style.borderColor='var(--pro-border)';this.style.color='var(--pro-text-muted)';">
-                        <div class="text-center">
+                    <input type="file" name="image" id="mealImageInput" class="d-none" accept="image/*" onchange="previewMealPhoto(this)">
+                    <div id="photoUploadBox" onclick="document.getElementById('mealImageInput').click()" style="width:140px;height:140px;border-radius:20px;background:rgba(255,255,255,0.05);border:2px dashed var(--pro-border);margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--pro-text-muted);cursor:pointer;transition:0.3s;overflow:hidden;position:relative;">
+                        <div class="text-center" id="uploadPlaceholder">
                             <i data-lucide="image-plus" style="width:32px;height:32px;margin-bottom:8px;"></i>
-                            <div style="font-size:0.7rem;font-weight:600;">Upload Photo</div>
+                            <div style="font-size:0.75rem;font-weight:600;">Upload Photo</div>
                         </div>
+                        <img id="imagePreview" src="" alt="Preview" style="display:none;width:100%;height:100%;object-fit:cover;">
                     </div>
-                    <!-- File input would go here in actual implementation -->
                 </div>
 
                 <div class="mb-4">
@@ -60,4 +61,18 @@
         </div>
     </div>
 </div>
+<script>
+function previewMealPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            document.getElementById('uploadPlaceholder').style.display = 'none';
+            const img = document.getElementById('imagePreview');
+            img.src = e.target.result;
+            img.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
 {% endblock %}

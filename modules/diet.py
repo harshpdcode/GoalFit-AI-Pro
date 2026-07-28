@@ -61,14 +61,26 @@ def diet_plan():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True, buffered=True)
 
-    # CHECK IF HIRED A DIETICIAN
+    # CHECK IF HIRED DIETICIANS
     cursor.execute("""
-        SELECT ca.*, p.full_name as prof_name, p.role
+        SELECT ca.*, p.full_name as prof_name, p.role, p.id as prof_id
         FROM client_assignments ca
         JOIN professionals p ON ca.professional_id = p.id
-        WHERE ca.user_id=%s AND ca.status='active' AND p.role IN ('dietician', 'both')
+        WHERE ca.user_id=%s AND ca.status='active' AND LOWER(p.role) IN ('dietician', 'both', 'prof_dietician', 'prof_both')
     """, (user_id,))
-    active_dietician = cursor.fetchone()
+    all_coaches = cursor.fetchall()
+
+    selected_coach_id = request.args.get('coach_id', type=int)
+    active_dietician = None
+
+    if all_coaches:
+        if selected_coach_id:
+            for c in all_coaches:
+                if c['professional_id'] == selected_coach_id or c['prof_id'] == selected_coach_id:
+                    active_dietician = c
+                    break
+        if not active_dietician:
+            active_dietician = all_coaches[0]
 
     if active_dietician:
         # Load custom plans from custom_diet_plans / custom_diet_plan_meals
@@ -93,6 +105,7 @@ def diet_plan():
             
         return render_template('diet/diet_plan.html', 
                                coach=active_dietician,
+                               all_coaches=all_coaches,
                                custom_plan=custom_plan,
                                custom_meals=custom_meals,
                                diet_logs=diet_logs,
@@ -260,6 +273,24 @@ def diet_plan():
         logs = cursor.fetchall()
         diet_logs = {log['meal_id']: log['is_completed'] for log in logs}
 
+        # Calculate Eating Streak
+        meal_streak = get_user_meal_streak(user_id, conn)
+
+        # Check Active Coach for Visibility Badge
+        cursor.execute("""
+            SELECT p.full_name
+            FROM client_assignments ca
+            JOIN professionals p ON ca.professional_id = p.id
+            WHERE ca.user_id=%s AND ca.status='active'
+        """, (user_id,))
+        coach_res = cursor.fetchone()
+        if coach_res:
+            coach_visibility_msg = f"Logged meal status shared with your Coach ({coach_res['full_name']})"
+            is_coach_hired = True
+        else:
+            coach_visibility_msg = "Logged meal status visible only to you"
+            is_coach_hired = False
+
         return render_template(
             "diet/diet_plan.html",
             active_meals=active_meals,
@@ -269,6 +300,9 @@ def diet_plan():
             diet_pref=diet_pref,
             tdee_data=tdee_data,
             diet_logs=diet_logs,
+            meal_streak=meal_streak,
+            coach_visibility_msg=coach_visibility_msg,
+            is_coach_hired=is_coach_hired,
             log_date=today,
             user_name=session.get('user_name'),
             email=session.get('email')
@@ -277,3 +311,37 @@ def diet_plan():
     finally:
         cursor.close()
         conn.close()
+
+
+def get_user_meal_streak(user_id, conn):
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    try:
+        cursor.execute("""
+            SELECT DISTINCT log_date
+            FROM diet_logs
+            WHERE user_id=%s AND is_completed=TRUE
+            ORDER BY log_date DESC
+        """, (user_id,))
+        rows = cursor.fetchall()
+        if not rows:
+            return 0
+        from datetime import date, timedelta
+        today = date.today()
+        dates = [r['log_date'] for r in rows if r['log_date']]
+        if not dates:
+            return 0
+        streak = 0
+        check_date = today
+        if check_date not in dates:
+            check_date = today - timedelta(days=1)
+            if check_date not in dates:
+                return 0
+        while check_date in dates:
+            streak += 1
+            check_date -= timedelta(days=1)
+        return streak
+    except Exception as e:
+        print(f"Error calculating meal streak: {e}")
+        return 0
+    finally:
+        cursor.close()

@@ -1,20 +1,20 @@
 {% extends 'professional/pro_base.html' %}
 {% block title %}Create Diet Plan{% endblock %}
-{% block page_title %}Plan Builder{% endblock %}
-{% block page_subtitle %}Assign a customized diet plan to your client{% endblock %}
+{% block page_title %}Diet Plan Builder{% endblock %}
+{% block page_subtitle %}Create a reusable diet plan card or assign directly to a client{% endblock %}
 
 {% block content %}
-<div class="row" data-aos="fade-up">
-    <div class="col-12">
+<div class="row justify-content-center" data-aos="fade-up">
+    <div class="col-lg-10">
         <div class="pro-card">
-            <form action="/pro/diet/plan/create" method="POST">
+            <form action="/pro/diet/plan/create" method="POST" id="dietPlanForm">
                 
-                <div class="row g-4 mb-4">
+                <div class="row g-3 mb-4">
                     <!-- Client Selection -->
-                    <div class="col-md-4">
-                        <label class="pro-form-label">Select Client</label>
-                        <select name="client_id" class="pro-form-control" required>
-                            <option value="">-- Choose Active Client --</option>
+                    <div class="col-md-6">
+                        <label class="pro-form-label">Assign to Client (Optional)</label>
+                        <select name="client_id" class="pro-form-control">
+                            <option value="">-- Save to Plan Library (Unassigned Template) --</option>
                             {% for client in clients %}
                             <option value="{{ client.user_id }}" {% if prefill_client == client.user_id|string %}selected{% endif %}>
                                 {{ client.name }}
@@ -22,55 +22,70 @@
                             {% endfor %}
                         </select>
                     </div>
-                    
-                    <div class="col-md-4">
-                        <label class="pro-form-label">Plan Name</label>
-                        <input type="text" name="plan_name" class="pro-form-control" placeholder="e.g. 4-Week Fat Loss Diet" required>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <label class="pro-form-label">Primary Goal</label>
-                        <input type="text" name="goal" class="pro-form-control" placeholder="e.g. Fat Loss & Retention" required>
+
+                    <!-- Select Pre-Made Plan Template -->
+                    <div class="col-md-6">
+                        <label class="pro-form-label text-warning"><i data-lucide="layers" style="width:16px;height:16px;"></i> Select Pre-Made Plan Template</label>
+                        <select name="template_plan_id" id="templatePlanSelect" class="pro-form-control border-warning" onchange="handleTemplateSelect(this)">
+                            <option value="">-- Create New Custom Plan --</option>
+                            {% for tmpl in existing_templates %}
+                            <option value="{{ tmpl.id }}">{{ tmpl.plan_name }} ({{ tmpl.goal }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted" style="font-size:0.75rem;">Selecting a pre-made template disables manual inputs and assigns the template directly.</small>
                     </div>
                 </div>
 
                 <div class="pro-divider my-4"></div>
 
-                <h5 class="fw-bold mb-4">Meal Selection</h5>
-                
-                <!-- Daily Structure -->
-                <div class="row g-4">
-                    {% for meal_type in ['breakfast', 'lunch', 'dinner', 'snacks'] %}
-                    <div class="col-md-6">
-                        <div class="p-3 rounded-4" style="background:rgba(255,255,255,0.02);border:1px solid var(--pro-border);">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-0 text-capitalize text-white">{{ meal_type }}</h6>
-                                <i data-lucide="plus-circle" style="color:var(--pro-primary);cursor:pointer;" onclick="addMealSelect('{{ meal_type }}')"></i>
-                            </div>
-                            <div id="container_{{ meal_type }}" class="d-flex flex-column gap-2">
-                                <select name="meal_{{ meal_type }}[]" class="pro-form-control" style="font-size:0.85rem;">
-                                    <option value="">-- Select a meal --</option>
-                                    {% for meal in meals %}
-                                    <option value="{{ meal.id }}">{{ meal.meal_name }} ({{ meal.calories }} kcal)</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                <div id="manualFieldsSection">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="pro-form-label">Plan Name</label>
+                            <input type="text" name="plan_name" id="plan_name_input" class="pro-form-control" placeholder="e.g. 4-Week Fat Loss Diet" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="pro-form-label">Primary Goal</label>
+                            <input type="text" name="goal" id="goal_input" class="pro-form-control" placeholder="e.g. Fat Loss &amp; Retention" required>
                         </div>
                     </div>
-                    {% endfor %}
+
+                    <h5 class="fw-bold mb-3" style="color:var(--pro-primary);"><i data-lucide="utensils" class="me-2"></i>Meal Selection</h5>
+                    
+                    <div class="row g-3 mb-4">
+                        {% for meal_type in ['breakfast', 'lunch', 'dinner', 'snacks'] %}
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-4" style="background:rgba(255,255,255,0.02);border:1px solid var(--pro-border);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0 text-capitalize text-white">{{ meal_type }}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-info border-0 p-0" onclick="addMealSelect('{{ meal_type }}')" title="Add another meal option">
+                                        <i data-lucide="plus-circle" style="width:18px;height:18px;"></i>
+                                    </button>
+                                </div>
+                                <div id="container_{{ meal_type }}" class="d-flex flex-column gap-2">
+                                    <select name="meal_{{ meal_type }}[]" class="pro-form-control meal-select-field" style="font-size:0.85rem;">
+                                        <option value="">-- Select a meal --</option>
+                                        {% for meal in meals %}
+                                        <option value="{{ meal.id }}">{{ meal.meal_name }} ({{ meal.calories }} kcal)</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="pro-form-label">Coach Notes / Instructions</label>
+                        <textarea name="notes" id="notes_input" class="pro-form-control" rows="3" placeholder="Hydration guidelines, meal timing, supplements..."></textarea>
+                    </div>
                 </div>
 
-                <div class="pro-divider my-4"></div>
-
-                <div class="mb-4">
-                    <label class="pro-form-label">Coach Notes / Instructions</label>
-                    <textarea name="notes" class="pro-form-control" rows="3" placeholder="Hydration guidelines, supplement timing, etc."></textarea>
-                </div>
-
-                <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="/pro/dashboard" class="btn-pro-ghost" style="padding:10px 20px;">Cancel</a>
-                    <button type="submit" class="btn-pro-primary" style="padding:10px 30px;">
-                        <i data-lucide="send" style="width:16px;height:16px;"></i> Assign Plan
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3" style="border-top:1px solid var(--pro-border);">
+                    <a href="/pro/diet/plans" class="btn-pro-ghost">Cancel</a>
+                    <button type="submit" class="btn-pro-primary px-4">
+                        <i data-lucide="check" style="width:16px;height:16px;"></i> Save Plan Card
                     </button>
                 </div>
 
@@ -82,7 +97,7 @@
 <!-- Hidden select template for JS -->
 <div id="mealSelectTemplate" style="display:none;">
     <div class="d-flex gap-2">
-        <select class="pro-form-control flex-grow-1" style="font-size:0.85rem;">
+        <select class="pro-form-control flex-grow-1 meal-select-field" style="font-size:0.85rem;">
             <option value="">-- Select a meal --</option>
             {% for meal in meals %}
             <option value="{{ meal.id }}">{{ meal.meal_name }} ({{ meal.calories }} kcal)</option>
@@ -97,20 +112,41 @@
 
 {% block scripts %}
 <script>
+function handleTemplateSelect(selectElem) {
+    const isTemplateSelected = selectElem.value !== "";
+    const nameInput = document.getElementById('plan_name_input');
+    const goalInput = document.getElementById('goal_input');
+    const notesInput = document.getElementById('notes_input');
+    const mealSelects = document.querySelectorAll('.meal-select-field');
+
+    if (isTemplateSelected) {
+        nameInput.required = false;
+        goalInput.required = false;
+        nameInput.disabled = true;
+        goalInput.disabled = true;
+        notesInput.disabled = true;
+        mealSelects.forEach(s => s.disabled = true);
+        document.getElementById('manualFieldsSection').style.opacity = '0.4';
+    } else {
+        nameInput.required = true;
+        goalInput.required = true;
+        nameInput.disabled = false;
+        goalInput.disabled = false;
+        notesInput.disabled = false;
+        mealSelects.forEach(s => s.disabled = false);
+        document.getElementById('manualFieldsSection').style.opacity = '1';
+    }
+}
+
 function addMealSelect(mealType) {
-    const container = document.getElementById('container_' + mealType);
-    const template = document.getElementById('mealSelectTemplate').innerHTML;
-    
-    // Create new element
-    const div = document.createElement('div');
-    div.innerHTML = template;
-    
-    // Update name attribute to match meal_type
-    const select = div.querySelector('select');
-    select.name = 'meal_' + mealType + '[]';
-    
-    container.appendChild(div.firstElementChild);
-    lucide.createIcons();
+    const container = document.getElementById(`container_${mealType}`);
+    const tmpl = document.getElementById('mealSelectTemplate').firstElementChild.cloneNode(true);
+    const select = tmpl.querySelector('select');
+    select.name = `meal_${mealType}[]`;
+    container.appendChild(tmpl);
+    if (document.getElementById('templatePlanSelect').value !== "") {
+        select.disabled = true;
+    }
 }
 </script>
 {% endblock %}
