@@ -564,7 +564,7 @@ body {
 .gf-card.center { text-align:center; }
 
 .gf-card-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-.gf-card-header h3 { font-size:13px; color: var(--text-label); font-weight:500; }
+.gf-card-header h2, .gf-card-header h3 { font-size:13px; color: var(--text-label); font-weight:500; margin:0; }
 .gf-card-header i { width:18px; height:18px; stroke: var(--accent-primary); }
 
 .big { font-size:26px; font-weight:700; margin-bottom:6px; }
@@ -883,7 +883,7 @@ select:-webkit-autofill:active {
 
 .water-streak-card { text-align:center; }
 .streak-display { margin:15px 0 8px; }
-.streak-number { font-size:48px; font-weight:900; background:linear-gradient(135deg,#f59e0b,#ef4444); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.streak-number { font-size:48px; font-weight:900; background:linear-gradient(135deg,#f59e0b,#ef4444); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 .streak-label { font-size:14px; color: var(--text-muted); margin-left:4px; }
 .streak-msg { font-size:13px; color: var(--text-label); }
 
@@ -986,7 +986,7 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 .loading-content { text-align:center; animation:fadeIn 0.6s; }
 .loading-content p { margin-top:10px; color: var(--text-label); font-size:14px; }
 .loader-title { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:20px; }
-.loader-text { font-size:32px; font-weight:800; letter-spacing:2px; background:var(--accent-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.loader-text { font-size:32px; font-weight:800; letter-spacing:2px; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 .loader-text.left { animation:slideLeft 1.5s ease-in-out infinite; }
 .loader-text.right { animation:slideRight 1.5s ease-in-out infinite; }
 .loader-dot { width:12px; height:12px; border-radius:50%; background:var(--accent-primary); animation:pulse-dot 1.5s ease-in-out infinite; }
@@ -1066,6 +1066,7 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
 .pro-mode .text-gradient {
   background: var(--pro-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1692,5 +1693,40 @@ html, body {
     .weight-form input {
         flex: 1 1 120px;
     }
+}
+
+/* ===== RESTART CHART BUTTON ===== */
+.btn-restart-chart {
+    background: var(--accent-glow-sm, rgba(0, 194, 255, 0.1));
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.15));
+    color: var(--text-secondary, #94a3b8);
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-restart-chart:hover {
+    background: var(--accent-glow, rgba(0, 194, 255, 0.2));
+    color: var(--text-primary, #ffffff);
+    border-color: var(--accent-primary, #00c2ff);
+    transform: translateY(-1px);
+}
+.btn-restart-chart i {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    transition: transform 0.3s ease;
+}
+@keyframes spin-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+.spin-animation {
+    animation: spin-rotate 0.8s ease-in-out !important;
 }
 

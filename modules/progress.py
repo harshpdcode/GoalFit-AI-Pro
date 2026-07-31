@@ -119,3 +119,61 @@ def progress():
         user_name=session.get('user_name'),
         email=session.get('email')
     )
+
+
+@progress_bp.route('/progress/reset', methods=['POST'])
+def reset_progress():
+    if 'user_id' not in session:
+        return redirect(url_for('auth.login'))
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True, buffered=True)
+
+    cursor.execute("SELECT weight_kg, height_cm, target_weight, goal_type FROM user_health WHERE user_id=%s", (user_id,))
+    health = cursor.fetchone()
+
+    if health:
+        current_weight = float(health['weight_kg'])
+        
+        # Clear previous progress logs and bmi records for fresh tracking phase starting today
+        cursor.execute("DELETE FROM progress_logs WHERE user_id=%s", (user_id,))
+        cursor.execute("DELETE FROM bmi_records WHERE user_id=%s", (user_id,))
+        
+        # Insert current weight as fresh starting baseline today
+        cursor.execute("INSERT INTO progress_logs (user_id, weight_kg, log_date) VALUES (%s, %s, %s)", (user_id, current_weight, date.today()))
+
+        # Recalculate BMI for today
+        if health['height_cm']:
+            h_m = float(health['height_cm']) / 100.0
+            bmi_val = round(current_weight / (h_m * h_m), 1)
+            cat = "Normal"
+            if bmi_val < 18.5: cat = "Underweight"
+            elif bmi_val < 25: cat = "Normal"
+            elif bmi_val < 30: cat = "Overweight"
+            else: cat = "Obese"
+            cursor.execute("INSERT INTO bmi_records (user_id, bmi_value, bmi_category, recorded_date) VALUES (%s, %s, %s, %s)", (user_id, bmi_val, cat, date.today()))
+
+        # Recalculate predictions & steps
+        tw = float(health['target_weight'])
+        g_type = health['goal_type']
+        w_diff = abs(current_weight - tw)
+        rate = 0.8 if g_type == "Weight Loss" else 0.5
+        
+        if w_diff > 0.5:
+            est_wks = max(int(w_diff / rate), 1)
+            from datetime import timedelta
+            comp_date = date.today() + timedelta(weeks=est_wks)
+            cursor.execute("DELETE FROM goal_predictions WHERE user_id=%s", (user_id,))
+            cursor.execute("""
+                INSERT INTO goal_predictions (user_id, current_weight, target_weight, weekly_change_rate, estimated_weeks, estimated_completion_date) 
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """, (user_id, current_weight, tw, rate, est_wks, comp_date))
+
+        conn.commit()
+        from flask import flash
+        flash("Progress tracking restarted! Your graph & goal completion now count fresh from today.", "success")
+
+    cursor.close()
+    conn.close()
+    return redirect(url_for('progress.progress'))

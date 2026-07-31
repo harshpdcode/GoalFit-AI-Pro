@@ -53,6 +53,37 @@ app.config['DB_PORT'] = int(os.getenv("DB_PORT", 3306))
 os.makedirs('static/images/progress_photos', exist_ok=True)
 os.makedirs('static/images/diet', exist_ok=True)
 
+# Performance: Gzip compression & Static Asset Caching
+import gzip
+from io import BytesIO
+
+@app.after_request
+def optimize_response(response):
+    # Set cache headers for static files
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    
+    # Gzip compress text, json, html, css, js responses
+    if (response.status_code >= 200 and response.status_code < 300 
+        and not response.direct_passthrough 
+        and 'Content-Encoding' not in response.headers):
+        accept_encoding = request.headers.get('Accept-Encoding', '')
+        if 'gzip' in accept_encoding.lower():
+            content_type = response.content_type or ''
+            if any(ct in content_type for ct in ['text/', 'application/json', 'application/javascript', 'text/css']):
+                data = response.get_data()
+                if len(data) > 500:
+                    gzip_buffer = BytesIO()
+                    with gzip.GzipFile(mode='wb', fileobj=gzip_buffer, compresslevel=6) as gzip_file:
+                        gzip_file.write(data)
+                    compressed_data = gzip_buffer.getvalue()
+                    response.set_data(compressed_data)
+                    response.headers['Content-Encoding'] = 'gzip'
+                    response.headers['Content-Length'] = len(compressed_data)
+                    response.headers['Vary'] = 'Accept-Encoding'
+
+    return response
+
 def init_db_on_startup():
     """Automatic database schema & seed data initialization check on app startup"""
     try:

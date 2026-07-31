@@ -125,6 +125,67 @@ def dashboard():
             st, cal = 8000, 320
         steps = {"daily_steps": st, "calories_to_burn": cal}
 
+    # ---------- PROGRESS OVERVIEW STATS ----------
+    cursor.execute("""
+        SELECT weight_kg, log_date
+        FROM progress_logs
+        WHERE user_id=%s
+        ORDER BY log_date ASC
+    """, (user_id,))
+    p_logs = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT log_date
+        FROM progress_logs
+        WHERE user_id=%s
+        ORDER BY log_date DESC
+    """, (user_id,))
+    log_dates = [row['log_date'] for row in cursor.fetchall()]
+
+    streak = 0
+    if log_dates:
+        from datetime import date, timedelta
+        today = date.today()
+        if log_dates[0] == today or log_dates[0] == today - timedelta(days=1):
+            streak = 1
+            curr = log_dates[0]
+            for d in log_dates[1:]:
+                if d == curr - timedelta(days=1):
+                    streak += 1
+                    curr = d
+                else:
+                    break
+        else:
+            streak = 1
+    else:
+        streak = 1
+
+    start_w = p_logs[0]['weight_kg'] if p_logs else health['weight_kg']
+    latest_w = p_logs[-1]['weight_kg'] if p_logs else health['weight_kg']
+    target_w = float(health['target_weight']) if health.get('target_weight') else start_w
+
+    if target_w < start_w:
+        t_diff = start_w - target_w
+        d_diff = start_w - latest_w
+        raw_pct = (d_diff / t_diff) * 100 if t_diff > 0 else 100.0
+    elif target_w > start_w:
+        t_diff = target_w - start_w
+        d_diff = latest_w - start_w
+        raw_pct = (d_diff / t_diff) * 100 if t_diff > 0 else 100.0
+    else:
+        raw_pct = 100.0
+
+    goal_progress_pct = round(max(0.0, min(100.0, raw_pct)), 1)
+    weight_changed = round(abs(latest_w - start_w), 1)
+    is_weight_loss = target_w <= start_w
+
+    overview_stats = {
+        "streak": streak,
+        "goal_progress_pct": goal_progress_pct,
+        "weight_changed": weight_changed,
+        "is_weight_loss": is_weight_loss
+    }
+
     # ---------- MEALS ----------
     cursor.execute("""
         SELECT COUNT(*) as total_meals
@@ -151,7 +212,8 @@ def dashboard():
         prediction=prediction,
         steps=steps,
         meal_counts=meal_counts,
-        workout=workout
+        workout=workout,
+        overview_stats=overview_stats
     )
 
 

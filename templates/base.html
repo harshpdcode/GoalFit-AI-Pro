@@ -8,12 +8,15 @@
     <meta name="description" content="AI-powered fitness intelligence with personalized diet, workout plans, and goal predictions.">
     <link rel="icon" type="image/png" href="/static/images/logo.png">
     
-    <!-- Google Fonts -->
+    <!-- Resource Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@1.28.0/dist/umd/lucide.min.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css?v=3">
     <!-- PWA Manifest & iOS Mobile App Compatibility -->
@@ -539,15 +542,32 @@
             setTimeout(() => toast.remove(), 300);
         }, 4000);
     }
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    document.addEventListener('DOMContentLoaded', function() { showToast("{{ message }}", "{{ category }}"); });
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
 </script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<script type="application/json" id="flashedMessagesData">
+[
+  {% for category, message in messages %}
+    {"category": {{ category|tojson }}, "message": {{ message|tojson }}}{% if not loop.last %},{% endif %}
+  {% endfor %}
+]
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataEl = document.getElementById('flashedMessagesData');
+        if (dataEl) {
+            try {
+                const msgs = JSON.parse(dataEl.textContent);
+                msgs.forEach(m => showToast(m.message, m.category));
+            } catch (e) {
+                console.error("Error parsing flashed messages", e);
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endwith %}
 
 <!-- Floating PWA Mobile Install Banner -->
 <div id="pwaInstallBanner" class="pwa-install-banner">
@@ -560,7 +580,7 @@
     </div>
     <div class="pwa-banner-actions">
         <button id="pwaInstallBtn" class="pwa-btn-install">Install App</button>
-        <button onclick="dismissPwaBanner(true)" class="pwa-btn-close">&times;</button>
+        <button onclick="dismissPwaBanner(true)" class="pwa-btn-close" aria-label="Dismiss app installation banner">&times;</button>
     </div>
 </div>
 
@@ -674,7 +694,7 @@
     <div class="theme-modal-panel" onclick="event.stopPropagation()">
         <div class="theme-modal-header">
             <h3>Choose Color Theme</h3>
-            <button class="theme-modal-close" onclick="closeThemeModal()"><i data-lucide="x"></i></button>
+            <button class="theme-modal-close" onclick="closeThemeModal()" aria-label="Close theme selection modal"><i data-lucide="x"></i></button>
         </div>
         <div class="theme-modal-grid">
 

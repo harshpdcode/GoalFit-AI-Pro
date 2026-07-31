@@ -37,12 +37,22 @@
     {% if health and logs %}
 
     {% set current = logs[-1].weight_kg %}
-    {% set start = health.weight_kg %}
+    {% set start = logs[0].weight_kg %}
     {% set target = health.target_weight %}
 
-    {% set percent =
-        ((start - current)/(start - target))*100
-        if start != target else 100 %}
+    {% if target < start %}
+        {% set total_diff = start - target %}
+        {% set done_diff = start - current %}
+        {% set raw_percent = (done_diff / total_diff) * 100 if total_diff > 0 else 100 %}
+    {% elif target > start %}
+        {% set total_diff = target - start %}
+        {% set done_diff = current - start %}
+        {% set raw_percent = (done_diff / total_diff) * 100 if total_diff > 0 else 100 %}
+    {% else %}
+        {% set raw_percent = 100 %}
+    {% endif %}
+
+    {% set percent = [0, [100, raw_percent]|min]|max %}
 
     <div class="progress-card">
 
@@ -66,15 +76,60 @@
     {% if logs and bmi_logs %}
     <div class="progress-card">
 
-        <div class="gf-card-header">
-            <i data-lucide="trending-up"></i>
-            <h3>BMI & Weight Trends</h3>
+        <div class="gf-card-header flex-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <i data-lucide="trending-up"></i>
+                <h3 class="m-0">BMI & Weight Trends</h3>
+            </div>
+            <button type="button" class="btn-restart-chart" data-bs-toggle="modal" data-bs-target="#restartTrackingModal" title="Restart Baseline Tracking from Today" aria-label="Restart Baseline Tracking">
+                <i data-lucide="rotate-ccw"></i> Restart Baseline
+            </button>
         </div>
 
         <div style="height:260px; position:relative;">
             <canvas id="trendChart"></canvas>
         </div>
 
+    </div>
+
+    <!-- RESTART TRACKING CONFIRMATION MODAL -->
+    <div class="modal fade" id="restartTrackingModal" tabindex="-1" aria-labelledby="restartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content gf-card border-0">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="restartModalLabel">
+                        <i data-lucide="rotate-ccw" class="text-info"></i> Restart Tracking Baseline
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <p class="text-secondary mb-3">
+                        Restart your graph values and count fresh starting from <strong>today's weight &amp; BMI</strong> as your new baseline.
+                    </p>
+                    <div class="p-3 rounded mb-3" style="background: rgba(0, 194, 255, 0.08); border: 1px solid rgba(0, 194, 255, 0.2);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-muted small">New Starting Baseline:</span>
+                            <strong class="text-info">{{ logs[-1].weight_kg if logs else health.weight_kg }} kg</strong>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="text-muted small">Target Weight:</span>
+                            <strong class="text-white">{{ health.target_weight if health else '—' }} kg</strong>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        Your goal completion % and graph history will restart fresh starting today.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 gap-2">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ url_for('progress.reset_progress') }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-info rounded-pill px-4 fw-bold text-dark" style="background: var(--accent-gradient, linear-gradient(135deg, #00C2FF, #1E88E5)); border:none;">
+                            Yes, Start Fresh Today
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     {% endif %}
 
@@ -97,43 +152,36 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 <script>
-    $(document).ready(function () {
+    let trendChartInstance = null;
+    let weightChartInstance = null;
+    let cachedProgressData = null;
 
-        lucide.createIcons();
+    function renderProgressCharts(data) {
+        if (typeof Chart === 'undefined') return;
+        if (!data || !data.weights || data.weights.length === 0) return;
 
-        $.getJSON("/dashboard-progress-data", function (data) {
+        const labels = data.weights.map(w => new Date(w.log_date).toLocaleDateString());
+        const weightValues = data.weights.map(w => w.weight_kg);
+        const bmiValues = data.bmi ? data.bmi.map(b => b.bmi_value) : [];
 
-            if (!data || !data.weights || data.weights.length === 0) {
-                $("#trendChart").parent().html(
-                    "<p style='text-align:center;color:#64748b;padding-top:100px;'>No tracking data available.</p>"
-                );
-                return;
+        const themePrimary = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#00C2FF';
+        const themeSecondary = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#1E88E5';
+
+        // 1. Trend Chart
+        const trendCanvas = document.getElementById("trendChart");
+        if (trendCanvas) {
+            if (trendChartInstance) {
+                trendChartInstance.destroy();
+                trendChartInstance = null;
             }
-
-            const labels = data.weights.map(w =>
-                new Date(w.log_date).toLocaleDateString()
-            );
-
-            const weightValues = data.weights.map(w => w.weight_kg);
-            const bmiValues = data.bmi.map(b => b.bmi_value);
-
-            /* ===== BMI + WEIGHT COMBINED CHART ===== */
-
-            const themePrimary = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#00C2FF';
-            const themeSecondary = getComputedStyle(document.documentElement).getPropertyValue('--accent-secondary').trim() || '#1E88E5';
-
-            new Chart(document.getElementById("trendChart"), {
-
+            trendChartInstance = new Chart(trendCanvas, {
                 type: "line",
-
                 data: {
                     labels: labels,
                     datasets: [
-
                         {
                             label: "Weight (kg)",
                             data: weightValues,
@@ -142,7 +190,6 @@
                             tension: 0.4,
                             fill: true
                         },
-
                         {
                             label: "BMI",
                             data: bmiValues,
@@ -151,13 +198,15 @@
                             tension: 0.4,
                             fill: true
                         }
-
                     ]
                 },
-
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
                     plugins: {
                         legend: { labels: { color: "#f8fafc", font: { weight: '600', size: 12 } } },
                         tooltip: { backgroundColor: 'rgba(12,18,30,0.95)', titleColor: '#00f2fe', bodyColor: '#f8fafc', borderColor: 'rgba(0,242,254,0.3)', borderWidth: 1 }
@@ -167,15 +216,18 @@
                         y: { ticks: { color: "#cbd5e1", font: { weight: '600', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' } }
                     }
                 }
-
             });
+        }
 
-            /* ===== WEIGHT HISTORY CHART ===== */
-
-            new Chart(document.getElementById("weightChart"), {
-
+        // 2. Weight History Chart
+        const weightCanvas = document.getElementById("weightChart");
+        if (weightCanvas) {
+            if (weightChartInstance) {
+                weightChartInstance.destroy();
+                weightChartInstance = null;
+            }
+            weightChartInstance = new Chart(weightCanvas, {
                 type: "bar",
-
                 data: {
                     labels: labels,
                     datasets: [{
@@ -186,10 +238,13 @@
                         borderWidth: 1
                     }]
                 },
-
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
                     plugins: {
                         legend: { labels: { color: "#f8fafc", font: { weight: '600', size: 12 } } },
                         tooltip: { backgroundColor: 'rgba(12,18,30,0.95)', titleColor: '#00f2fe', bodyColor: '#f8fafc', borderColor: 'rgba(0,242,254,0.3)', borderWidth: 1 }
@@ -199,11 +254,38 @@
                         y: { ticks: { color: "#cbd5e1", font: { weight: '600', size: 11 } }, grid: { color: 'rgba(255,255,255,0.08)' } }
                     }
                 }
-
             });
+        }
+    }
 
+    function initProgressPage() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        $.getJSON("/dashboard-progress-data", function (data) {
+            cachedProgressData = data;
+            renderProgressCharts(data);
         });
+    }
 
+    $(document).ready(function () {
+        initProgressPage();
+
+        $('#restartProgressChartBtn').on('click', function () {
+            const $icon = $(this).find('i');
+            $icon.addClass('spin-animation');
+
+            if (cachedProgressData) {
+                renderProgressCharts(cachedProgressData);
+            } else {
+                initProgressPage();
+            }
+
+            setTimeout(() => {
+                $icon.removeClass('spin-animation');
+            }, 900);
+        });
     });
 </script>
 {% endblock %}
