@@ -1613,3 +1613,84 @@ input:-webkit-autofill { -webkit-box-shadow:0 0 0px 1000px var(--auth-bg) inset;
         gap: 6px !important;
     }
 }
+
+/* ===== GLOBAL MOBILE & MODAL RESPONSIVENESS ===== */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Weight Form Responsiveness on Progress Page */
+.weight-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+    align-items: center;
+    width: 100%;
+}
+.weight-form input {
+    flex: 1 1 140px;
+    min-width: 0;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: 0.3s;
+}
+.weight-form .submit-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    height: 46px;
+    border-radius: 10px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Modal Dialogs Mobile Responsiveness & Sticky Action Buttons */
+.modal-dialog {
+    max-width: 520px;
+    margin: 1.25rem auto;
+}
+@media (max-width: 768px) {
+    .content {
+        padding-bottom: 140px !important;
+    }
+    .modal-dialog {
+        margin: 0.75rem auto;
+        max-width: calc(100vw - 20px) !important;
+    }
+    .modal-content {
+        max-height: 85vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        border-radius: 20px !important;
+        overflow: hidden !important;
+    }
+    .modal-body {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 1rem !important;
+        flex: 1 1 auto;
+    }
+    .modal-footer {
+        flex-shrink: 0 !important;
+        position: sticky !important;
+        bottom: 0 !important;
+        background: var(--bg-card, #121929) !important;
+        z-index: 10 !important;
+        border-top: 1px solid var(--border-subtle, rgba(255,255,255,0.1)) !important;
+        padding: 0.75rem 1rem !important;
+    }
+    .weight-form input {
+        flex: 1 1 120px;
+    }
+}
+

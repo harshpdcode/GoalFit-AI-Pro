@@ -242,13 +242,13 @@ document.addEventListener('DOMContentLoaded', function () {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(255,255,255,0.04)' },
-                    ticks: { color: '#7a8599', font: { family: 'Outfit', size: 11 },
+                    grid: { color: 'rgba(255,255,255,0.08)' },
+                    ticks: { color: '#cbd5e1', font: { family: 'Outfit', size: 11, weight: '600' },
                              callback: v => '₹' + (v/1000)+'k' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { color: '#7a8599', font: { family: 'Outfit', size: 11 } }
+                    ticks: { color: '#cbd5e1', font: { family: 'Outfit', size: 11, weight: '600' } }
                 }
             }
         }

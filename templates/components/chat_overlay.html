@@ -1,166 +1,346 @@
 {% if coach %}
+<!-- Floating Circular Draggable Chat Trigger Button -->
+<div id="chat-circle-btn" class="chat-circle-btn" title="Chat with {{ coach.prof_name }}">
+    <div class="avatar-circle-btn">
+        {{ coach.prof_name[0]|upper }}
+    </div>
+    <span id="chat-badge" class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
+        style="display:none; font-size:0.65rem;">New</span>
+</div>
+
+<!-- Floating Expandable Chat Box -->
 <div id="chat-overlay" class="chat-overlay">
-    <div class="chat-header" onclick="toggleChat()">
+    <div class="chat-header">
         <div class="d-flex align-items-center gap-2">
-            <div class="avatar-circle" style="width: 32px; height: 32px; font-size: 14px; background: rgba(255,255,255,0.22); color: var(--text-on-accent); display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
+            <div class="avatar-circle"
+                style="width: 34px; height: 34px; font-size: 14px; background: var(--accent-gradient, linear-gradient(135deg, #00C2FF, #1E88E5)); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700; flex-shrink: 0; box-shadow: 0 0 10px rgba(0,194,255,0.4);">
                 {{ coach.prof_name[0]|upper }}
             </div>
             <div>
-                <h6 class="mb-0 fw-bold" style="color: var(--text-on-accent); font-size: 0.92rem; line-height: 1.2;">{{ coach.prof_name }}</h6>
-                <small style="color: var(--text-on-accent); opacity: 0.85; font-size: 0.73rem;">{{ coach.role|title }}</small>
+                <h6 class="mb-0 fw-bold" style="color: #ffffff; font-size: 0.92rem; line-height: 1.2;">{{
+                    coach.prof_name }}</h6>
+                <small style="color: rgba(255,255,255,0.75); font-size: 0.72rem;">{{ coach.role|title }} (Coach)</small>
             </div>
         </div>
-        <i data-lucide="chevron-up" id="chat-toggle-icon" style="stroke: var(--text-on-accent);"></i>
+        <button type="button" class="btn btn-sm p-1 text-white opacity-75 opacity-100-hover" onclick="toggleChat()"
+            style="background:transparent; border:none;" title="Close Chat">
+            <i data-lucide="x" style="width: 20px; height: 20px; stroke: #ffffff;"></i>
+        </button>
     </div>
-    
+
     <div class="chat-body" id="chat-body">
-        <div id="chat-messages" class="p-3 d-flex flex-column gap-2" style="height: 300px; overflow-y: auto; background: var(--bg-card);">
+        <div id="chat-messages" class="p-3 d-flex flex-column gap-2"
+            style="height: 300px; overflow-y: auto; background: var(--bg-card, #0c121e);">
             <!-- Messages load here -->
         </div>
-        <div class="chat-input p-3" style="background: var(--bg-secondary); border-top: 1px solid var(--border-subtle);">
+        <div class="chat-input p-3"
+            style="background: var(--bg-secondary, #151d2d); border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));">
             <form id="chat-form" class="d-flex gap-2">
-                <input type="text" id="chat-input-msg" class="form-control" style="background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 10px;" placeholder="Type a message..." required>
-                <button type="submit" class="btn" style="background: var(--accent-gradient); color: var(--text-on-accent); border: none; border-radius: 10px; padding: 0 16px;"><i data-lucide="send" style="width: 16px; stroke: var(--text-on-accent);"></i></button>
+                <input type="text" id="chat-input-msg" class="form-control"
+                    style="background: var(--bg-input, #0c121e); color: var(--text-primary, #ffffff); border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.15)); border-radius: 10px; font-size:0.88rem;"
+                    placeholder="Message your coach..." required>
+                <button type="submit" class="btn btn-send-chat">
+                    <i data-lucide="send" style="width: 15px; height: 15px; stroke: #fff; stroke-width: 2.5;"></i>
+                </button>
             </form>
         </div>
     </div>
 </div>
 
 <style>
-.chat-overlay {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 340px;
-    background: var(--bg-card);
-    border-radius: 16px;
-    box-shadow: var(--shadow-dark);
-    z-index: 9995;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    border: 1px solid var(--border-subtle);
-}
-.chat-header {
-    background: var(--accent-gradient);
-    color: var(--text-on-accent);
-    padding: 12px 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-@media (max-width: 768px) {
-    .chat-overlay {
-        bottom: 85px !important;
-        right: 12px !important;
-        width: calc(100vw - 24px) !important;
-        max-width: 360px !important;
+    .chat-circle-btn {
+        position: fixed;
+        bottom: 50px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--accent-gradient, linear-gradient(135deg, #00C2FF, #1E88E5));
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 25px rgba(0, 194, 255, 0.45);
+        z-index: 1035;
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 2px solid rgba(255, 255, 255, 0.3);
     }
-}
-.chat-body {
-    display: none;
-}
-.chat-body.active {
-    display: block;
-}
-.chat-message {
-    max-width: 85%;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-size: 0.88rem;
-    margin-bottom: 4px;
-    line-height: 1.4;
-}
-.chat-message.sent {
-    background: var(--accent-gradient);
-    color: var(--text-on-accent);
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-    font-weight: 500;
-}
-.chat-message.received {
-    background: var(--bg-input);
-    color: var(--text-primary);
-    border: 1px solid var(--border-subtle);
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-}
+
+    .chat-circle-btn:active {
+        cursor: grabbing;
+        transform: scale(0.95);
+    }
+
+    .chat-circle-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 12px 32px rgba(0, 194, 255, 0.6);
+    }
+
+    .avatar-circle-btn {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #ffffff;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+    }
+
+    .chat-overlay {
+        position: fixed;
+        bottom: 185px;
+        right: 20px;
+        width: 340px;
+        background: var(--bg-card, #0c121e) !important;
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+        z-index: 1035;
+        overflow: hidden;
+        display: none;
+        border: 1px solid var(--border-subtle, rgba(0, 194, 255, 0.35));
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .chat-overlay.open {
+        display: block;
+        animation: chatPopUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes chatPopUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .chat-header {
+        background: var(--bg-secondary, linear-gradient(135deg, #151d2d, #0c121e));
+        color: #ffffff !important;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+    }
+
+    .btn-send-chat {
+        background: var(--accent-gradient, linear-gradient(135deg, #00C2FF, #1E88E5)) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    .chat-message {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        margin-bottom: 4px;
+        line-height: 1.4;
+    }
+
+    .chat-message.sent {
+        background: var(--accent-gradient, linear-gradient(135deg, #00C2FF, #1E88E5));
+        color: #ffffff;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        font-weight: 500;
+    }
+
+    .chat-message.received {
+        background: var(--bg-input, #1e293b);
+        color: var(--text-primary, #f8fafc);
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .chat-circle-btn {
+            bottom: 140px;
+            right: 16px;
+        }
+
+        .chat-overlay {
+            bottom: 180px;
+            right: 12px;
+            width: calc(100vw - 24px);
+            max-width: 360px;
+        }
+    }
 </style>
 
 <script>
-const proId = "{{ coach.professional_id }}";
-const proRole = "{{ coach.role }}";
+    (function () {
+        const proId = "{{ coach.professional_id }}";
+        const proRole = "{{ coach.role }}";
+        const circleBtn = document.getElementById('chat-circle-btn');
+        const overlay = document.getElementById('chat-overlay');
 
-function toggleChat() {
-    const body = document.getElementById('chat-body');
-    const icon = document.getElementById('chat-toggle-icon');
-    body.classList.toggle('active');
-    
-    if(body.classList.contains('active')) {
-        icon.setAttribute('data-lucide', 'chevron-down');
-        loadMessages();
-        // Set an interval to poll messages while chat is open
-        if(!window.chatInterval) {
-            window.chatInterval = setInterval(loadMessages, 5000);
-        }
-    } else {
-        icon.setAttribute('data-lucide', 'chevron-up');
-        if(window.chatInterval) {
-            clearInterval(window.chatInterval);
-            window.chatInterval = null;
-        }
-    }
-    lucide.createIcons();
-}
+        // Toggle Chat function
+        window.toggleChat = function () {
+            if (!overlay) return;
+            overlay.classList.toggle('open');
+            const badge = document.getElementById('chat-badge');
+            if (badge) badge.style.display = 'none';
 
-async function loadMessages() {
-    try {
-        const res = await fetch(`/chat/history?other_id=${proId}&other_role=${proRole}`);
-        const messages = await res.json();
-        
-        const container = document.getElementById('chat-messages');
-        container.innerHTML = '';
-        
-        messages.forEach(msg => {
-            const div = document.createElement('div');
-            // If sender is the user
-            const isSent = msg.sender_role === '{{ current_role }}' && msg.sender_id == '{{ session.user_id }}';
-            div.className = `chat-message ${isSent ? 'sent' : 'received'}`;
-            div.textContent = msg.message;
-            container.appendChild(div);
-        });
-        
-        // Scroll to bottom
-        container.scrollTop = container.scrollHeight;
-    } catch (e) {
-        console.error("Failed to load chat history", e);
-    }
-}
+            if (overlay.classList.contains('open')) {
+                loadMessages();
+                if (!window.chatInterval) {
+                    window.chatInterval = setInterval(loadMessages, 5000);
+                }
+            } else {
+                if (window.chatInterval) {
+                    clearInterval(window.chatInterval);
+                    window.chatInterval = null;
+                }
+            }
+            if (window.lucide) lucide.createIcons();
+        };
 
-document.getElementById('chat-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const input = document.getElementById('chat-input-msg');
-    const message = input.value.trim();
-    if(!message) return;
-    
-    try {
-        const res = await fetch('/chat/send', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                receiver_id: proId,
-                receiver_role: proRole,
-                message: message
-            })
-        });
-        const data = await res.json();
-        if(data.success) {
-            input.value = '';
-            loadMessages();
+        // Make circle button draggable (mouse & touch)
+        if (circleBtn) {
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+            let dragMoved = false;
+
+            function onStart(e) {
+                isDragging = true;
+                dragMoved = false;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                const rect = circleBtn.getBoundingClientRect();
+                initialLeft = rect.left;
+                initialTop = rect.top;
+                circleBtn.style.transition = 'none';
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+
+                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                    dragMoved = true;
+                }
+
+                if (dragMoved) {
+                    e.preventDefault();
+                    let newLeft = initialLeft + deltaX;
+                    let newTop = initialTop + deltaY;
+
+                    // Boundary check
+                    const maxLeft = window.innerWidth - circleBtn.offsetWidth - 10;
+                    const maxTop = window.innerHeight - circleBtn.offsetHeight - 10;
+                    newLeft = Math.max(10, Math.min(newLeft, maxLeft));
+                    newTop = Math.max(10, Math.min(newTop, maxTop));
+
+                    circleBtn.style.left = newLeft + 'px';
+                    circleBtn.style.top = newTop + 'px';
+                    circleBtn.style.right = 'auto';
+                    circleBtn.style.bottom = 'auto';
+
+                    // Reposition chat window relative to bubble
+                    if (overlay) {
+                        let overlayTop = newTop - 340;
+                        if (overlayTop < 10) overlayTop = newTop + 65;
+                        let overlayLeft = newLeft - 280;
+                        if (overlayLeft < 10) overlayLeft = 10;
+                        if (overlayLeft + 340 > window.innerWidth) overlayLeft = window.innerWidth - 350;
+                        overlay.style.top = overlayTop + 'px';
+                        overlay.style.left = overlayLeft + 'px';
+                        overlay.style.right = 'auto';
+                        overlay.style.bottom = 'auto';
+                    }
+                }
+            }
+
+            function onEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                circleBtn.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
+                if (!dragMoved) {
+                    toggleChat();
+                }
+            }
+
+            circleBtn.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            circleBtn.addEventListener('touchstart', onStart, { passive: false });
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onEnd);
         }
-    } catch(e) {
-        console.error("Failed to send message", e);
-    }
-});
+
+        async function loadMessages() {
+            try {
+                const res = await fetch(`/chat/history?other_id=${proId}&other_role=${proRole}`);
+                const messages = await res.json();
+
+                const container = document.getElementById('chat-messages');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    const isSent = msg.sender_role === '{{ current_role }}' && msg.sender_id == '{{ session.user_id }}';
+                    div.className = `chat-message ${isSent ? 'sent' : 'received'}`;
+                    div.textContent = msg.message;
+                    container.appendChild(div);
+                });
+
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                console.error("Failed to load chat history", e);
+            }
+        }
+
+        const chatForm = document.getElementById('chat-form');
+        if (chatForm) {
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const input = document.getElementById('chat-input-msg');
+                const message = input.value.trim();
+                if (!message) return;
+
+                try {
+                    const res = await fetch('/chat/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            receiver_id: proId,
+                            receiver_role: proRole,
+                            message: message
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        input.value = '';
+                        loadMessages();
+                    }
+                } catch (e) {
+                    console.error("Failed to send message", e);
+                }
+            });
+        }
+    })();
 </script>
 {% endif %}

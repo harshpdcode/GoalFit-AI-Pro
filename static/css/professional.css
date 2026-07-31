@@ -1592,17 +1592,18 @@ textarea.pro-form-control { resize: vertical; min-height: 90px; }
 }
 
 @media (max-width: 768px) {
-    .pro-content { padding: 16px; }
+    .pro-content { padding: 16px 16px 140px 16px !important; }
     .pro-topbar { padding: 0 16px; }
     .pro-page-header { margin-bottom: 18px; }
     .pro-stat-card { padding: 16px 18px; }
     .stat-value { font-size: 1.5rem; }
-    .fab-container { bottom: 16px; right: 16px; }
+    .fab-container { bottom: 85px; right: 16px; }
     .topbar-search { display: none; }
-    .chart-container { height: 200px; }
+    .chart-container { height: 220px; }
 }
 
 @media (max-width: 480px) {
-    .pro-content { padding: 12px; }
+    .pro-content { padding: 12px 12px 140px 12px !important; }
     .pro-page-title { font-size: 1.2rem; }
 }
+

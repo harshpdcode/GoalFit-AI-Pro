@@ -1010,7 +1010,7 @@
     }
     .content {
         margin-left: 0 !important;
-        padding: 16px !important;
+        padding: 16px 16px 140px 16px !important;
         width: 100% !important;
     }
     .admin-sidebar-overlay {

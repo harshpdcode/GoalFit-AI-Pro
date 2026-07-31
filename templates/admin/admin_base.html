@@ -173,6 +173,11 @@
 <script>
     AOS.init({ duration: 600, once: true });
     lucide.createIcons();
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = '#cbd5e1';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.08)';
+        Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+    }
 
     function toggleAdminSidebar() {
         const sidebar = document.querySelector('.admin-sidebar');
