@@ -46,15 +46,15 @@
                     </div>
                 </div>
                 <div class="user-info-text">
-                    <div class="user-info-name">
-                        <span>{{ user.name }}</span>
+                    <h3 class="user-info-name" title="{{ user.name }}">{{ user.name }}</h3>
+                    <div class="user-info-meta">
+                        <span class="user-info-email" title="{{ user.email }}">{{ user.email }}</span>
                         {% if user.is_banned %}
                         <span class="user-status-pill banned">BANNED</span>
                         {% else %}
                         <span class="user-status-pill active">ACTIVE</span>
                         {% endif %}
                     </div>
-                    <span class="user-info-email" title="{{ user.email }}">{{ user.email }}</span>
                 </div>
             </div>
 

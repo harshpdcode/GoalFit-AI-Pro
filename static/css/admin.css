@@ -1117,9 +1117,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.user-info-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
 }
 
 .user-info-email {
@@ -1128,8 +1133,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: block;
-    margin-top: 2px;
+    display: inline-block;
+    max-width: 140px;
 }
 
 .user-card-actions {
@@ -1198,14 +1203,19 @@
     border-radius: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
 }
 .user-status-pill.active {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(16, 185, 129, 0.18);
     color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 .user-status-pill.banned {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.18);
     color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .user-metrics-grid {
