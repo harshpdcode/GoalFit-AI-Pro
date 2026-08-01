@@ -15,7 +15,7 @@
     </div>
 </div>
 
-<!-- Search -->
+<!-- Search & Toolbar -->
 <div class="admin-toolbar" data-aos="fade-up" data-aos-delay="100">
     <form class="search-form" method="GET" action="/admin/users">
         <div class="search-box">
@@ -28,69 +28,84 @@
         {% endif %}
     </form>
     <div class="toolbar-stats">
-        <span class="stat-pill"><i data-lucide="users"></i> {{ users|length }} users</span>
+        <span class="stat-pill"><i data-lucide="users"></i> {{ users|length }} Total Users</span>
     </div>
 </div>
 
 <!-- Users Grid -->
-<div class="grid" data-aos="fade-up" data-aos-delay="200" style="margin-top:20px;">
+<div class="admin-user-grid" data-aos="fade-up" data-aos-delay="200">
     {% for user in users %}
-    <div class="gf-card" style="cursor:pointer; padding-top:25px;" onclick="window.location.href='/admin/users/{{ user.id }}'">
+    <div class="admin-user-card {% if user.is_banned %}banned{% endif %}" onclick="window.location.href='/admin/users/{{ user.id }}'" style="cursor:pointer;">
         
-        <div style="position:absolute; top:20px; right:20px; z-index:10; display:flex; gap:6px; align-items:center;">
-            <form method="POST" action="/admin/users/{{ user.id }}/toggle-ban" onsubmit="return confirm('Toggle ban status for this user?')">
-                {% if user.is_banned %}
-                <button type="submit" class="admin-btn sm success" title="Unban User" onclick="event.stopPropagation();">
-                    <i data-lucide="user-check" style="width:14px; height:14px;"></i> Unban
-                </button>
-                {% else %}
-                <button type="submit" class="admin-btn sm danger" title="Ban User" onclick="event.stopPropagation();">
-                    <i data-lucide="ban" style="width:14px; height:14px;"></i> Ban
-                </button>
-                {% endif %}
-            </form>
-            <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('Delete this user permanently?')">
-                <button type="submit" class="action-btn delete" title="Delete User" onclick="event.stopPropagation();">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            </form>
-        </div>
-
-        <div class="user-cell" style="margin-bottom:20px;">
-            <div class="mini-avatar" style="width:48px; height:48px; font-size:18px;">{{ user.name[0] if user.name else '?' }}</div>
-            <div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <h3 style="margin:0; color:var(--text-primary); font-size:17px; font-weight:700;">{{ user.name }}</h3>
-                    {% if user.is_banned %}
-                    <span class="tag danger" style="font-size:10px; padding:2px 6px;">BANNED</span>
-                    {% endif %}
+        <!-- Header -->
+        <div class="user-card-header">
+            <div class="user-card-profile">
+                <div class="user-avatar-wrapper">
+                    <div class="user-avatar-circle">
+                        {{ user.name[0]|upper if user.name else '?' }}
+                    </div>
                 </div>
-                <span class="email-cell" style="display:block; margin-top:4px;">{{ user.email }}</span>
+                <div class="user-info-text">
+                    <div class="user-info-name">
+                        <span>{{ user.name }}</span>
+                        {% if user.is_banned %}
+                        <span class="user-status-pill banned">BANNED</span>
+                        {% else %}
+                        <span class="user-status-pill active">ACTIVE</span>
+                        {% endif %}
+                    </div>
+                    <span class="user-info-email" title="{{ user.email }}">{{ user.email }}</span>
+                </div>
+            </div>
+
+            <!-- Top Actions -->
+            <div class="user-card-actions" onclick="event.stopPropagation();">
+                <form method="POST" action="/admin/users/{{ user.id }}/toggle-ban" onsubmit="return confirm('Toggle ban status for this user?')">
+                    {% if user.is_banned %}
+                    <button type="submit" class="btn-ban-toggle unban" title="Unban User">
+                        <i data-lucide="user-check" style="width:14px; height:14px;"></i> Unban
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn-ban-toggle ban" title="Ban User">
+                        <i data-lucide="ban" style="width:14px; height:14px;"></i> Ban
+                    </button>
+                    {% endif %}
+                </form>
+                <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('Delete this user permanently?')">
+                    <button type="submit" class="btn-user-delete" title="Delete User">
+                        <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                    </button>
+                </form>
             </div>
         </div>
         
-        <div class="detail-grid cols-2" style="margin-bottom:15px;">
-            <div class="detail-item">
-                <span>Goal</span>
-                <strong>{{ user.goal_type or '—' }}</strong>
+        <!-- Metrics Grid -->
+        <div class="user-metrics-grid">
+            <div class="user-metric-chip">
+                <span class="user-metric-label"><i data-lucide="target" style="width:12px; height:12px;"></i> Goal</span>
+                <div class="user-metric-value">{{ user.goal_type or '—' }}</div>
             </div>
-            <div class="detail-item">
-                <span>Diet</span>
-                <strong>{{ user.diet_preference or '—' }}</strong>
+            <div class="user-metric-chip">
+                <span class="user-metric-label"><i data-lucide="utensils" style="width:12px; height:12px;"></i> Diet</span>
+                <div class="user-metric-value">{{ user.diet_preference or '—' }}</div>
             </div>
-            <div class="detail-item">
-                <span>Weight</span>
-                <strong>{{ user.weight_kg or '—' }} kg</strong>
+            <div class="user-metric-chip">
+                <span class="user-metric-label"><i data-lucide="weight" style="width:12px; height:12px;"></i> Weight</span>
+                <div class="user-metric-value">{{ user.weight_kg or '—' }} {% if user.weight_kg %}kg{% endif %}</div>
             </div>
-            <div class="detail-item">
-                <span>Latest BMI</span>
-                <strong>{{ user.latest_bmi or '—' }}</strong>
+            <div class="user-metric-chip">
+                <span class="user-metric-label"><i data-lucide="activity" style="width:12px; height:12px;"></i> Latest BMI</span>
+                <div class="user-metric-value">{{ user.latest_bmi or '—' }}</div>
             </div>
         </div>
 
-        <div style="border-top:1px solid var(--border-subtle); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; color:var(--text-muted);"><i data-lucide="calendar" style="width:12px; height:12px; display:inline; margin-right:4px; margin-bottom:-2px;"></i>Joined: {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}</span>
-            <span style="font-size:12px; color:var(--accent-primary); font-weight:600;">View Profile &rarr;</span>
+        <!-- Footer -->
+        <div class="user-card-footer">
+            <span class="user-joined-date">
+                <i data-lucide="calendar" style="width:12px; height:12px;"></i>
+                Joined {{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}
+            </span>
+            <span class="user-view-link">View Profile &rarr;</span>
         </div>
     </div>
     {% endfor %}
