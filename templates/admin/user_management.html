@@ -37,16 +37,34 @@
     {% for user in users %}
     <div class="gf-card" style="cursor:pointer; padding-top:25px;" onclick="window.location.href='/admin/users/{{ user.id }}'">
         
-        <form method="POST" action="/admin/users/{{ user.id }}/delete" style="position:absolute; top:20px; right:20px; z-index:10;" onsubmit="return confirm('Delete this user permanently?')">
-            <button type="submit" class="action-btn delete" title="Delete User" onclick="event.stopPropagation();">
-                <i data-lucide="trash-2"></i>
-            </button>
-        </form>
+        <div style="position:absolute; top:20px; right:20px; z-index:10; display:flex; gap:6px; align-items:center;">
+            <form method="POST" action="/admin/users/{{ user.id }}/toggle-ban" onsubmit="return confirm('Toggle ban status for this user?')">
+                {% if user.is_banned %}
+                <button type="submit" class="admin-btn sm success" title="Unban User" onclick="event.stopPropagation();">
+                    <i data-lucide="user-check" style="width:14px; height:14px;"></i> Unban
+                </button>
+                {% else %}
+                <button type="submit" class="admin-btn sm danger" title="Ban User" onclick="event.stopPropagation();">
+                    <i data-lucide="ban" style="width:14px; height:14px;"></i> Ban
+                </button>
+                {% endif %}
+            </form>
+            <form method="POST" action="/admin/users/{{ user.id }}/delete" onsubmit="return confirm('Delete this user permanently?')">
+                <button type="submit" class="action-btn delete" title="Delete User" onclick="event.stopPropagation();">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </form>
+        </div>
 
         <div class="user-cell" style="margin-bottom:20px;">
             <div class="mini-avatar" style="width:48px; height:48px; font-size:18px;">{{ user.name[0] if user.name else '?' }}</div>
             <div>
-                <h3 style="margin:0; color:var(--text-primary); font-size:17px; font-weight:700;">{{ user.name }}</h3>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <h3 style="margin:0; color:var(--text-primary); font-size:17px; font-weight:700;">{{ user.name }}</h3>
+                    {% if user.is_banned %}
+                    <span class="tag danger" style="font-size:10px; padding:2px 6px;">BANNED</span>
+                    {% endif %}
+                </div>
                 <span class="email-cell" style="display:block; margin-top:4px;">{{ user.email }}</span>
             </div>
         </div>

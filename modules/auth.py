@@ -89,6 +89,12 @@ def login():
 
         if user and check_password_hash(user['password'], password):
 
+            if user.get('is_banned'):
+                flash("Your account has been banned by the administrator. Access denied.", "danger")
+                cursor.close()
+                conn.close()
+                return redirect(url_for('auth.login'))
+
             session['user_id'] = user['id']
             session['user_name'] = user['name']
             session['email'] = user['email']

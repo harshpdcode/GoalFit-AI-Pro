@@ -109,9 +109,6 @@ def init_db_on_startup():
                     print("[Auto-Init DB] Database users table empty. Seeding demo data...")
                     needs_init = True
 
-            cursor.close()
-            conn.close()
-
             if needs_init:
                 from setup_db import create_schema
                 from seed_data import seed
@@ -119,7 +116,12 @@ def init_db_on_startup():
                 seed()
                 print("[Auto-Init DB] Schema & seed data initialized successfully!")
             else:
-                print("[Auto-Init DB] All required database tables verified.")
+                from setup_db import ensure_ban_columns
+                ensure_ban_columns(cursor)
+                print("[Auto-Init DB] All required database tables and ban columns verified.")
+
+            cursor.close()
+            conn.close()
     except Exception as err:
         print(f"[Auto-Init DB Error] {err}")
 

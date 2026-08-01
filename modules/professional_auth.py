@@ -62,6 +62,10 @@ def login():
         conn.close()
 
         if professional and check_password_hash(professional['password'], password):
+            if professional.get('is_banned'):
+                flash("Your account has been banned by the administrator. Access denied.", "danger")
+                return redirect(url_for('professional_auth.login'))
+
             session['user_id'] = professional['id']
             session['user_name'] = professional['full_name']
             session['email'] = professional['email']

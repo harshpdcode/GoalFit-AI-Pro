@@ -370,6 +370,35 @@ def delete_user(user_id):
     return redirect(url_for('admin.user_management'))
 
 
+# ================= TOGGLE BAN USER =================
+@admin_bp.route('/users/<int:user_id>/toggle-ban', methods=['POST'])
+@admin_required
+def toggle_ban_user(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, name, is_banned FROM users WHERE id=%s AND role='user'", (user_id,))
+    user = cursor.fetchone()
+    
+    if not user:
+        flash("User not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin.user_management'))
+    
+    new_banned = not user.get('is_banned', False)
+    cursor.execute("UPDATE users SET is_banned=%s WHERE id=%s", (new_banned, user_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    status_str = "banned" if new_banned else "unbanned"
+    log_activity(session['user_id'], 'toggle_ban_user', f'{status_str.capitalize()} user: {user["name"]} (ID: {user_id})')
+    flash(f"User {user['name']} has been {status_str}.", "success" if not new_banned else "warning")
+
+    redirect_url = request.referrer or url_for('admin.user_management')
+    return redirect(redirect_url)
+
+
 # ================= MEAL MANAGEMENT =================
 @admin_bp.route('/meals')
 @admin_required
@@ -729,6 +758,33 @@ def verify_professional(prof_id):
     conn.close()
     flash("Professional verification status updated.", "success")
     return redirect(url_for('admin.professionals_management'))
+
+@admin_bp.route('/professionals/<int:prof_id>/toggle-ban', methods=['POST'])
+@admin_required
+def toggle_ban_professional(prof_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT id, full_name, is_banned FROM professionals WHERE id=%s", (prof_id,))
+    prof = cursor.fetchone()
+
+    if not prof:
+        flash("Professional not found.", "danger")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin.professionals_management'))
+
+    new_banned = not prof.get('is_banned', False)
+    cursor.execute("UPDATE professionals SET is_banned=%s WHERE id=%s", (new_banned, prof_id))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    status_str = "banned" if new_banned else "unbanned"
+    log_activity(session['user_id'], 'toggle_ban_professional', f'{status_str.capitalize()} professional: {prof["full_name"]} (ID: {prof_id})')
+    flash(f"Professional {prof['full_name']} has been {status_str}.", "success" if not new_banned else "warning")
+
+    redirect_url = request.referrer or url_for('admin.professionals_management')
+    return redirect(redirect_url)
 
 # ================= PAYMENTS =================
 @admin_bp.route('/payments')

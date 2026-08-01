@@ -15,7 +15,7 @@ def trainers_list():
         FROM professionals p
         LEFT JOIN professional_pricing pp ON pp.professional_id = p.id
         LEFT JOIN client_assignments ca ON ca.professional_id = p.id AND ca.status = 'active'
-        WHERE p.role IN ('trainer', 'both')
+        WHERE p.role IN ('trainer', 'both') AND (p.is_banned IS NULL OR p.is_banned = FALSE)
         GROUP BY p.id
         ORDER BY p.rating DESC
     """)
@@ -42,7 +42,7 @@ def dieticians_list():
         FROM professionals p
         LEFT JOIN professional_pricing pp ON pp.professional_id = p.id
         LEFT JOIN client_assignments ca ON ca.professional_id = p.id AND ca.status = 'active'
-        WHERE p.role IN ('dietician', 'both')
+        WHERE p.role IN ('dietician', 'both') AND (p.is_banned IS NULL OR p.is_banned = FALSE)
         GROUP BY p.id
         ORDER BY p.rating DESC
     """)
@@ -66,11 +66,11 @@ def profile(prof_id):
     cursor.execute("SELECT * FROM professionals WHERE id=%s", (prof_id,))
     professional = cursor.fetchone()
 
-    if not professional:
-        flash('Professional not found.', 'danger')
+    if not professional or professional.get('is_banned'):
+        flash('This professional profile is currently unavailable.', 'danger')
         cursor.close()
         conn.close()
-        return redirect(url_for('dashboard.dashboard'))
+        return redirect(url_for('marketplace.trainers_list'))
 
     cursor.execute("SELECT * FROM professional_pricing WHERE professional_id=%s", (prof_id,))
     pricing_plans = cursor.fetchall()

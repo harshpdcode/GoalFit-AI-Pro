@@ -21,6 +21,7 @@
             <div class="detail-item"><span>Name</span><strong>{{ user.name }}</strong></div>
             <div class="detail-item"><span>Email</span><strong>{{ user.email }}</strong></div>
             <div class="detail-item"><span>Role</span><strong>{{ user.role }}</strong></div>
+            <div class="detail-item"><span>Status</span><strong>{% if user.is_banned %}<span class="tag danger">Banned</span>{% else %}<span class="tag success">Active</span>{% endif %}</strong></div>
             <div class="detail-item"><span>Joined</span><strong>{{ user.created_at.strftime('%b %d, %Y') if user.created_at else '—' }}</strong></div>
         </div>
     </div>
@@ -128,6 +129,14 @@
 
 <div class="admin-actions-bar" data-aos="fade-up" data-aos-delay="500">
     <a href="/admin/users" class="admin-btn secondary">← Back to Users</a>
+    <form method="POST" action="/admin/users/{{ user.id }}/toggle-ban" class="inline-form"
+          onsubmit="return confirm('Toggle ban status for this user?')">
+        {% if user.is_banned %}
+        <button type="submit" class="admin-btn success">Unban User</button>
+        {% else %}
+        <button type="submit" class="admin-btn warning">Ban User</button>
+        {% endif %}
+    </form>
     <form method="POST" action="/admin/users/{{ user.id }}/delete" class="inline-form"
           onsubmit="return confirm('Delete this user permanently? This cannot be undone.')">
         <button type="submit" class="admin-btn danger">Delete User</button>

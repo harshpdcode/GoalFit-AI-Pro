@@ -32,6 +32,20 @@ def pro_required(f):
         if 'user_id' not in session or session.get('role') not in allowed_roles:
             flash("Please log in as a professional to access this page.", "danger")
             return redirect(url_for('professional_auth.login'))
+
+        # Check if banned
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT is_banned FROM professionals WHERE id = %s", (session['user_id'],))
+            pro = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            if pro and pro.get('is_banned'):
+                session.clear()
+                flash("Your account has been banned by the administrator. Access denied.", "danger")
+                return redirect(url_for('professional_auth.login'))
+
         return f(*args, **kwargs)
     return decorated_function
 

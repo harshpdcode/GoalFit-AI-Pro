@@ -55,6 +55,7 @@ def create_schema():
             email VARCHAR(100) UNIQUE,
             password VARCHAR(255),
             role VARCHAR(20) DEFAULT 'user',
+            is_banned BOOLEAN DEFAULT FALSE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         """)
@@ -237,6 +238,7 @@ def create_schema():
             specialization VARCHAR(255),
             profile_photo VARCHAR(255) DEFAULT 'static/images/profile_img/default_prof.jpg',
             is_verified BOOLEAN DEFAULT FALSE,
+            is_banned BOOLEAN DEFAULT FALSE,
             rating FLOAT DEFAULT 0.0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -770,5 +772,21 @@ def ensure_notifications_table(cursor):
         );
     """)
 
+def ensure_ban_columns(cursor):
+    try:
+        cursor.execute("SHOW COLUMNS FROM users LIKE 'is_banned'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE users ADD COLUMN is_banned BOOLEAN DEFAULT FALSE")
+    except Exception as e:
+        print("Error checking/adding is_banned column to users:", e)
+
+    try:
+        cursor.execute("SHOW COLUMNS FROM professionals LIKE 'is_banned'")
+        if not cursor.fetchone():
+            cursor.execute("ALTER TABLE professionals ADD COLUMN is_banned BOOLEAN DEFAULT FALSE")
+    except Exception as e:
+        print("Error checking/adding is_banned column to professionals:", e)
+
 if __name__ == "__main__":
     create_schema()
+
